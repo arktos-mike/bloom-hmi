@@ -41,6 +41,7 @@ const App: React.FC = () => {
 
   const { t, i18n } = useTranslation();
 
+  const [lngs, setLngs] = useState({ data: [] })
   const [state, setState] = useState({ data: [] })
   const [today, setDate] = useState(new Date())
   const [visible, setVisible] = useState(false)
@@ -72,6 +73,16 @@ const App: React.FC = () => {
     }
   }, []);
 
+  const fetchLngs = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/locales');
+      if (!response.ok) { throw Error(response.statusText); }
+      const json = await response.json();
+      setLngs({ data: json });
+    }
+    catch (error) { console.log(error); }
+  }
+
   const fetchData = async () => {
     try {
       const response = await fetch('http://localhost:3000/tags');
@@ -85,6 +96,10 @@ const App: React.FC = () => {
   useEffect(() => {
     fetchData()
   }, [state])
+
+  useEffect(() => {
+    fetchLngs()
+  }, [])
 
   return (
     <div>
@@ -114,10 +129,10 @@ const App: React.FC = () => {
             </div>
             <div className="lang">
               <Select optionLabelProp="label" value={i18n.language} size="large" dropdownStyle={{ fontSize: '40px !important' }} dropdownAlign={{ offset: [-40, 4] }} dropdownMatchSelectWidth={false} style={{ color: "white" }} onChange={lngChange} bordered={false}>
-                <Option value="ru" label="RU"><div>RU - Русский</div></Option>
-                <Option value="en" label="EN"><div>EN - English</div></Option>
-                <Option value="tr" label="TR"><div>TR - Türkçe</div></Option>
-                <Option value="es" label="ES"><div>ES - Español</div></Option>
+              {(lngs.data || []).map(lng => (
+                <Option key={lng['locale']} value={lng['locale']} label={String(lng['locale']).toUpperCase()}>
+                  <div>{String(lng['locale']).toUpperCase()} - {t('self',{lng:lng['locale']})}</div></Option>
+                ))}
               </Select>
             </div>
             <div className="time">

@@ -72,10 +72,17 @@ const dbInit = async () => {
       { name: "modeControl", group: "setting", dev: "rtu1", addr: "12", type: "word", reg: "rw", min: 0, max: 2, dec: 0 },
       { name: "stopAngle", group: "visual", dev: "rtu1", addr: "13", type: "word", reg: "r", min: 0, max: 359, dec: 0 },
     ]
+    const locales = [
+      { self: "English", menu: { production: "PRODUCTION" }, notifications: { idle: "User inactive" } },
+      { self: "Español", menu: { production: "PRODUCCIÓN" }, notifications: { idle: "Usuario inactivo" } },
+      { self: "Русский", menu: { production: "ТОВАР" }, notifications: { idle: "Пользователь неактивен" } },
+      { self: "Türkçe", menu: { production: "YASIM" }, notifications: { idle: "Kullanıcı etkin değil" } },
+    ]
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['rtuConf', rtuConf])
     await db.query('INSERT INTO tags SELECT * FROM UNNEST($1::jsonb[]) ON CONFLICT (tag) DO NOTHING;', [tags])
+    await db.query('INSERT INTO locales SELECT UNNEST($1::text[]), UNNEST($2::jsonb[]), UNNEST($3::boolean[]) ON CONFLICT (locale) DO NOTHING;', [['en', 'es', 'ru', 'tr'], locales, [false, false, true, false]])
 
     const comRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['comConf']);
     com1 = Object.assign(com1, comRows.rows[0].data.opCOM1, { act: 0 });

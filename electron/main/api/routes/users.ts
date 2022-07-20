@@ -42,11 +42,11 @@ router.post('/register', async (req, res) => {
                 if (flag) {
                     const token = jwt.sign( //Signing a jwt token
                         Object.assign(
-                            { id: user[0].id },
-                            { name: user[0].name },
-                            user[0].email && { email: user[0].email },
-                            user[0].phonenumber && { phonenumber: user[0].phonenumber },
-                            { role: user[0].phonenumber }
+                            { id: user.id },
+                            { name: user.name },
+                            user.email && { email: user.email },
+                            user.phonenumber && { phonenumber: user.phonenumber },
+                            { role: user.phonenumber }
                         ),
                         process.env['SECRET_KEY'] || 'g@&hGgG&n34b%F7_f123K9',
                     );
@@ -140,6 +140,36 @@ router.post('/login/:id', async (req, res) => {
         console.log(err);
         res.status(500).json({
             error: "Database error occurred while signing in!", //Database connection error
+        });
+    };
+});
+
+router.delete('/:id', async (req, res) => {
+    try {
+        const data = await db.query(`SELECT * FROM users WHERE id= $1;`, [req.params.id]) //Verifying if the user exists in the database
+        const user = data.rows;
+        if (user.length === 0) {
+            res.status(400).json({
+                error: "User is not registered",
+            });
+        }
+        else {
+            db.query('DELETE FROM users WHERE id= $1;', [req.params.id], (err) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).json({
+                        error: "Database error"
+                    })
+                }
+                else {
+                    res.status(200).send({ message: 'User deleted', id: req.params.id});
+                }
+            })
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            error: "Database error occurred while deleting user!", //Database connection error
         });
     };
 });

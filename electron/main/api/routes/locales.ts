@@ -5,9 +5,15 @@ import db from '../../db'
 // it allows you to use async functions as route handlers
 const router = PromiseRouter();
 // export our router to be mounted by the parent application
+
 router.get('/lng', async (req, res) => {
     const { rows } = await db.query('SELECT locale FROM locales WHERE selected=true');
     res.status(200).send({ lng: rows[0].locale })
+})
+
+router.get('/', async (req, res) => {
+    const { rows } = await db.query('SELECT locale FROM locales');
+    res.status(200).send(rows)
 })
 
 router.get('/translations', async (req, res) => {
