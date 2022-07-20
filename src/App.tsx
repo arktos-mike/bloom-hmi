@@ -5,11 +5,15 @@ import { HashRouter, Route, Link, Routes, useLocation } from 'react-router-dom';
 import type { MenuProps } from 'antd';
 import { Layout, Menu, Select, Drawer, Button, Modal, Input, Form, Checkbox, notification, DatePicker, TimePicker, ConfigProvider, Breadcrumb } from 'antd';
 import { EyeOutlined, ToolOutlined, SettingOutlined, UserOutlined, LockOutlined, ApartmentOutlined, SendOutlined, AlertOutlined } from '@ant-design/icons';
+import { FabricPieceIcon } from "./components/IcOn"
 import { useIdleTimer } from 'react-idle-timer'
 import rulocale from 'antd/lib/locale/ru_RU';
 import trlocale from 'antd/lib/locale/tr_TR';
 import eslocale from 'antd/lib/locale/es_ES';
 import enlocale from 'antd/lib/locale/en_US';
+import Overview from "./page/overview";
+import Control from "./page/control";
+import Settings from "./page/settings";
 import './i18n/config';
 import { useTranslation } from 'react-i18next';
 
@@ -59,11 +63,38 @@ const App: React.FC = () => {
     }
   }
 
+  const BreadCrumb = () => {
+    const location = useLocation();
+    const { pathname } = location;
+    const pathnames = pathname.split("/").filter((item) => item);
+    return (
+      <Breadcrumb separator=">" style={{ margin: '3px 0' }}>
+        {(pathnames || []).length > 0 ? (
+          <Breadcrumb.Item key="overview">
+            <Link to="/"><EyeOutlined /></Link>
+          </Breadcrumb.Item>
+        ) : (
+          <Breadcrumb.Item key="overview"><EyeOutlined /> {t('menu.overview')}</Breadcrumb.Item>
+        )}
+        {(pathnames || []).map((name, index) => {
+          const routeTo = `/${(pathnames || []).slice(0, index + 1).join("/")}`;
+          const isLast = index === (pathnames || []).length - 1;
+          return isLast ? (
+            <Breadcrumb.Item key={name}>{t(i18name(name))}</Breadcrumb.Item>
+          ) : (
+            <Breadcrumb.Item key={name}>
+              <Link to={`${routeTo}`}>{t(i18name(name))}</Link>
+            </Breadcrumb.Item>
+          );
+        })}
+      </Breadcrumb>
+    );
+  }
+
   const [lngs, setLngs] = useState({ data: [] })
-  const [state, setState] = useState({ data: [] })
   const [today, setDate] = useState(new Date())
   const [visible, setVisible] = useState(false)
-  const [pathnames, setPathnames] = useState<string[]>([])
+
   const showDrawer = () => {
     setVisible(!visible);
   }
@@ -104,34 +135,6 @@ const App: React.FC = () => {
   useEffect(() => {
     fetchLngs()
   }, [])
-
-  const fetchData = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/tags');
-      if (!response.ok) { throw Error(response.statusText); }
-      const json = await response.json();
-      setState({ data: json });
-    }
-    catch (error) { console.log(error); }
-  }
-
-  useEffect(() => {
-    fetchData()
-  }, [state])
-
-
-
-  useEffect(() => {
-    try {
-    const location = useLocation();
-    const { pathname } = location;
-    console.log(pathname)
-    setPathnames(pathname.split("/").filter((item) => item));
-    }
-    catch{
-
-    }
-  }, [pathnames])
 
   return (
     <div>
@@ -174,28 +177,14 @@ const App: React.FC = () => {
           <div className="site-drawer-render-in-current-wrapper">
             <Content className="content">
               <div>
-                <Breadcrumb separator=">" style={{ margin: '3px 0' }}>
-                  {(pathnames|| []).length > 0 ? (
-                    <Breadcrumb.Item key="overview">
-                      <Link to="/"><EyeOutlined /></Link>
-                    </Breadcrumb.Item>
-                  ) : (
-                    <Breadcrumb.Item key="overview"><EyeOutlined /> {t('menu.overview')}</Breadcrumb.Item>
-                  )}
-                  {(pathnames|| []).map((name, index) => {
-                    const routeTo = `/${(pathnames|| []).slice(0, index + 1).join("/")}`;
-                    const isLast = index === (pathnames|| []).length - 1;
-                    return isLast ? (
-                      <Breadcrumb.Item key={name}>{t(i18name(name))}</Breadcrumb.Item>
-                    ) : (
-                      <Breadcrumb.Item key={name}>
-                        <Link to={`${routeTo}`}>{t(i18name(name))}</Link>
-                      </Breadcrumb.Item>
-                    );
-                  })}
-                </Breadcrumb>
+              <BreadCrumb/>
               </div>
               <div className="site-layout-content">
+                <Routes>
+                  <Route path={'/'} element={<Overview />} />
+                  <Route path={'/control'} element={<Control />} />
+                  <Route path={'/settings'} element={<Settings />} />
+                </Routes>
                 <Drawer
                   //title="Basic Drawer"
                   placement="left"
@@ -207,45 +196,28 @@ const App: React.FC = () => {
                 >
                   <Menu style={{ fontSize: '150%' }} mode="inline">
                     <Menu.Item key="overview" icon={<EyeOutlined style={{ fontSize: '100%' }} />}>
-                      <Link to="/"></Link>
+                      <Link onClick={showDrawer} to="/">{t('menu.overview')}</Link>
                     </Menu.Item>
                     <Menu.Item key="control" icon={<ToolOutlined style={{ fontSize: '100%' }} />}>
-                      <Link to="/control"></Link>
+                      <Link onClick={showDrawer} to="/control">{t('menu.control')}</Link>
                     </Menu.Item>
-                    <Menu.Item key="production" icon={<ToolOutlined style={{ fontSize: '100%' }} />}>
-                      <Link to="/production"></Link>
+                    <Menu.Item key="production" icon={<FabricPieceIcon style={{ fontSize: '100%' }} />}>
+                      <Link onClick={showDrawer} to="/production">{t('menu.production')}</Link>
                     </Menu.Item>
                     <Menu.Item key="projectile" icon={<SendOutlined style={{ fontSize: '100%' }} />}>
-                      <Link to="/projectile"></Link>
+                      <Link onClick={showDrawer} to="/projectile">{t('menu.projectile')}</Link>
                     </Menu.Item>
                     <Menu.Item key="settings" icon={<SettingOutlined style={{ fontSize: '100%' }} />}>
-                      <Link to="/settings"></Link>
+                      <Link onClick={showDrawer} to="/settings">{t('menu.settings')}</Link>
                     </Menu.Item>
                     <Menu.Item key="alarms" icon={<AlertOutlined style={{ fontSize: '100%' }} />}>
-                      <Link to="/alarms"></Link>
+                      <Link onClick={showDrawer} to="/alarms">{t('menu.alarms')}</Link>
                     </Menu.Item>
                     <Menu.Item key="system" icon={<ApartmentOutlined style={{ fontSize: '100%' }} />}>
-                      <Link to="/system"></Link>
+                      <Link onClick={showDrawer} to="/system">{t('menu.system')}</Link>
                     </Menu.Item>
                   </Menu>
                 </Drawer>
-                <div><h1>{t('menu.production')}</h1>
-                  <div>
-                    <ol>
-                      {
-                        (state.data || []).map(tag => (
-                          <li key={tag['tag']['name']} style={{ textAlign: 'start' }}>
-                            <code>{tag['tag']['name']}</code>&emsp;<b>{Number(tag['val']).toFixed(tag['tag']['dec'])}</b>&emsp;{new Date(tag['updated']).toLocaleDateString("ru-RU", {
-                              year: 'numeric', month: 'numeric', day: 'numeric',
-                              hour: 'numeric', minute: 'numeric', second: 'numeric', fractionalSecondDigits: 3,
-                              hour12: false, timeZone: 'Europe/Moscow'
-                            })}
-                          </li>
-                        ))
-                      }
-                    </ol>
-                  </div>
-                </div>
               </div>
             </Content>
             <Footer style={{ textAlign: 'center', margin: '0px', padding: '3px', color: 'rgba(0, 0, 0, 0.45)' }}>{t('footer')}</Footer>
