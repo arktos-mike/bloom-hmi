@@ -73,10 +73,10 @@ const dbInit = async () => {
       { name: "stopAngle", group: "visual", dev: "rtu1", addr: "13", type: "word", reg: "r", min: 0, max: 359, dec: 0 },
     ]
     const locales = [
-      { self: "English", menu: { production: "PRODUCTION" }, notifications: { idle: "User inactive" } },
-      { self: "Español", menu: { production: "PRODUCCIÓN" }, notifications: { idle: "Usuario inactivo" } },
-      { self: "Русский", menu: { production: "ТОВАР" }, notifications: { idle: "Пользователь неактивен" } },
-      { self: "Türkçe", menu: { production: "YASIM" }, notifications: { idle: "Kullanıcı etkin değil" } },
+      { self: "English", menu: { production: "PRODUCTION" }, notifications: { idle: "User inactive" }, footer: "© TEHMASHHOLDING Cheboksary, Russia" },
+      { self: "Español", menu: { production: "PRODUCCIÓN" }, notifications: { idle: "Usuario inactivo" }, footer: "© TEHMASHHOLDING Cheboksary, Rusia" },
+      { self: "Русский", menu: { production: "ТОВАР" }, notifications: { idle: "Пользователь неактивен" }, footer: "© ТЕХМАШХОЛДИНГ г.Чебоксары" },
+      { self: "Türkçe", menu: { production: "YASIM" }, notifications: { idle: "Kullanıcı etkin değil" }, footer: "© TEHMASHHOLDİNG Cheboksary, Rusya Federasyonu" },
     ]
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])

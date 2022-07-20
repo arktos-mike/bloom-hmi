@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
 import logo from '/icon.svg'
 import 'styles/app.css'
-import { HashRouter, Route, Link, Routes } from 'react-router-dom';
+import { HashRouter, Route, Link, Routes, useLocation } from 'react-router-dom';
 import type { MenuProps } from 'antd';
-import { Layout, Menu, Select, Drawer, Button, Modal, Input, Form, Checkbox, notification, DatePicker, TimePicker, ConfigProvider } from 'antd';
+import { Layout, Menu, Select, Drawer, Button, Modal, Input, Form, Checkbox, notification, DatePicker, TimePicker, ConfigProvider, Breadcrumb } from 'antd';
 import { EyeOutlined, ToolOutlined, SettingOutlined, UserOutlined, LockOutlined, ApartmentOutlined, SendOutlined, AlertOutlined } from '@ant-design/icons';
 import { useIdleTimer } from 'react-idle-timer'
 import rulocale from 'antd/lib/locale/ru_RU';
@@ -41,11 +41,29 @@ const App: React.FC = () => {
 
   const { t, i18n } = useTranslation();
 
+  const i18name = (name: string) => {
+    switch (name) {
+      case 'general':
+        return 'panel.general';
+      case 'stop':
+      case 'ready':
+      case 'run':
+      case 'alarm':
+        return 'tags.mode.' + name;
+      case 'run1':
+        return 'panel.left';
+      case 'run2':
+        return 'panel.right';
+      default:
+        return 'menu.' + name;
+    }
+  }
+
   const [lngs, setLngs] = useState({ data: [] })
   const [state, setState] = useState({ data: [] })
   const [today, setDate] = useState(new Date())
   const [visible, setVisible] = useState(false)
-
+  const [pathnames, setPathnames] = useState<string[]>([])
   const showDrawer = () => {
     setVisible(!visible);
   }
@@ -83,6 +101,10 @@ const App: React.FC = () => {
     catch (error) { console.log(error); }
   }
 
+  useEffect(() => {
+    fetchLngs()
+  }, [])
+
   const fetchData = async () => {
     try {
       const response = await fetch('http://localhost:3000/tags');
@@ -97,9 +119,19 @@ const App: React.FC = () => {
     fetchData()
   }, [state])
 
+
+
   useEffect(() => {
-    fetchLngs()
-  }, [])
+    try {
+    const location = useLocation();
+    const { pathname } = location;
+    console.log(pathname)
+    setPathnames(pathname.split("/").filter((item) => item));
+    }
+    catch{
+
+    }
+  }, [pathnames])
 
   return (
     <div>
@@ -129,9 +161,9 @@ const App: React.FC = () => {
             </div>
             <div className="lang">
               <Select optionLabelProp="label" value={i18n.language} size="large" dropdownStyle={{ fontSize: '40px !important' }} dropdownAlign={{ offset: [-40, 4] }} dropdownMatchSelectWidth={false} style={{ color: "white" }} onChange={lngChange} bordered={false}>
-              {(lngs.data || []).map(lng => (
-                <Option key={lng['locale']} value={lng['locale']} label={String(lng['locale']).toUpperCase()}>
-                  <div>{String(lng['locale']).toUpperCase()} - {t('self',{lng:lng['locale']})}</div></Option>
+                {(lngs.data || []).map(lng => (
+                  <Option key={lng['locale']} value={lng['locale']} label={String(lng['locale']).toUpperCase()}>
+                    <div>{String(lng['locale']).toUpperCase()} - {t('self', { lng: lng['locale'] })}</div></Option>
                 ))}
               </Select>
             </div>
@@ -141,6 +173,28 @@ const App: React.FC = () => {
           </Header>
           <div className="site-drawer-render-in-current-wrapper">
             <Content className="content">
+              <div>
+                <Breadcrumb separator=">" style={{ margin: '3px 0' }}>
+                  {(pathnames|| []).length > 0 ? (
+                    <Breadcrumb.Item key="overview">
+                      <Link to="/"><EyeOutlined /></Link>
+                    </Breadcrumb.Item>
+                  ) : (
+                    <Breadcrumb.Item key="overview"><EyeOutlined /> {t('menu.overview')}</Breadcrumb.Item>
+                  )}
+                  {(pathnames|| []).map((name, index) => {
+                    const routeTo = `/${(pathnames|| []).slice(0, index + 1).join("/")}`;
+                    const isLast = index === (pathnames|| []).length - 1;
+                    return isLast ? (
+                      <Breadcrumb.Item key={name}>{t(i18name(name))}</Breadcrumb.Item>
+                    ) : (
+                      <Breadcrumb.Item key={name}>
+                        <Link to={`${routeTo}`}>{t(i18name(name))}</Link>
+                      </Breadcrumb.Item>
+                    );
+                  })}
+                </Breadcrumb>
+              </div>
               <div className="site-layout-content">
                 <Drawer
                   //title="Basic Drawer"
@@ -194,7 +248,7 @@ const App: React.FC = () => {
                 </div>
               </div>
             </Content>
-            <Footer style={{ textAlign: 'center', margin: '0px', padding: '3px', color: 'rgba(0, 0, 0, 0.45)' }}></Footer>
+            <Footer style={{ textAlign: 'center', margin: '0px', padding: '3px', color: 'rgba(0, 0, 0, 0.45)' }}>{t('footer')}</Footer>
           </div>
         </Layout>
       </HashRouter >
