@@ -44,7 +44,8 @@ function useLoading() {
   animation-fill-mode: both;
   width: 50px;
   height: 50px;
-  background: #fff;
+
+  background: #282c34;
   animation: square-spin 3s 0s cubic-bezier(0.09, 0.57, 0.49, 0.9) infinite;
 }
 .app-loading-wrap {
@@ -66,7 +67,7 @@ function useLoading() {
   oStyle.id = 'app-loading-style'
   oStyle.innerHTML = styleContent
   oDiv.className = 'app-loading-wrap'
-  oDiv.innerHTML = `<div class="${className}"><div></div></div>`
+  oDiv.innerHTML = `<div class="${className}"><div><img style="width: 50px;  height: 50px;" src='/icon.svg' alt=""></img></div></div>`
 
   return {
     appendLoading() {
