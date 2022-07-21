@@ -12,7 +12,6 @@ import trlocale from 'antd/lib/locale/tr_TR';
 import eslocale from 'antd/lib/locale/es_ES';
 import enlocale from 'antd/lib/locale/en_US';
 import Overview from "./page/overview";
-import Control from "./page/control";
 import Settings from "./page/settings";
 import './i18n/config';
 import { useTranslation } from 'react-i18next';
@@ -150,9 +149,6 @@ const App: React.FC = () => {
               <Menu.Item key="overview">
                 <Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link>
               </Menu.Item>
-              <Menu.Item key="control" >
-                <Link to="/control"><ToolOutlined style={{ fontSize: '100%' }} /></Link>
-              </Menu.Item>
               <Menu.Item key="settings" >
                 <Link to="/settings"><SettingOutlined style={{ fontSize: '100%' }} /></Link>
               </Menu.Item>
@@ -182,7 +178,6 @@ const App: React.FC = () => {
               <div className="site-layout-content">
                 <Routes>
                   <Route path={'/'} element={<Overview />} />
-                  <Route path={'/control'} element={<Control />} />
                   <Route path={'/settings'} element={<Settings />} />
                 </Routes>
                 <Drawer
@@ -197,15 +192,6 @@ const App: React.FC = () => {
                   <Menu style={{ fontSize: '150%' }} mode="inline">
                     <Menu.Item key="overview" icon={<EyeOutlined style={{ fontSize: '100%' }} />}>
                       <Link onClick={showDrawer} to="/">{t('menu.overview')}</Link>
-                    </Menu.Item>
-                    <Menu.Item key="control" icon={<ToolOutlined style={{ fontSize: '100%' }} />}>
-                      <Link onClick={showDrawer} to="/control">{t('menu.control')}</Link>
-                    </Menu.Item>
-                    <Menu.Item key="production" icon={<FabricPieceIcon style={{ fontSize: '100%' }} />}>
-                      <Link onClick={showDrawer} to="/production">{t('menu.production')}</Link>
-                    </Menu.Item>
-                    <Menu.Item key="projectile" icon={<SendOutlined style={{ fontSize: '100%' }} />}>
-                      <Link onClick={showDrawer} to="/projectile">{t('menu.projectile')}</Link>
                     </Menu.Item>
                     <Menu.Item key="settings" icon={<SettingOutlined style={{ fontSize: '100%' }} />}>
                       <Link onClick={showDrawer} to="/settings">{t('menu.settings')}</Link>
