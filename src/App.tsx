@@ -13,6 +13,7 @@ import eslocale from 'antd/lib/locale/es_ES';
 import enlocale from 'antd/lib/locale/en_US';
 import Overview from "./page/overview";
 import Settings from "./page/settings";
+import UserLogin from "./dialog/UserLogin";
 import './i18n/config';
 import { useTranslation } from 'react-i18next';
 
@@ -93,11 +94,15 @@ const App: React.FC = () => {
   const [lngs, setLngs] = useState({ data: [] })
   const [today, setDate] = useState(new Date())
   const [visible, setVisible] = useState(false)
+  const [userDialogVisible, setUserDialogVisible] = useState(false)
 
   const showDrawer = () => {
     setVisible(!visible);
   }
 
+  const showUserDialog = () => {
+    setUserDialogVisible(true);
+  }
   const lngChange = async (lang: string) => {
     try {
       i18n.changeLanguage(lang)
@@ -156,7 +161,8 @@ const App: React.FC = () => {
             <div className="mode" style={{ backgroundColor: '#00000000' }}>
             </div>
             <div className="user">
-              <Button type="primary" size="large" shape="circle" icon={<UserOutlined style={{ fontSize: '120%' }} />} /><span className="text"></span>
+              <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} /><span className="text"></span>
+              <UserLogin isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} />
             </div>
             <div className="lang">
               <Select optionLabelProp="label" value={i18n.language} size="large" dropdownStyle={{ fontSize: '40px !important' }} dropdownAlign={{ offset: [-40, 4] }} dropdownMatchSelectWidth={false} style={{ color: "white" }} onChange={lngChange} bordered={false}>
@@ -173,7 +179,7 @@ const App: React.FC = () => {
           <div className="site-drawer-render-in-current-wrapper">
             <Content className="content">
               <div>
-              <BreadCrumb/>
+                <BreadCrumb />
               </div>
               <div className="site-layout-content">
                 <Routes>
