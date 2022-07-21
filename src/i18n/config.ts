@@ -25,8 +25,9 @@ i18n.use(AsyncStoragePlugin(detectUserLanguage)).use(Fetch).use(initReactI18next
       method: 'POST',
     },
   },
+  supportedLngs: ['ru', 'en','es','tr'],
   fallbackLng: ['en'],
-  preload: ['ru', 'en'],
+  preload: ['ru', 'en','es','tr'],
   ns: 'translation',
   defaultNS: 'translation',
   interpolation: {
