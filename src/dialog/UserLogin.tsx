@@ -6,13 +6,17 @@ import { useTranslation } from 'react-i18next';
 
 type Props = {
     isModalVisible: boolean;
-    token: string;
+    token: any;
+    setToken: (val: any) => void;
+    setRemember: (val: boolean) => void;
     setIsModalVisible: (val: boolean) => void;
 };
 const UserLogin: React.FC<Props> = ({
     isModalVisible,
     setIsModalVisible,
-    token
+    token,
+    setToken,
+    setRemember
 }) => {
     const [form] = Form.useForm()
 
@@ -33,9 +37,9 @@ const UserLogin: React.FC<Props> = ({
     }
     const handleOk = () => {
         form.resetFields()
+        setToken(null);
     }
-    const onFinish = async (values: { user: any; password: any; remember: any; }) => {
-        console.log('Form submited!', values.user, values.password, values.remember)
+    const onFinish = async (values: { user: any; password: any; remember: boolean; }) => {
         try {
             const response = await fetch('http://localhost:3000/users/login', {
                 method: 'POST',
@@ -43,8 +47,9 @@ const UserLogin: React.FC<Props> = ({
                 body: JSON.stringify({ name: values.user, password: values.password, }),
             });
             const json = await response.json();
-            token = json.token
-            openNotificationWithIcon('info', json.message, 0);
+            setToken(json.token || null);
+            setRemember(values.remember);
+            openNotificationWithIcon(json.error?'warning':'success', t(json.message), 3);
             if (!response.ok) { throw Error(response.statusText); }
 
 
@@ -80,14 +85,14 @@ const UserLogin: React.FC<Props> = ({
                     <Form.Item
                         label={t('user.curuser')}
                     >
-                        <span className="text">{t('user.user' )}</span>
+                        <span className="text">{t('user.' + token )}</span>
                     </Form.Item>
                     <Form.Item
                         label={t('user.user')}
                         name="user"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Input placeholder={t('user.user')} value={''} size="large" />
+                        <Input placeholder={t('user.user')} size="large" />
                     </Form.Item>
 
                     <Form.Item
@@ -95,7 +100,7 @@ const UserLogin: React.FC<Props> = ({
                         name="password"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Input.Password visibilityToggle={false} value={''} placeholder={t('user.password')} prefix={<LockOutlined className="site-form-item-icon" />} />
+                        <Input.Password visibilityToggle={false} placeholder={t('user.password')} prefix={<LockOutlined className="site-form-item-icon" />} />
                     </Form.Item>
                     <Form.Item name="remember" valuePropName="checked" wrapperCol={{ offset: 8, span: 16 }}>
                         <Checkbox>{t('user.remember')}</Checkbox>

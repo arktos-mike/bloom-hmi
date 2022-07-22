@@ -69,6 +69,7 @@ router.post('/login', async (req, res) => {
         const user = data.rows;
         if (user.length === 0) {
             res.status(400).json({
+                message: "notifications.notregistered",
                 error: "User is not registered, Sign Up first",
             });
         }
@@ -76,6 +77,7 @@ router.post('/login', async (req, res) => {
             bcrypt.compare(password, user[0].password, (err, result) => { //Comparing the hashed password
                 if (err) {
                     res.status(500).json({
+                        message: "notifications.servererror",
                         error: "Server error",
                     });
                 } else if (result === true) { //Checking if credentials match
@@ -90,7 +92,7 @@ router.post('/login', async (req, res) => {
                         process.env['SECRET_KEY'] || 'g@&hGgG&n34b%F7_f123K9',
                     );
                     res.status(200).json({
-                        message: "User signed in!",
+                        message: "notifications.userok",
                         token: token,
                     });
                 }
@@ -98,6 +100,7 @@ router.post('/login', async (req, res) => {
                     //Declaring the errors
                     if (result != true)
                         res.status(400).json({
+                            message: "notifications.usererror",
                             error: "Enter correct password!",
                         });
                 }
@@ -106,6 +109,7 @@ router.post('/login', async (req, res) => {
     } catch (err) {
         console.log(err);
         res.status(500).json({
+            message: "notifications.dberror",
             error: "Database error occurred while signing in!", //Database connection error
         });
     };
@@ -117,6 +121,7 @@ router.post('/login/:id', async (req, res) => {
         const user = data.rows;
         if (user.length === 0) {
             res.status(400).json({
+                message: "notifications.notregistered",
                 error: "User is not registered, Sign Up first",
             });
         }
@@ -132,13 +137,14 @@ router.post('/login/:id', async (req, res) => {
                 process.env['SECRET_KEY'] || 'g@&hGgG&n34b%F7_f123K9',
             );
             res.status(200).json({
-                message: "User signed in!",
+                message: "notifications.userok",
                 token: token,
             });
         }
     } catch (err) {
         console.log(err);
         res.status(500).json({
+            message: "notifications.dberror",
             error: "Database error occurred while signing in!", //Database connection error
         });
     };
@@ -150,6 +156,7 @@ router.delete('/:id', async (req, res) => {
         const user = data.rows;
         if (user.length === 0) {
             res.status(400).json({
+                message: "notifications.notregistered",
                 error: "User is not registered",
             });
         }
@@ -158,17 +165,19 @@ router.delete('/:id', async (req, res) => {
                 if (err) {
                     console.error(err);
                     return res.status(500).json({
+                        message: "notifications.dberror",
                         error: "Database error"
                     })
                 }
                 else {
-                    res.status(200).send({ message: 'User deleted', id: req.params.id});
+                    res.status(200).send({ message: "notifications.userdel", id: req.params.id});
                 }
             })
         }
     } catch (err) {
         console.log(err);
         res.status(500).json({
+            message: "notifications.dberror",
             error: "Database error occurred while deleting user!", //Database connection error
         });
     };
@@ -208,6 +217,7 @@ router.post('/update', async (req, res) => {
                 bcrypt.hash(password, 10, (err, hash) => {
                     if (err)
                         res.status(err).json({
+                            message: "notifications.servererror",
                             error: "Server error",
                         });
                     const user = { id, name, email, phonenumber, password: hash, role };
@@ -218,12 +228,13 @@ router.post('/update', async (req, res) => {
                             flag = 0; //If user is not updated assigning flag as 0/false.
                             console.error(err);
                             return res.status(500).json({
+                                message: "notifications.dberror",
                                 error: "Database error"
                             })
                         }
                         else {
                             flag = 1;
-                            res.status(200).send({ message: 'User updated' });
+                            res.status(200).send({ message: "notifications.userupdate", });
                         }
                     })
                     if (flag) {
@@ -241,6 +252,7 @@ router.post('/update', async (req, res) => {
                 });
             } else {
                 return res.status(400).json({
+                    message: "notifications.usererror",
                     error: "No username or password given.",
                 });
             }
@@ -249,6 +261,7 @@ router.post('/update', async (req, res) => {
     catch (err) {
         console.log(err);
         res.status(500).json({
+            message: "notifications.dberror",
             error: "Database error while updating user!", //Database connection error
         });
     };
