@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 const Overview: React.FC = () => {
 
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [state, setState] = useState({ data: [] })
 
     const fetchData = async () => {
@@ -28,7 +28,7 @@ return (
                         {
                           (state.data || []).map(tag => (
                             <li key={tag['tag']['name']} style={{ textAlign: 'start' }}>
-                              <code>{tag['tag']['name']}</code>&emsp;<b>{Number(tag['val']).toFixed(tag['tag']['dec'])}</b>&emsp;{new Date(tag['updated']).toLocaleDateString("ru-RU", {
+                              <code>{tag['tag']['name']}</code>&emsp;<b>{Number(tag['val']).toFixed(tag['tag']['dec'])}</b>&emsp;{new Date(tag['updated']).toLocaleDateString(i18n.language, {
                                 year: 'numeric', month: 'numeric', day: 'numeric',
                                 hour: 'numeric', minute: 'numeric', second: 'numeric', fractionalSecondDigits: 3,
                                 hour12: false, timeZone: 'Europe/Moscow'

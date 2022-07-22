@@ -187,6 +187,7 @@ const writeModbusData = async function (tagName, val) {
         try {
           const size = getByteLength(tag.type);
           const buffer = Buffer.allocUnsafe(size);
+          val=Number(val.replace(',','.'))
           if (tag.type === "int16") {
             slave.swapWords ? buffer.writeInt16LE(val) : buffer.writeInt16BE(val);
           } else if (tag.type === "word") {
@@ -248,7 +249,7 @@ const readModbusData = async function (client, port, slave) {
                   val = slave.swapWords ? data.buffer.readUInt32LE(0) : data.buffer.readUInt32BE(0);
                   break;
                 case 'word':
-                  val = slave.swapWords ? data.buffer.readInt16LE(0) : data.buffer.readInt16BE(0);
+                  val = slave.swapWords ? data.buffer.readUInt16LE(0) : data.buffer.readUInt16BE(0);
                   break;
                 case 'float':
                   val = slave.swapWords ? data.buffer.readFloatLE(0) : data.buffer.readFloatBE(0);
@@ -298,7 +299,7 @@ const readModbusData = async function (client, port, slave) {
                   val = slave.swapWords ? data.buffer.readUInt32LE(0) : data.buffer.readUInt32BE(0);
                   break;
                 case 'word':
-                  val = slave.swapWords ? data.buffer.readInt16LE(0) : data.buffer.readInt16BE(0);
+                  val = slave.swapWords ? data.buffer.readUInt16LE(0) : data.buffer.readUInt16BE(0);
                   break;
                 case 'float':
                   val = slave.swapWords ? data.buffer.readFloatLE(0) : data.buffer.readFloatBE(0);

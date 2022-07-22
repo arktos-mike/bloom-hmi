@@ -92,6 +92,7 @@ const App: React.FC = () => {
   }
 
   const [lngs, setLngs] = useState({ data: [] })
+  const [token, setToken] = useState('')
   const [today, setDate] = useState(new Date())
   const [visible, setVisible] = useState(false)
   const [userDialogVisible, setUserDialogVisible] = useState(false)
@@ -162,7 +163,7 @@ const App: React.FC = () => {
             </div>
             <div className="user">
               <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} /><span className="text"></span>
-              <UserLogin isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} />
+              <UserLogin token={token} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} />
             </div>
             <div className="lang">
               <Select optionLabelProp="label" value={i18n.language} size="large" dropdownStyle={{ fontSize: '40px !important' }} dropdownAlign={{ offset: [-40, 4] }} dropdownMatchSelectWidth={false} style={{ color: "white" }} onChange={lngChange} bordered={false}>
@@ -183,9 +184,10 @@ const App: React.FC = () => {
               </div>
               <div className="site-layout-content">
                 <Routes>
-                  <Route path={'/'} element={<Overview />} />
+                  <Route index element={<Overview />} />
                   <Route path={'/settings'} element={<Settings />} />
                 </Routes>
+                {token}
                 <Drawer
                   //title="Basic Drawer"
                   placement="left"
