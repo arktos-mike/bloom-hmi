@@ -54,13 +54,7 @@ const UserLogin: React.FC<Props> = ({
         form.resetFields()
         setToken(null);
     }
-    const onChange = (value: string) => {
-        console.log(`selected ${value}`);
-    };
-    const onSearch = (value: string) => {
-        console.log('search:', value);
-    };
-
+    
     const onFinish = async (values: { user: any; password: any; remember: boolean; }) => {
         try {
             const response = await fetch('http://localhost:3000/users/login', {
@@ -115,7 +109,7 @@ const UserLogin: React.FC<Props> = ({
                         name="user"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Select showSearch onChange={onChange} onSearch={onSearch} filterOption={(input, option) => (option!.children as unknown as string).toLowerCase().includes(input.toLowerCase())
+                        <Select showSearch filterOption={(input, option) => (option!.children as unknown as string).toLowerCase().includes(input.toLowerCase())
                         } placeholder={t('user.user')} virtual={false} size="large" suffixIcon={<UserOutlined style={{ fontSize: '120%' }} />}>
                             {(state.data || []).map(user => (
                                 <Option key={user['name']} value={user['name']} label={user['name']}>
@@ -129,12 +123,12 @@ const UserLogin: React.FC<Props> = ({
                         name="password"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Input.Password visibilityToggle={false} placeholder={t('user.password')} prefix={<LockOutlined className="site-form-item-icon" />} />
+                        <Input.Password visibilityToggle={true} placeholder={t('user.password')} prefix={<LockOutlined className="site-form-item-icon" />} />
                     </Form.Item>
                     <Form.Item name="remember" valuePropName="checked" wrapperCol={{ offset: 8, span: 16 }}>
                         <Checkbox>{t('user.remember')}</Checkbox>
                     </Form.Item>
-                    <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                    <Form.Item wrapperCol={{ offset: 8, span: 16 }} hidden={!token} >
                         <Button type="link" onClick={() => { }}>{t('user.change')}</Button>
                     </Form.Item >
                     <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
