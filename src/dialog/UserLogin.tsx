@@ -1,8 +1,8 @@
-import { ChangeEvent, FormEvent } from 'react'
-import { Modal, Button, Form, Input, Checkbox, notification } from 'antd'
-import { LockOutlined } from '@ant-design/icons';
+import { useState, useEffect } from 'react'
+import { Modal, Button, Form, Input, Checkbox, notification, Select } from 'antd'
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-
+const { Option } = Select;
 
 type Props = {
     isModalVisible: boolean;
@@ -19,17 +19,32 @@ const UserLogin: React.FC<Props> = ({
     setRemember
 }) => {
     const [form] = Form.useForm()
+    const [state, setState] = useState({ data: [] })
+
+    const fetchData = async () => {
+        try {
+            const response = await fetch('http://localhost:3000/users');
+            if (!response.ok) { throw Error(response.statusText); }
+            const json = await response.json();
+            setState({ data: json });
+        }
+        catch (error) { console.log(error); }
+    }
+
+    useEffect(() => {
+        fetchData()
+    }, [isModalVisible])
 
     const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
         if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
-          notification[type]({
-            message: message,
-            description: descr,
-            placement: 'bottomRight',
-            duration: dur,
-            style: style,
-          });
-      };
+            notification[type]({
+                message: message,
+                description: descr,
+                placement: 'bottomRight',
+                duration: dur,
+                style: style,
+            });
+    };
     const { t } = useTranslation();
     const handleCancel = () => {
         setIsModalVisible(false)
@@ -39,6 +54,13 @@ const UserLogin: React.FC<Props> = ({
         form.resetFields()
         setToken(null);
     }
+    const onChange = (value: string) => {
+        console.log(`selected ${value}`);
+    };
+    const onSearch = (value: string) => {
+        console.log('search:', value);
+    };
+
     const onFinish = async (values: { user: any; password: any; remember: boolean; }) => {
         try {
             const response = await fetch('http://localhost:3000/users/login', {
@@ -49,7 +71,7 @@ const UserLogin: React.FC<Props> = ({
             const json = await response.json();
             setToken(json.token || null);
             setRemember(values.remember);
-            openNotificationWithIcon(json.error?'warning':'success', t(json.message), 3);
+            openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
             if (!response.ok) { throw Error(response.statusText); }
 
 
@@ -63,6 +85,7 @@ const UserLogin: React.FC<Props> = ({
             title={t('user.signin')}
             okButtonProps={{ size: 'large' }}
             okText={t('user.logout')}
+            cancelText={t('menu.close')}
             cancelButtonProps={{ size: 'large' }}
             onOk={handleOk}
             onCancel={handleCancel}
@@ -85,14 +108,20 @@ const UserLogin: React.FC<Props> = ({
                     <Form.Item
                         label={t('user.curuser')}
                     >
-                        <span className="text">{t('user.' + token )}</span>
+                        <span className="text">{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</span>
                     </Form.Item>
                     <Form.Item
                         label={t('user.user')}
                         name="user"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Input placeholder={t('user.user')} size="large" />
+                        <Select showSearch onChange={onChange} onSearch={onSearch} filterOption={(input, option) => (option!.children as unknown as string).toLowerCase().includes(input.toLowerCase())
+                        } placeholder={t('user.user')} virtual={false} size="large" suffixIcon={<UserOutlined style={{ fontSize: '120%' }} />}>
+                            {(state.data || []).map(user => (
+                                <Option key={user['name']} value={user['name']} label={user['name']}>
+                                    {user['name']}</Option>
+                            ))}
+                        </Select>
                     </Form.Item>
 
                     <Form.Item

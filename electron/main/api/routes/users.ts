@@ -8,6 +8,12 @@ import * as jwt from 'jsonwebtoken';
 // it allows you to use async functions as route handlers
 const router = PromiseRouter();
 // export our router to be mounted by the parent application
+
+router.get('/', async (req, res) => {
+    const { rows } = await db.query('SELECT name FROM users ORDER BY name;');
+    res.status(200).send(rows)
+})
+
 router.post('/register', async (req, res) => {
     const { id, name, email, phonenumber, password, role } = req.body;
     try {
@@ -15,12 +21,14 @@ router.post('/register', async (req, res) => {
         const arr = data.rows;
         if (arr.length != 0) {
             return res.status(400).json({
+                message: "notifications.userexist",
                 error: "ID already there, No need to register again.",
             });
         } else {
             bcrypt.hash(password, 10, (err, hash) => {
                 if (err)
                     res.status(err).json({
+                        message: "notifications.servererror",
                         error: "Server error",
                     });
                 const user = { id, name, email, phonenumber, password: hash, role };
@@ -31,12 +39,13 @@ router.post('/register', async (req, res) => {
                         flag = 0; //If user is not inserted is not inserted to database assigning flag as 0/false.
                         console.error(err);
                         return res.status(500).json({
+                            message: "notifications.dberror",
                             error: "Database error"
                         })
                     }
                     else {
                         flag = 1;
-                        res.status(200).send({ message: 'User added to database, not verified' });
+                        res.status(200).send({ message: "notifications.userregistered", });
                     }
                 })
                 if (flag) {
@@ -57,6 +66,7 @@ router.post('/register', async (req, res) => {
     catch (err) {
         console.log(err);
         res.status(500).json({
+            message: "notifications.dberror",
             error: "Database error while registring user!", //Database connection error
         });
     };
@@ -188,8 +198,7 @@ router.post('/decode/:jwt', async (req, res) => {
         const decoded = jwt.decode(req.params.jwt)
         if (decoded) {
             res.status(200).json({
-                message: "User decoded",
-                user: decoded,
+                decoded
             });
         } else {
             throw new Error();

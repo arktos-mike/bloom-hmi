@@ -96,7 +96,7 @@ const App: React.FC = () => {
 
   const [lngs, setLngs] = useState({ data: [] })
   const [token, setToken] = useState(null)
-  const [remember,setRemember] = useState(true)
+  const [remember, setRemember] = useState(true)
   const [today, setDate] = useState(new Date())
   const [visible, setVisible] = useState(false)
   const [userDialogVisible, setUserDialogVisible] = useState(false)
@@ -173,8 +173,9 @@ const App: React.FC = () => {
             <div className="mode" style={{ backgroundColor: '#00000000' }}>
             </div>
             <div className="user">
-              <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} /><span className="text"></span>
+              <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} /><span className="text">{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</span>
               <UserLogin token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} />
+              
             </div>
             <div className="lang">
               <Select optionLabelProp="label" value={i18n.language} size="large" dropdownStyle={{ fontSize: '40px !important' }} dropdownAlign={{ offset: [-40, 4] }} dropdownMatchSelectWidth={false} style={{ color: "white" }} onChange={lngChange} bordered={false}>
@@ -194,7 +195,6 @@ const App: React.FC = () => {
                 <BreadCrumb />
               </div>
               <div className="site-layout-content">
-              <code>{remember.toString()} {token}</code>
                 <Routes>
                   <Route index element={<Overview />} />
                   <Route path={'/settings'} element={<Settings />} />
