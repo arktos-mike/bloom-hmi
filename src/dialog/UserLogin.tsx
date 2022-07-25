@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Modal, Button, Form, Input, Checkbox, notification, Select } from 'antd'
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import UserEdit from "./UserEdit";
+import UserRegister from "./UserRegister";
 const { Option } = Select;
 
 type Props = {
@@ -20,7 +22,8 @@ const UserLogin: React.FC<Props> = ({
 }) => {
     const [form] = Form.useForm()
     const [state, setState] = useState({ data: [] })
-
+    const [editVisible, setEditVisible] = useState(false)
+    const [regVisible, setRegVisible] = useState(false)
     const fetchData = async () => {
         try {
             const response = await fetch('http://localhost:3000/users');
@@ -33,7 +36,8 @@ const UserLogin: React.FC<Props> = ({
 
     useEffect(() => {
         fetchData()
-    }, [isModalVisible])
+        form.resetFields()
+    }, [isModalVisible,editVisible,regVisible])
 
     const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
         if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
@@ -67,11 +71,9 @@ const UserLogin: React.FC<Props> = ({
             setRemember(values.remember);
             openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
             if (!response.ok) { throw Error(response.statusText); }
-
-
         }
         catch (error) { console.log(error) }
-        setIsModalVisible(false)
+        //setIsModalVisible(false)
     }
 
     return (
@@ -129,13 +131,18 @@ const UserLogin: React.FC<Props> = ({
                         <Checkbox>{t('user.remember')}</Checkbox>
                     </Form.Item>
                     <Form.Item wrapperCol={{ offset: 8, span: 16 }} hidden={!token} >
-                        <Button type="link" onClick={() => { }}>{t('user.change')}</Button>
+                        <Button type="link" onClick={() => {setEditVisible(true);}}>{t('user.change')}</Button>
+                        <UserEdit isModalVisible={editVisible} setIsModalVisible={setEditVisible} token={token} setToken={setToken} />
                     </Form.Item >
                     <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
                         <Button size="large" type="primary" htmlType="submit" >
                             {t('user.login')}
                         </Button>
                     </Form.Item>
+                    <Form.Item wrapperCol={{ offset: 8, span: 16 }} >
+                        <Button type="link" onClick={() => {setRegVisible(true); }}>{t('user.register')}</Button>
+                        <UserRegister isModalVisible={regVisible} setIsModalVisible={setRegVisible} />
+                    </Form.Item >
                 </Form>
             </div>
         </Modal>

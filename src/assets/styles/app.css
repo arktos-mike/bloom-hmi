@@ -231,6 +231,12 @@
   height: 100% !important;
 }
 
+.ant-input-number, .ant-input-number-group-addon {
+  font-size: 24px !important;
+  padding-top: 6.5px !important;
+  padding-bottom: 6.5px !important;
+}
+
 .ant-input, .ant-picker, .ant-picker input{
   font-size: 24px !important;
 }

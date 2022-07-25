@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
 router.post('/register', async (req, res) => {
     const { id, name, email, phonenumber, password, role } = req.body;
     try {
-        const data = await db.query('SELECT * FROM users WHERE id = $1;', [id]);
+        const data = await db.query(id ? 'SELECT * FROM users WHERE id = $1;' : 'SELECT * FROM users WHERE name = $1;', [id ? id : name]);
         const arr = data.rows;
         if (arr.length != 0) {
             return res.status(400).json({
@@ -34,7 +34,8 @@ router.post('/register', async (req, res) => {
                 const user = { id, name, email, phonenumber, password: hash, role };
                 var flag = 1; //Declaring a flag
                 //Inserting data into the database
-                db.query('INSERT INTO users (id, name, email, phonenumber, password, role) VALUES ($1,$2,$3,$4,$5,$6);', [user.id, user.name, user.email, user.phonenumber, user.password, user.role], (err) => {
+
+                db.query(id ? 'INSERT INTO users (id, name, email, phonenumber, password, role) VALUES ($1,$2,$3,$4,$5,$6);' : 'INSERT INTO users (name, email, phonenumber, password, role) VALUES ($1,$2,$3,$4,$5);', id ? [user.id, user.name, user.email, user.phonenumber, user.password, user.role] : [user.name, user.email, user.phonenumber, user.password, user.role], (err) => {
                     if (err) {
                         flag = 0; //If user is not inserted is not inserted to database assigning flag as 0/false.
                         console.error(err);
@@ -48,18 +49,6 @@ router.post('/register', async (req, res) => {
                         res.status(200).send({ message: "notifications.userregistered", });
                     }
                 })
-                if (flag) {
-                    const token = jwt.sign( //Signing a jwt token
-                        Object.assign(
-                            { id: user.id },
-                            { name: user.name },
-                            user.email && { email: user.email },
-                            user.phonenumber && { phonenumber: user.phonenumber },
-                            { role: user.phonenumber }
-                        ),
-                        process.env['SECRET_KEY'] || 'g@&hGgG&n34b%F7_f123K9',
-                    );
-                };
             });
         }
     }
@@ -97,7 +86,7 @@ router.post('/login', async (req, res) => {
                             { name: user[0].name },
                             user[0].email && { email: user[0].email },
                             user[0].phonenumber && { phonenumber: user[0].phonenumber },
-                            { role: user[0].phonenumber }
+                            { role: user[0].role }
                         ),
                         process.env['SECRET_KEY'] || 'g@&hGgG&n34b%F7_f123K9',
                     );
@@ -142,7 +131,7 @@ router.post('/login/:id', async (req, res) => {
                     { name: user[0].name },
                     user[0].email && { email: user[0].email },
                     user[0].phonenumber && { phonenumber: user[0].phonenumber },
-                    { role: user[0].phonenumber }
+                    { role: user[0].role }
                 ),
                 process.env['SECRET_KEY'] || 'g@&hGgG&n34b%F7_f123K9',
             );
@@ -180,7 +169,7 @@ router.delete('/:id', async (req, res) => {
                     })
                 }
                 else {
-                    res.status(200).send({ message: "notifications.userdel", id: req.params.id});
+                    res.status(200).send({ message: "notifications.userdel", id: req.params.id });
                 }
             })
         }
@@ -213,67 +202,90 @@ router.post('/decode/:jwt', async (req, res) => {
 });
 
 router.post('/update', async (req, res) => {
-    const { id, name, email, phonenumber, password, role } = req.body;
-    try {
-        const data = await db.query('SELECT * FROM users WHERE id = $1;', [id]);
-        const arr = data.rows;
-        if (arr.length = 0) {
-            return res.status(400).json({
-                error: "No such user.",
-            });
-        } else {
-            if (name && password) {
-                bcrypt.hash(password, 10, (err, hash) => {
-                    if (err)
-                        res.status(err).json({
-                            message: "notifications.servererror",
-                            error: "Server error",
+    const { id, name, email, phonenumber, oldpassword, newpassword, role } = req.body;
+    // try {
+    const data = await db.query('SELECT * FROM users WHERE id = $1;', [id]);
+    const arr = data.rows;
+    const password = arr[0]['password']
+    if (arr.length = 0) {
+        return res.status(400).json({
+            message: "notifications.usererror",
+            error: "No such user.",
+        });
+    } else {
+        if (name && oldpassword && newpassword) {
+            bcrypt.compare(oldpassword, password, (err, result) => { //Comparing the hashed password
+                if (err) {
+                    res.status(500).json({
+                        message: "notifications.servererror",
+                        error: "Server error",
+                    });
+                } else if (result === true) { //Checking if credentials match
+                    bcrypt.hash(newpassword, 10, (err, hash) => {
+                        if (err)
+                            res.status(err).json({
+                                message: "notifications.servererror",
+                                error: "Server error",
+                            });
+
+                        var flag = 1; //Declaring a flag
+                        //Inserting data into the database
+                        db.query('UPDATE users SET name=$2, email=$3, phonenumber=$4, password=$5, role=$6 where id=$1;', [id, name, email, phonenumber, hash, role], (err) => {
+                            if (err) {
+                                flag = 0; //If user is not updated assigning flag as 0/false.
+                                console.error(err);
+                                return res.status(500).json({
+                                    message: "notifications.dberror",
+                                    error: "Database error"
+                                })
+                            }
+                            else {
+                                flag = 1;
+                            }
+                        })
+                        if (flag) {
+                            const token = jwt.sign( //Signing a jwt token
+                                Object.assign(
+                                    { id: id },
+                                    { name: name },
+                                    email && { email: email },
+                                    phonenumber && { phonenumber: phonenumber },
+                                    { role: role }
+                                ),
+                                process.env['SECRET_KEY'] || 'g@&hGgG&n34b%F7_f123K9',
+                            );
+                            res.status(200).json({
+                                message: "notifications.userupdate",
+                                token: token,
+                            });
+                        };
+                    });
+                }
+                else {
+                    //Declaring the errors
+                    if (result != true)
+                        res.status(400).json({
+                            message: "notifications.usererror",
+                            error: "Enter correct password!",
                         });
-                    const user = { id, name, email, phonenumber, password: hash, role };
-                    var flag = 1; //Declaring a flag
-                    //Inserting data into the database
-                    db.query('UPDATE users SET name=$2, email=$3, phonenumber=$4, password=$5, role=$6 where id=$1;', [user.id, user.name, user.email, user.phonenumber, user.password, user.role], (err) => {
-                        if (err) {
-                            flag = 0; //If user is not updated assigning flag as 0/false.
-                            console.error(err);
-                            return res.status(500).json({
-                                message: "notifications.dberror",
-                                error: "Database error"
-                            })
-                        }
-                        else {
-                            flag = 1;
-                            res.status(200).send({ message: "notifications.userupdate", });
-                        }
-                    })
-                    if (flag) {
-                        const token = jwt.sign( //Signing a jwt token
-                            Object.assign(
-                                { id: user.id },
-                                { name: user.name },
-                                user.email && { email: user.email },
-                                user.phonenumber && { phonenumber: user.phonenumber },
-                                { role: user.phonenumber }
-                            ),
-                            process.env['SECRET_KEY'] || 'g@&hGgG&n34b%F7_f123K9',
-                        );
-                    };
-                });
-            } else {
-                return res.status(400).json({
-                    message: "notifications.usererror",
-                    error: "No username or password given.",
-                });
-            }
+                }
+            })
+
+        } else {
+            return res.status(400).json({
+                message: "notifications.usererror",
+                error: "No username and password given.",
+            });
         }
     }
-    catch (err) {
-        console.log(err);
-        res.status(500).json({
-            message: "notifications.dberror",
-            error: "Database error while updating user!", //Database connection error
-        });
-    };
+    /* }
+     catch (err) {
+         console.log(err);
+         res.status(500).json({
+             message: "notifications.dberror",
+             error: "Database error while updating user!", //Database connection error
+         });
+     };*/
 });
 
 export default router 

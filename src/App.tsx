@@ -7,15 +7,15 @@ import { Layout, Menu, Select, Drawer, Button, Modal, Input, Form, Checkbox, not
 import { EyeOutlined, ToolOutlined, SettingOutlined, UserOutlined, LockOutlined, ApartmentOutlined, SendOutlined, AlertOutlined } from '@ant-design/icons';
 import { FabricPieceIcon } from "./components/IcOn"
 import { useIdleTimer } from 'react-idle-timer'
-import rulocale from 'antd/lib/locale/ru_RU';
-import trlocale from 'antd/lib/locale/tr_TR';
-import eslocale from 'antd/lib/locale/es_ES';
-import enlocale from 'antd/lib/locale/en_US';
 import Overview from "./page/overview";
 import Settings from "./page/settings";
 import UserLogin from "./dialog/UserLogin";
 import './i18n/config';
 import { useTranslation } from 'react-i18next';
+import rulocale from 'antd/lib/locale/ru_RU';
+import trlocale from 'antd/lib/locale/tr_TR';
+import eslocale from 'antd/lib/locale/es_ES';
+import enlocale from 'antd/lib/locale/en_US';
 
 const { Header, Content, Footer } = Layout;
 const { Option } = Select;
@@ -155,40 +155,41 @@ const App: React.FC = () => {
   return (
     <div>
       <HashRouter>
+      <ConfigProvider locale={i18n.language === 'en' ? enlocale : i18n.language === 'ru' ? rulocale : i18n.language === 'tr' ? trlocale : i18n.language === 'es' ? eslocale : enlocale}>
         <Layout className="layout">
-          <Header style={{ position: 'fixed', zIndex: 1, width: '100%', padding: 0, display: 'inline-flex', justifyContent: "space-between" }}>
-            <div className="logo" onClick={showDrawer}>
-              <img src={logo} className="applogo" alt=""></img>
-            </div>
-            <Menu style={{
-              fontSize: '150%'
-            }} theme='dark' mode="horizontal">
-              <Menu.Item key="overview">
-                <Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link>
-              </Menu.Item>
-              <Menu.Item key="settings" >
-                <Link to="/settings"><SettingOutlined style={{ fontSize: '100%' }} /></Link>
-              </Menu.Item>
-            </Menu>
-            <div className="mode" style={{ backgroundColor: '#00000000' }}>
-            </div>
-            <div className="user">
-              <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} /><span className="text">{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</span>
-              <UserLogin token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} />
-              
-            </div>
-            <div className="lang">
-              <Select optionLabelProp="label" value={i18n.language} size="large" dropdownStyle={{ fontSize: '40px !important' }} dropdownAlign={{ offset: [-40, 4] }} dropdownMatchSelectWidth={false} style={{ color: "white" }} onChange={lngChange} bordered={false}>
-                {(lngs.data || []).map(lng => (
-                  <Option key={lng['locale']} value={lng['locale']} label={String(lng['locale']).toUpperCase()}>
-                    <div>{String(lng['locale']).toUpperCase()} - {t('self', { lng: lng['locale'] })}</div></Option>
-                ))}
-              </Select>
-            </div>
-            <div className="time">
-              {curTime}{curDate}
-            </div>
-          </Header>
+            <Header style={{ position: 'fixed', zIndex: 1, width: '100%', padding: 0, display: 'inline-flex', justifyContent: "space-between" }}>
+              <div className="logo" onClick={showDrawer}>
+                <img src={logo} className="applogo" alt=""></img>
+              </div>
+              <Menu style={{
+                fontSize: '150%'
+              }} theme='dark' mode="horizontal">
+                <Menu.Item key="overview">
+                  <Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link>
+                </Menu.Item>
+                <Menu.Item key="settings" >
+                  <Link to="/settings"><SettingOutlined style={{ fontSize: '100%' }} /></Link>
+                </Menu.Item>
+              </Menu>
+              <div className="mode" style={{ backgroundColor: '#00000000' }}>
+              </div>
+              <div className="user">
+                <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} /><span className="text">{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</span>
+                <UserLogin token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} />
+
+              </div>
+              <div className="lang">
+                <Select optionLabelProp="label" value={i18n.language} size="large" dropdownStyle={{ fontSize: '40px !important' }} dropdownAlign={{ offset: [-40, 4] }} dropdownMatchSelectWidth={false} style={{ color: "white" }} onChange={lngChange} bordered={false}>
+                  {(lngs.data || []).map(lng => (
+                    <Option key={lng['locale']} value={lng['locale']} label={String(lng['locale']).toUpperCase()}>
+                      <div>{String(lng['locale']).toUpperCase()} - {t('self', { lng: lng['locale'] })}</div></Option>
+                  ))}
+                </Select>
+              </div>
+              <div className="time">
+                {curTime}{curDate}
+              </div>
+            </Header>
           <div className="site-drawer-render-in-current-wrapper">
             <Content className="content">
               <div>
@@ -228,6 +229,7 @@ const App: React.FC = () => {
             <Footer style={{ textAlign: 'center', margin: '0px', padding: '3px', color: 'rgba(0, 0, 0, 0.45)' }}>{t('footer')}</Footer>
           </div>
         </Layout>
+        </ConfigProvider>
       </HashRouter >
     </div >
   )

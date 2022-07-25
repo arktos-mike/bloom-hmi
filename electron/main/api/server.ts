@@ -4,6 +4,7 @@ import cors from 'cors'
 import express from 'express'
 import mountRoutes from './routes'
 import db from '../db'
+import * as bcrypt from 'bcrypt';
 import createTableText from './createdb'
 import { SerialPort } from 'serialport'
 import ModbusRTU from 'modbus-serial'
@@ -82,6 +83,8 @@ const dbInit = async () => {
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['rtuConf', rtuConf])
     await db.query('INSERT INTO tags SELECT * FROM UNNEST($1::jsonb[]) ON CONFLICT (tag) DO NOTHING;', [tags])
+    bcrypt.hash('123456', 10, async (err, hash) => {
+    await db.query(`INSERT INTO users (id, name, password, role) VALUES(1,'Admin',$1,'sa') ON CONFLICT (id) DO NOTHING;`, [hash])});
     await db.query('INSERT INTO locales SELECT UNNEST($1::text[]), UNNEST($2::jsonb[]), UNNEST($3::boolean[]) ON CONFLICT (locale) DO NOTHING;', [['en', 'es', 'ru', 'tr'], locales, [false, false, true, false]])
 
     const comRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['comConf']);
