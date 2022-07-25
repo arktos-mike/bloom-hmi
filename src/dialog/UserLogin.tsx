@@ -26,7 +26,7 @@ const UserLogin: React.FC<Props> = ({
     const [regVisible, setRegVisible] = useState(false)
     const fetchData = async () => {
         try {
-            const response = await fetch('http://localhost:3000/users');
+            const response = await fetch('http://localhost:3000/users/names');
             if (!response.ok) { throw Error(response.statusText); }
             const json = await response.json();
             setState({ data: json });
