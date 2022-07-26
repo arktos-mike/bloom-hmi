@@ -26,9 +26,10 @@ const Users: React.FC = () => {
   const [filteredInfo, setFilteredInfo] = useState<Record<string, FilterValue | null>>({});
   const [sortedInfo, setSortedInfo] = useState<SorterResult<DataType>>({});
 
-  const handleChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter) => {
+  const handleChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter, currentDataSource) => {
     setFilteredInfo(filters);
     setSortedInfo(sorter as SorterResult<DataType>);
+    pagination.total=currentDataSource.currentDataSource.length
     setPagination(pagination);
   };
 
@@ -88,17 +89,20 @@ const openNotificationWithIcon = (type: string, message: string, dur: number, de
       key: 'name',
       sorter: (a, b) => a.name.localeCompare(b.name),
       sortOrder: sortedInfo.columnKey === 'name' ? sortedInfo.order : null,
+      ellipsis: true,
     },
     {
       title: t('user.email'),
       dataIndex: 'email',
       width: '15%',
+      ellipsis: true,
     },
     {
       title: t('user.phone'),
       dataIndex: 'phonenumber',
       render: phonenumber => phonenumber ? `+ ${phonenumber}` : '',
       width: '15%',
+      ellipsis: true,
     },
     {
       title: t('user.role'),
@@ -141,6 +145,7 @@ const openNotificationWithIcon = (type: string, message: string, dur: number, de
       const json = await response.json();
       setPagination({
         total: json.length,
+        defaultPageSize: 12, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"]
       });
       setData(json);
       setLoading(false);
