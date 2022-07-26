@@ -1,20 +1,18 @@
 import { useEffect } from 'react'
 import { Modal, Button, Form, Input, InputNumber, Select, notification } from 'antd'
-import { LockOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { LockOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 const { Option } = Select;
 
 type Props = {
     isModalVisible: boolean;
-    token: any;
-    setToken: (val: any) => void;
+    user: any;
     setIsModalVisible: (val: boolean) => void;
 };
-const UserEdit: React.FC<Props> = ({
+const UserEditSA: React.FC<Props> = ({
     isModalVisible,
     setIsModalVisible,
-    token,
-    setToken,
+    user,
 }) => {
     const [form] = Form.useForm()
     const { t } = useTranslation();
@@ -23,41 +21,15 @@ const UserEdit: React.FC<Props> = ({
         form.resetFields()
     }
 
-    const handleDelete = async (id:Number) => {
-        try {
-            const response = await fetch('http://localhost:3000/users/' + id, {
-                method: 'DELETE',
-            });
-            const json = await response.json();
-            openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
-            if (!response.ok) { throw Error(response.statusText); }
-        }
-        catch (error) { console.log(error) }
-        setIsModalVisible(false)
-        form.resetFields()
-        setToken(null)
-    }
-    const confirm = () => {
-        Modal.confirm({
-            title: t('confirm.title'),
-            icon: <ExclamationCircleOutlined style={{ fontSize: "300%" }} />,
-            content: t('confirm.descr'),
-            okText: t('confirm.ok'),
-            cancelText: t('confirm.cancel'),
-            centered: true,
-            okButtonProps: { size: 'large', danger: true },
-            cancelButtonProps: { size: 'large' },
-            onOk: () => { handleDelete(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id) },
-        });
-    };
     useEffect(() => {
         form.setFieldsValue({
-            user: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon'),
-            email: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).email : '',
-            phone: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).phonenumber : '',
-            role: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : ''
+            id: user.id,
+            user: user.name,
+            email: user.email,
+            phone: user.phonenumber,
+            role: user.role
         })
-    }, [form, token])
+    }, [form, user])
 
     const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
         if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
@@ -69,17 +41,17 @@ const UserEdit: React.FC<Props> = ({
                 style: style,
             });
     };
-    const onFinish = async (values: { user: any; oldpassword: any; newpassword: any; email: any; phone: any; role: any; }) => {
+    const onFinish = async (values: { id: any; user: any; password: any; email: any; phone: any; role: any; }) => {
         try {
             const response = await fetch('http://localhost:3000/users/update', {
                 method: 'POST',
                 headers: { 'content-type': 'application/json;charset=UTF-8', },
-                body: JSON.stringify({ id: JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id, name: values.user, email: values.email, phonenumber: values.phone, role: values.role, oldpassword: values.oldpassword, newpassword: values.newpassword }),
+                body: JSON.stringify({ id: values.id, name: values.user, email: values.email, phonenumber: values.phone, role: values.role, password: values.password }),
             });
             const json = await response.json();
-            if (json.token) { setToken(json.token); setIsModalVisible(false) }
             openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
             if (!response.ok) { throw Error(response.statusText); }
+            setIsModalVisible(false);
         }
         catch (error) { console.log(error) }
         //setIsModalVisible(false)
@@ -90,11 +62,9 @@ const UserEdit: React.FC<Props> = ({
         <Modal
             title={t('user.change')}
             cancelText={t('menu.close')}
-            okText={t('user.delete')}
             cancelButtonProps={{ size: 'large' }}
-            onOk={confirm}
             onCancel={handleCancel}
-            okButtonProps={{ type: "primary", danger: true, size: 'large' }}
+            okButtonProps={{ style: { display: 'none' } }}
             visible={isModalVisible}
             destroyOnClose={true}
             centered={true}
@@ -110,18 +80,35 @@ const UserEdit: React.FC<Props> = ({
                     form={form}
                     preserve={false}
                     initialValues={{
-                        user: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon'),
-                        email: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).email : '',
-                        phone: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).phonenumber : '',
-                        role: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : ''
+                        id: user.id,
+                        user: user.name,
+                        email: user.email,
+                        phone: user.phonenumber,
+                        role: user.role
                     }}
                 >
+                    <Form.Item
+                        label={t('user.id')}
+                        name="id"
+                        rules={[{ required: true, message: t('user.fill') }]}
+                    >
+                        <InputNumber disabled={true} placeholder={t('user.id')} style={{ width: '100%' }} size="large" controls={false} />
+                    </Form.Item>
+                    
                     <Form.Item
                         label={t('user.user')}
                         name="user"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
                         <Input placeholder={t('user.user')} size="large" />
+                    </Form.Item>
+
+                    <Form.Item
+                        label={t('user.password')}
+                        name="password"
+                        rules={[{ required: false, message: t('user.fill') }]}
+                    >
+                        <Input.Password visibilityToggle={true} placeholder={t('user.password')} size="large" prefix={<LockOutlined className="site-form-item-icon" />} />
                     </Form.Item>
 
                     <Form.Item
@@ -145,7 +132,7 @@ const UserEdit: React.FC<Props> = ({
                         label={t('user.role')}
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Select disabled={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'sa' ? true : false : false} >
+                        <Select disabled={user.role == 'sa' ? true : false} >
                             <Option value="weaver">{t('user.weaver')}</Option>
                             <Option value="fixer">{t('user.fixer')}</Option>
                             <Option value="manager">{t('user.manager')}</Option>
@@ -153,21 +140,6 @@ const UserEdit: React.FC<Props> = ({
                         </Select>
                     </Form.Item>
 
-                    <Form.Item
-                        label={t('user.oldpassword')}
-                        name="oldpassword"
-                        rules={[{ required: true, message: t('user.fill') }]}
-                    >
-                        <Input.Password visibilityToggle={true} placeholder={t('user.password')} size="large" prefix={<LockOutlined className="site-form-item-icon" />} />
-                    </Form.Item>
-
-                    <Form.Item
-                        label={t('user.newpassword')}
-                        name="newpassword"
-                        rules={[{ required: true, message: t('user.fill') }]}
-                    >
-                        <Input.Password visibilityToggle={true} placeholder={t('user.password')} size="large" prefix={<LockOutlined className="site-form-item-icon" />} />
-                    </Form.Item>
                     <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
                         <Button size="large" type="primary" htmlType="submit" >
                             {t('user.editsubmit')}
@@ -178,4 +150,4 @@ const UserEdit: React.FC<Props> = ({
         </Modal>
     )
 }
-export default UserEdit;
+export default UserEditSA;

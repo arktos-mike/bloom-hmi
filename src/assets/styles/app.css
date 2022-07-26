@@ -241,6 +241,10 @@
   font-size: 24px !important;
 }
 
+.ant-table-thead > tr > th {
+  font-weight: bold;
+}
+
 .ant-input[disabled] {
   color: rgba(0, 0, 0, 1) !important;
   background-color: #fff !important;

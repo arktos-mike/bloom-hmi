@@ -114,7 +114,7 @@ const UserRegister: React.FC<Props> = ({
 
                     <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
                         <Button size="large" type="primary" htmlType="submit" >
-                            {t('user.submit')}
+                            {t('user.regsubmit')}
                         </Button>
                     </Form.Item>
                 </Form>

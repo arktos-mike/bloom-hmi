@@ -207,11 +207,11 @@ router.post('/decode/:jwt', async (req, res) => {
 });
 
 router.post('/update', async (req, res) => {
-    const { id, name, email, phonenumber, oldpassword, newpassword, role } = req.body;
+    const { id, name, email, phonenumber, oldpassword, newpassword, password, role } = req.body;
     try {
         const data = await db.query('SELECT * FROM users WHERE id = $1;', [id]);
         const arr = data.rows;
-        const password = arr[0]['password']
+        const pass = arr[0]['password']
         if (arr.length = 0) {
             return res.status(400).json({
                 message: "notifications.usererror",
@@ -219,7 +219,7 @@ router.post('/update', async (req, res) => {
             });
         } else {
             if (name && oldpassword && newpassword) {
-                bcrypt.compare(oldpassword, password, (err, result) => { //Comparing the hashed password
+                bcrypt.compare(oldpassword, pass, (err, result) => { //Comparing the hashed password
                     if (err) {
                         res.status(500).json({
                             message: "notifications.servererror",
@@ -276,6 +276,51 @@ router.post('/update', async (req, res) => {
                     }
                 })
 
+            } else if (name && password) {
+                bcrypt.hash(password, 10, (err, hash) => {
+                    if (err)
+                        res.status(err).json({
+                            message: "notifications.servererror",
+                            error: "Server error",
+                        });
+
+                    var flag = 1; //Declaring a flag
+                    //Inserting data into the database
+                    db.query('UPDATE users SET name=$2, email=$3, phonenumber=$4, password=$5, role=$6 where id=$1;', [id, name, email, phonenumber, hash, role], (err) => {
+                        if (err) {
+                            flag = 0; //If user is not updated assigning flag as 0/false.
+                            console.error(err);
+                            return res.status(500).json({
+                                message: "notifications.dberror",
+                                error: "Database error"
+                            })
+                        }
+                        else {
+                            flag = 1;
+                        }
+                    })
+                    if (flag) {
+                        res.status(200).json({
+                            message: "notifications.userupdate",
+                        });
+                    };
+                });
+            } else if (name && id) {
+                    db.query('UPDATE users SET name=$2, email=$3, phonenumber=$4, role=$5 where id=$1;', [id, name, email, phonenumber, role], (err) => {
+                        if (err) {
+                            console.error(err);
+                            return res.status(500).json({
+                                message: "notifications.dberror",
+                                error: "Database error"
+                            })
+                        }
+                        else {
+                            res.status(200).json({
+                                message: "notifications.userupdate",
+                            });
+               
+                        }
+                    })        
             } else {
                 return res.status(400).json({
                     message: "notifications.usererror",

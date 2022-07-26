@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react'
 import logo from '/icon.svg'
 import 'styles/app.css'
-import { HashRouter, Route, Link, Routes, useLocation } from 'react-router-dom';
+import { HashRouter, Route, Link, Routes, useLocation, Navigate } from 'react-router-dom';
 import type { MenuProps } from 'antd';
 import { Layout, Menu, Select, Drawer, Button, Modal, Input, Form, Checkbox, notification, DatePicker, TimePicker, ConfigProvider, Breadcrumb } from 'antd';
-import { EyeOutlined, ToolOutlined, SettingOutlined, UserOutlined, LockOutlined, ApartmentOutlined, SendOutlined, AlertOutlined } from '@ant-design/icons';
+import { EyeOutlined, TeamOutlined, ToolOutlined, SettingOutlined, UserOutlined, LockOutlined, ApartmentOutlined, SendOutlined, AlertOutlined } from '@ant-design/icons';
 import { FabricPieceIcon } from "./components/IcOn"
 import { useIdleTimer } from 'react-idle-timer'
 import Overview from "./page/overview";
 import Settings from "./page/settings";
+import Users from "./page/users";
 import UserLogin from "./dialog/UserLogin";
 import './i18n/config';
 import { useTranslation } from 'react-i18next';
@@ -95,7 +96,7 @@ const App: React.FC = () => {
   }
 
   const [lngs, setLngs] = useState({ data: [] })
-  const [token, setToken] = useState(null)
+  const [token, setToken] = useState<string | null>(null)
   const [remember, setRemember] = useState(true)
   const [today, setDate] = useState(new Date())
   const [visible, setVisible] = useState(false)
@@ -152,31 +153,38 @@ const App: React.FC = () => {
     setRemember(remember)
   }, [remember])
 
+  const smallItems = [
+    { label: <Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'overview' },
+    { label: <Link to="/settings"><SettingOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'settings' },
+  ];
+  const smallItemsSA = [
+    { label: <Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'overview' },
+    { label: <Link to="/settings"><SettingOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'settings' },
+    { label: <Link to="/users"><TeamOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'submenu' },
+  ];
+  const bigItems = [
+    { label: <Link onClick={showDrawer} to="/">{t('menu.overview')}</Link>, title: '', key: 'overview', icon: <EyeOutlined style={{ fontSize: '100%' }} /> },
+    { label: <Link onClick={showDrawer} to="/settings">{t('menu.settings')}</Link>, title: '', key: 'settings', icon: <SettingOutlined style={{ fontSize: '100%' }} /> },
+    { label: <Link onClick={showDrawer} to="/alarms">{t('menu.alarms')}</Link>, title: '', key: 'alarms', icon: <AlertOutlined style={{ fontSize: '100%' }} /> },
+    { label: <Link onClick={showDrawer} to="/system">{t('menu.system')}</Link>, title: '', key: 'system', icon: <ApartmentOutlined style={{ fontSize: '100%' }} /> },
+  ];
+
   return (
     <div>
       <HashRouter>
-      <ConfigProvider locale={i18n.language === 'en' ? enlocale : i18n.language === 'ru' ? rulocale : i18n.language === 'tr' ? trlocale : i18n.language === 'es' ? eslocale : enlocale}>
-        <Layout className="layout">
+        <ConfigProvider locale={i18n.language === 'en' ? enlocale : i18n.language === 'ru' ? rulocale : i18n.language === 'tr' ? trlocale : i18n.language === 'es' ? eslocale : enlocale}>
+          <Layout className="layout">
             <Header style={{ position: 'fixed', zIndex: 1, width: '100%', padding: 0, display: 'inline-flex', justifyContent: "space-between" }}>
               <div className="logo" onClick={showDrawer}>
                 <img src={logo} className="applogo" alt=""></img>
               </div>
-              <Menu style={{
-                fontSize: '150%'
-              }} theme='dark' mode="horizontal">
-                <Menu.Item key="overview">
-                  <Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link>
-                </Menu.Item>
-                <Menu.Item key="settings" >
-                  <Link to="/settings"><SettingOutlined style={{ fontSize: '100%' }} /></Link>
-                </Menu.Item>
+              <Menu style={{ flex: 'auto', fontSize: '150%' }} theme='dark' mode="horizontal" items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == "sa" ? smallItemsSA : smallItems : smallItems}>
               </Menu>
               <div className="mode" style={{ backgroundColor: '#00000000' }}>
               </div>
               <div className="user">
                 <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} /><span className="text">{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</span>
                 <UserLogin token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} />
-
               </div>
               <div className="lang">
                 <Select optionLabelProp="label" value={i18n.language} size="large" dropdownStyle={{ fontSize: '40px !important' }} dropdownAlign={{ offset: [-40, 4] }} dropdownMatchSelectWidth={false} style={{ color: "white" }} onChange={lngChange} bordered={false}>
@@ -190,45 +198,35 @@ const App: React.FC = () => {
                 {curTime}{curDate}
               </div>
             </Header>
-          <div className="site-drawer-render-in-current-wrapper">
-            <Content className="content">
-              <div>
-                <BreadCrumb />
-              </div>
-              <div className="site-layout-content">
-                <Routes>
-                  <Route index element={<Overview />} />
-                  <Route path={'/settings'} element={<Settings />} />
-                </Routes>
-                <Drawer
-                  //title="Basic Drawer"
-                  placement="left"
-                  closable={false}
-                  visible={visible}
-                  getContainer={false}
-                  style={{ position: 'absolute', }}
-                  bodyStyle={{ margin: "0px", padding: "0px" }}
-                >
-                  <Menu style={{ fontSize: '150%' }} mode="inline">
-                    <Menu.Item key="overview" icon={<EyeOutlined style={{ fontSize: '100%' }} />}>
-                      <Link onClick={showDrawer} to="/">{t('menu.overview')}</Link>
-                    </Menu.Item>
-                    <Menu.Item key="settings" icon={<SettingOutlined style={{ fontSize: '100%' }} />}>
-                      <Link onClick={showDrawer} to="/settings">{t('menu.settings')}</Link>
-                    </Menu.Item>
-                    <Menu.Item key="alarms" icon={<AlertOutlined style={{ fontSize: '100%' }} />}>
-                      <Link onClick={showDrawer} to="/alarms">{t('menu.alarms')}</Link>
-                    </Menu.Item>
-                    <Menu.Item key="system" icon={<ApartmentOutlined style={{ fontSize: '100%' }} />}>
-                      <Link onClick={showDrawer} to="/system">{t('menu.system')}</Link>
-                    </Menu.Item>
-                  </Menu>
-                </Drawer>
-              </div>
-            </Content>
-            <Footer style={{ textAlign: 'center', margin: '0px', padding: '3px', color: 'rgba(0, 0, 0, 0.45)' }}>{t('footer')}</Footer>
-          </div>
-        </Layout>
+            <div className="site-drawer-render-in-current-wrapper">
+              <Content className="content">
+                <div>
+                  <BreadCrumb />
+                </div>
+                <div className="site-layout-content">
+                  <Routes>
+                    <Route index element={<Overview />} />
+                    <Route path={'/settings'} element={<Settings />} />
+                    <Route path={'/users'} element={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == "sa" ? <Users /> : <Navigate to="/" /> : <Navigate to="/" />} />
+                    <Route path="*" element={<Navigate to="/" />} />
+                  </Routes>
+                  <Drawer
+                    //title="Basic Drawer"
+                    placement="left"
+                    closable={false}
+                    visible={visible}
+                    getContainer={false}
+                    style={{ position: 'absolute', }}
+                    bodyStyle={{ margin: "0px", padding: "0px" }}
+                  >
+                    <Menu style={{ fontSize: '150%' }} mode="inline" items={bigItems} defaultSelectedKeys={['overview']}>
+                    </Menu>
+                  </Drawer>
+                </div>
+              </Content>
+              <Footer style={{ textAlign: 'center', margin: '0px', padding: '3px', color: 'rgba(0, 0, 0, 0.45)' }}>{t('footer')}</Footer>
+            </div>
+          </Layout>
         </ConfigProvider>
       </HashRouter >
     </div >
