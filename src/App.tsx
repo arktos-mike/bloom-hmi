@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react'
 import logo from '/icon.svg'
 import 'styles/app.css'
 import { HashRouter, Route, Link, Routes, useLocation, Navigate } from 'react-router-dom';
-import type { MenuProps } from 'antd';
 import { Layout, Menu, Select, Drawer, Button, Modal, Input, Form, Checkbox, notification, DatePicker, TimePicker, ConfigProvider, Breadcrumb } from 'antd';
 import { EyeOutlined, TeamOutlined, ToolOutlined, SettingOutlined, UserOutlined, LockOutlined, ApartmentOutlined, SendOutlined, AlertOutlined } from '@ant-design/icons';
 import { FabricPieceIcon } from "./components/IcOn"
@@ -109,6 +108,7 @@ const App: React.FC = () => {
   const showUserDialog = () => {
     setUserDialogVisible(true);
   }
+
   const lngChange = async (lang: string) => {
     try {
       i18n.changeLanguage(lang)
@@ -141,6 +141,7 @@ const App: React.FC = () => {
     }
     catch (error) { console.log(error); }
   }
+  
   useEffect(() => {
     fetchLngs()
   }, [])
@@ -160,7 +161,7 @@ const App: React.FC = () => {
   const smallItemsSA = [
     { label: <Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'overview' },
     { label: <Link to="/settings"><SettingOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'settings' },
-    { label: <Link to="/users"><TeamOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'submenu' },
+    { label: <Link to="/users"><TeamOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'users' },
   ];
   const bigItems = [
     { label: <Link onClick={showDrawer} to="/">{t('menu.overview')}</Link>, title: '', key: 'overview', icon: <EyeOutlined style={{ fontSize: '100%' }} /> },
@@ -178,7 +179,7 @@ const App: React.FC = () => {
               <div className="logo" onClick={showDrawer}>
                 <img src={logo} className="applogo" alt=""></img>
               </div>
-              <Menu style={{ flex: 'auto', fontSize: '150%' }} theme='dark' mode="horizontal" items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == "sa" ? smallItemsSA : smallItems : smallItems}>
+              <Menu style={{ flex: 'auto', fontSize: '150%' }} theme='dark' mode="horizontal" selectedKeys={[location.hash=='#/'?'overview':location.hash.split("/")[1]]} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == "sa" ? smallItemsSA : smallItems : smallItems}>
               </Menu>
               <div className="mode" style={{ backgroundColor: '#00000000' }}>
               </div>
@@ -219,7 +220,7 @@ const App: React.FC = () => {
                     style={{ position: 'absolute', }}
                     bodyStyle={{ margin: "0px", padding: "0px" }}
                   >
-                    <Menu style={{ fontSize: '150%' }} mode="inline" items={bigItems} defaultSelectedKeys={['overview']}>
+                    <Menu style={{ fontSize: '150%' }} mode="inline" items={bigItems} selectedKeys={[location.hash=='#/'?'overview':location.hash.split("/")[1]]} defaultSelectedKeys={['overview']}>
                     </Menu>
                   </Drawer>
                 </div>
