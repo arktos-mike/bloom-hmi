@@ -21,15 +21,15 @@ const Users: React.FC = () => {
   const [data, setData] = useState();
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<TablePaginationConfig>({
-    defaultPageSize: 12, hideOnSinglePage: true, responsive: true,
+    defaultPageSize: 12, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"]
   });
   const [filteredInfo, setFilteredInfo] = useState<Record<string, FilterValue | null>>({});
   const [sortedInfo, setSortedInfo] = useState<SorterResult<DataType>>({});
 
-  const handleChange: TableProps<DataType>['onChange'] = async (pagination, filters, sorter) => {
-    await fetchData();
+  const handleChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter) => {
     setFilteredInfo(filters);
     setSortedInfo(sorter as SorterResult<DataType>);
+    setPagination(pagination);
   };
 
   const handleDelete = async (id:Number) => {
@@ -139,11 +139,12 @@ const openNotificationWithIcon = (type: string, message: string, dur: number, de
       const response = await fetch('http://localhost:3000/users');
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
-      setData(json);
-      setLoading(false);
       setPagination({
         total: json.length,
       });
+      setData(json);
+      setLoading(false);
+      
     }
     catch (error) { console.log(error); }
   };
