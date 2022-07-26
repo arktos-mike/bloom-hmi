@@ -22,13 +22,15 @@ const UserEditSA: React.FC<Props> = ({
     }
 
     useEffect(() => {
-        form.setFieldsValue({
-            id: user.id,
-            user: user.name,
-            email: user.email,
-            phone: user.phonenumber,
-            role: user.role
-        })
+        if (form && isModalVisible) {
+            form.setFieldsValue({
+                id: user.id,
+                user: user.name,
+                email: user.email,
+                phone: user.phonenumber,
+                role: user.role
+            })
+        }
     }, [form, user])
 
     const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
@@ -69,6 +71,7 @@ const UserEditSA: React.FC<Props> = ({
             destroyOnClose={true}
             centered={true}
             afterClose={handleCancel}
+            getContainer={false}
         >
             <div className="sel">
                 <Form
@@ -94,7 +97,7 @@ const UserEditSA: React.FC<Props> = ({
                     >
                         <InputNumber disabled={true} placeholder={t('user.id')} style={{ width: '100%' }} size="large" controls={false} />
                     </Form.Item>
-                    
+
                     <Form.Item
                         label={t('user.user')}
                         name="user"

@@ -23,7 +23,7 @@ const UserEdit: React.FC<Props> = ({
         form.resetFields()
     }
 
-    const handleDelete = async (id:Number) => {
+    const handleDelete = async (id: Number) => {
         try {
             const response = await fetch('http://localhost:3000/users/' + id, {
                 method: 'DELETE',
@@ -51,12 +51,14 @@ const UserEdit: React.FC<Props> = ({
         });
     };
     useEffect(() => {
-        form.setFieldsValue({
-            user: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon'),
-            email: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).email : '',
-            phone: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).phonenumber : '',
-            role: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : ''
-        })
+        if (form && isModalVisible) {
+            form.setFieldsValue({
+                user: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon'),
+                email: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).email : '',
+                phone: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).phonenumber : '',
+                role: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : ''
+            })
+        }
     }, [form, token])
 
     const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {

@@ -36,8 +36,8 @@ const UserLogin: React.FC<Props> = ({
 
     useEffect(() => {
         fetchData()
-        form.resetFields()
-    }, [isModalVisible,editVisible,regVisible])
+        if (form && isModalVisible) form.resetFields()
+    }, [isModalVisible, editVisible, regVisible])
 
     const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
         if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
@@ -58,7 +58,7 @@ const UserLogin: React.FC<Props> = ({
         form.resetFields()
         setToken(null);
     }
-    
+
     const onFinish = async (values: { user: any; password: any; remember: boolean; }) => {
         try {
             const response = await fetch('http://localhost:3000/users/login', {
@@ -89,6 +89,7 @@ const UserLogin: React.FC<Props> = ({
             destroyOnClose={true}
             centered={true}
             afterClose={handleCancel}
+            getContainer={false}
         >
             <div className="sel">
                 <Form
@@ -131,7 +132,7 @@ const UserLogin: React.FC<Props> = ({
                         <Checkbox>{t('user.remember')}</Checkbox>
                     </Form.Item>
                     <Form.Item wrapperCol={{ offset: 8, span: 16 }} hidden={!token} >
-                        <Button type="link" onClick={() => {setEditVisible(true);}}>{t('user.change')}</Button>
+                        <Button type="link" onClick={() => { setEditVisible(true); }}>{t('user.change')}</Button>
                         <UserEdit isModalVisible={editVisible} setIsModalVisible={setEditVisible} token={token} setToken={setToken} />
                     </Form.Item >
                     <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
@@ -140,7 +141,7 @@ const UserLogin: React.FC<Props> = ({
                         </Button>
                     </Form.Item>
                     <Form.Item wrapperCol={{ offset: 8, span: 16 }} >
-                        <Button type="link" onClick={() => {setRegVisible(true); }}>{t('user.register')}</Button>
+                        <Button type="link" onClick={() => { setRegVisible(true); }}>{t('user.register')}</Button>
                         <UserRegister isModalVisible={regVisible} setIsModalVisible={setRegVisible} />
                     </Form.Item >
                 </Form>
