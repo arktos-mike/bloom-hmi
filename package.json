@@ -70,6 +70,7 @@
     "modbus-serial": "github:yaacov/node-modbus-serial",
     "pg": "^8.7.3",
     "serialport": "^10.4.0",
+    "simple-keyboard-layouts": "^3.1.155",
     "sudo-prompt": "^9.2.1"
   },
   "devDependencies": {
@@ -87,7 +88,7 @@
     "react-router": "^6.3.0",
     "react-router-dom": "^6.3.0",
     "react-scripts": "^5.0.1",
-    "react-simple-keyboard": "^3.4.164",
+    "react-simple-keyboard": "^3.4.177",
     "sass": "^1.52.2",
     "typescript": "^4.7.3",
     "vite": "^2.9.10",

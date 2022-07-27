@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import logo from '/icon.svg'
 import 'styles/app.css'
 import { HashRouter, Route, Link, Routes, useLocation, Navigate } from 'react-router-dom';
-import { Layout, Menu, Select, Drawer, Button, Modal, Input, Form, Checkbox, notification, DatePicker, TimePicker, ConfigProvider, Breadcrumb } from 'antd';
+import { Layout, Menu, Select, Drawer, Button, Modal, Input, Form, Checkbox, notification, DatePicker, TimePicker, ConfigProvider, Breadcrumb, InputRef } from 'antd';
 import { EyeOutlined, TeamOutlined, ToolOutlined, SettingOutlined, UserOutlined, LockOutlined, ApartmentOutlined, SendOutlined, AlertOutlined } from '@ant-design/icons';
 import { FabricPieceIcon } from "./components/IcOn"
 import { useIdleTimer } from 'react-idle-timer'
@@ -17,11 +17,21 @@ import trlocale from 'antd/lib/locale/tr_TR';
 import eslocale from 'antd/lib/locale/es_ES';
 import enlocale from 'antd/lib/locale/en_US';
 
+import Keyboard, { KeyboardReactInterface } from 'react-simple-keyboard'
+import 'styles/keyboard.css'
+import enlayout from "simple-keyboard-layouts/build/layouts/english";
+import trlayout from "simple-keyboard-layouts/build/layouts/turkish";
+import rulayout from "simple-keyboard-layouts/build/layouts/russian";
+import eslayout from "simple-keyboard-layouts/build/layouts/spanish";
+import numeric from "./components/numeric";
+
 const { Header, Content, Footer } = Layout;
 const { Option } = Select;
 
 const App: React.FC = () => {
 
+  const keyboardRef = useRef<KeyboardReactInterface | null>(null)
+  const inputRef = useRef<InputRef>(null)
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
     if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
       notification[type]({
@@ -93,13 +103,25 @@ const App: React.FC = () => {
       </Breadcrumb>
     );
   }
-
+  const [showKeyboard, setShowKeyboard] = useState(false)
+  const [keyboardLayout, setKeyboardLayout] = useState(enlayout.layout)
+  const [inputKeyboard, setInputKeyboard] = useState('')
   const [lngs, setLngs] = useState({ data: [] })
   const [token, setToken] = useState<string | null>(null)
   const [remember, setRemember] = useState(true)
   const [today, setDate] = useState(new Date())
   const [visible, setVisible] = useState(false)
   const [userDialogVisible, setUserDialogVisible] = useState(false)
+  const [layout, setLayout] = useState('default')
+
+  const handleShift = () => {
+    setLayout(layout === "default" ? "shift" : "default")
+  };
+
+  const onKeyPress = (button: string) => {
+    //console.log("Button pressed", button);
+    if (button === "{shift}" || button === "{lock}") handleShift();
+  };
 
   const showDrawer = () => {
     setVisible(!visible);
@@ -108,7 +130,25 @@ const App: React.FC = () => {
   const showUserDialog = () => {
     setUserDialogVisible(true);
   }
+  const lngToLayout = (lng: string) => {
+    switch (lng) {
+      case 'ru':
+        setKeyboardLayout(rulayout.layout)
+        break;
+      case 'tr':
+        setKeyboardLayout(trlayout.layout)
+        break;
+      case 'en':
+        setKeyboardLayout(enlayout.layout)
+        break;
+      case 'es':
+        setKeyboardLayout(eslayout.layout)
+        break;
+      default:
+        break;
+    }
 
+  }
   const lngChange = async (lang: string) => {
     try {
       i18n.changeLanguage(lang)
@@ -141,7 +181,7 @@ const App: React.FC = () => {
     }
     catch (error) { console.log(error); }
   }
-  
+
   useEffect(() => {
     fetchLngs()
   }, [])
@@ -153,6 +193,16 @@ const App: React.FC = () => {
   useEffect(() => {
     setRemember(remember)
   }, [remember])
+
+  useEffect(() => {
+    setShowKeyboard(showKeyboard)
+  }, [showKeyboard])
+
+  useEffect(() => {
+    setInputKeyboard(inputKeyboard)
+    keyboardRef.current?.setInput(inputKeyboard);
+    console.log('SEE ' + inputKeyboard);
+  }, [inputKeyboard])
 
   const smallItems = [
     { label: <Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'overview' },
@@ -179,13 +229,13 @@ const App: React.FC = () => {
               <div className="logo" onClick={showDrawer}>
                 <img src={logo} className="applogo" alt=""></img>
               </div>
-              <Menu style={{ flex: 'auto', fontSize: '150%' }} theme='dark' mode="horizontal" selectedKeys={[location.hash=='#/'?'overview':location.hash.split("/")[1]]} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == "sa" ? smallItemsSA : smallItems : smallItems}>
+              <Menu style={{ flex: 'auto', fontSize: '150%' }} theme='dark' mode="horizontal" selectedKeys={[location.hash == '#/' ? 'overview' : location.hash.split("/")[1]]} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == "sa" ? smallItemsSA : smallItems : smallItems}>
               </Menu>
               <div className="mode" style={{ backgroundColor: '#00000000' }}>
               </div>
               <div className="user">
-                <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} /><span className="text">{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</span>
-                <UserLogin token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} />
+                <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} /><span className="text" style={{ color: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "" }}>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</span>
+                <UserLogin token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} />
               </div>
               <div className="lang">
                 <Select optionLabelProp="label" value={i18n.language} size="large" dropdownStyle={{ fontSize: '40px !important' }} dropdownAlign={{ offset: [-40, 4] }} dropdownMatchSelectWidth={false} style={{ color: "white" }} onChange={lngChange} bordered={false}>
@@ -195,7 +245,7 @@ const App: React.FC = () => {
                   ))}
                 </Select>
               </div>
-              <div className="time">
+              <div className="time" onClick={() => { setShowKeyboard(!showKeyboard) }}>
                 {curTime}{curDate}
               </div>
             </Header>
@@ -212,7 +262,6 @@ const App: React.FC = () => {
                     <Route path="*" element={<Navigate to="/" />} />
                   </Routes>
                   <Drawer
-                    //title="Basic Drawer"
                     placement="left"
                     closable={false}
                     visible={visible}
@@ -220,8 +269,44 @@ const App: React.FC = () => {
                     style={{ position: 'absolute', }}
                     bodyStyle={{ margin: "0px", padding: "0px" }}
                   >
-                    <Menu style={{ fontSize: '150%' }} mode="inline" items={bigItems} selectedKeys={[location.hash=='#/'?'overview':location.hash.split("/")[1]]} defaultSelectedKeys={['overview']}>
+                    <Menu style={{ fontSize: '150%' }} mode="inline" items={bigItems} selectedKeys={[location.hash == '#/' ? 'overview' : location.hash.split("/")[1]]} defaultSelectedKeys={['overview']}>
                     </Menu>
+                  </Drawer>
+                  <Drawer
+                    placement="bottom"
+                    //closable={false}
+                    mask={false}
+                    visible={showKeyboard}
+                    onClose={() => { setShowKeyboard(false) }}
+                    destroyOnClose={true}
+                    headerStyle={{padding:0}}
+                    style={{ height: "406x", width: "100%" }}
+                    bodyStyle={{ margin: "0px", padding: "0px" }}
+                    extra={
+                      <Select optionLabelProp="label" defaultValue={'en'} size="large" dropdownStyle={{ fontSize: '40px !important' }} dropdownAlign={{ offset: [-45, 4] }} dropdownMatchSelectWidth={false} onChange={(val) => { lngToLayout(val) }} bordered={false}>
+                        {(lngs.data || []).map(lng => (
+                          <Option key={lng['locale']} value={lng['locale']} label={String(lng['locale']).toUpperCase()}>
+                            <div>{String(lng['locale']).toUpperCase()} - {t('self', { lng: lng['locale'] })}</div></Option>
+                        ))}
+                      </Select>
+                    }
+                  >
+                    <Keyboard
+                      keyboardRef={(r) => (keyboardRef.current = r)}
+                      layout={keyboardLayout}
+                      //layout={numeric.layout}
+                      layoutName={layout}
+                      onKeyPress={onKeyPress}
+                      physicalKeyboardHighlight={true}
+                      onChange={(input) => {
+                        console.log('KEY ' + input)
+                        setInputKeyboard(input);
+                      }}
+
+                      excludeFromLayout={{
+                        default: ["@", ".com"], shift: ["@", ".com"]
+                      }}
+                    />
                   </Drawer>
                 </div>
               </Content>

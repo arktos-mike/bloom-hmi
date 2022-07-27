@@ -4,6 +4,7 @@ import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import UserEdit from "./UserEdit";
 import UserRegister from "./UserRegister";
+
 const { Option } = Select;
 
 type Props = {
@@ -12,13 +13,20 @@ type Props = {
     setToken: (val: any) => void;
     setRemember: (val: boolean) => void;
     setIsModalVisible: (val: boolean) => void;
+    setShowKeyboard: (val: boolean) => void;
+    inputKeyboard: string;
+    setInputKeyboard: (val: string) => void;
 };
+
 const UserLogin: React.FC<Props> = ({
     isModalVisible,
     setIsModalVisible,
     token,
     setToken,
-    setRemember
+    setRemember,
+    setShowKeyboard,
+    inputKeyboard,
+    setInputKeyboard
 }) => {
     const [form] = Form.useForm()
     const [state, setState] = useState({ data: [] })
@@ -38,6 +46,10 @@ const UserLogin: React.FC<Props> = ({
         fetchData()
         if (form && isModalVisible) form.resetFields()
     }, [isModalVisible, editVisible, regVisible])
+
+    useEffect(() => {
+        form.setFieldsValue({password: inputKeyboard})
+      }, [inputKeyboard])
 
     const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
         if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
@@ -105,7 +117,7 @@ const UserLogin: React.FC<Props> = ({
                     <Form.Item
                         label={t('user.curuser')}
                     >
-                        <span className="text">{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</span>
+                        <span className="text" style={{ color: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "" }}>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</span>
                     </Form.Item>
                     <Form.Item
                         label={t('user.user')}
@@ -126,7 +138,7 @@ const UserLogin: React.FC<Props> = ({
                         name="password"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Input.Password visibilityToggle={true} placeholder={t('user.password')} prefix={<LockOutlined className="site-form-item-icon" />} />
+                        <Input.Password onFocus={(e) => { setShowKeyboard(true);setInputKeyboard(e.target.value) }} visibilityToggle={true} placeholder={t('user.password')} prefix={<LockOutlined className="site-form-item-icon" />} />
                     </Form.Item>
                     <Form.Item name="remember" valuePropName="checked" wrapperCol={{ offset: 8, span: 16 }}>
                         <Checkbox>{t('user.remember')}</Checkbox>

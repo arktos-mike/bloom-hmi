@@ -56,6 +56,7 @@ const UserRegister: React.FC<Props> = ({
             destroyOnClose={true}
             centered={true}
             afterClose={handleCancel}
+            mask={false}
         >
             <div className="sel">
                 <Form
