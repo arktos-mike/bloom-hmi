@@ -1,6 +1,6 @@
 import { Button, Modal, notification, Space, Table, Tag } from 'antd';
 import type { ColumnsType, TablePaginationConfig, TableProps } from 'antd/es/table';
-import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { ExclamationCircleOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { FilterValue, SorterResult } from 'antd/es/table/interface';
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next';
@@ -14,14 +14,24 @@ interface DataType {
   role: string;
 }
 
-const Users: React.FC = () => {
+type Props = {
+  setShowKeyboard: (val: boolean) => void;
+  inputKeyboard: string;
+  setInputKeyboard: (val: string) => void;
+};
+
+const Users: React.FC<Props> = ({
+  setShowKeyboard,
+  inputKeyboard,
+  setInputKeyboard }
+) => {
   const { t } = useTranslation();
   const [user, setUser] = useState({})
   const [editVisible, setEditVisible] = useState(false)
   const [data, setData] = useState();
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<TablePaginationConfig>({
-    defaultPageSize: 12, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"]
+    defaultPageSize: 6, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default'
   });
   const [filteredInfo, setFilteredInfo] = useState<Record<string, FilterValue | null>>({});
   const [sortedInfo, setSortedInfo] = useState<SorterResult<DataType>>({});
@@ -29,38 +39,38 @@ const Users: React.FC = () => {
   const handleChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter, currentDataSource) => {
     setFilteredInfo(filters);
     setSortedInfo(sorter as SorterResult<DataType>);
-    pagination.total=currentDataSource.currentDataSource.length
+    pagination.total = currentDataSource.currentDataSource.length
     setPagination(pagination);
   };
 
-  const handleDelete = async (id:Number) => {
+  const handleDelete = async (id: Number) => {
     try {
-        const response = await fetch('http://localhost:3000/users/' + id, {
-            method: 'DELETE',
-        });
-        const json = await response.json();
-        openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
-        if (!response.ok) { throw Error(response.statusText); }
+      const response = await fetch('http://localhost:3000/users/' + id, {
+        method: 'DELETE',
+      });
+      const json = await response.json();
+      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
+      if (!response.ok) { throw Error(response.statusText); }
     }
     catch (error) { console.log(error) }
     fetchData();
-}
+  }
 
-const handleEdit = async (user:any) => {
-  setUser(user);
-  setEditVisible(true);
-}
-const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
-  if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
+  const handleEdit = async (user: any) => {
+    setUser(user);
+    setEditVisible(true);
+  }
+  const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
+    if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
       notification[type]({
-          message: message,
-          description: descr,
-          placement: 'bottomRight',
-          duration: dur,
-          style: style,
+        message: message,
+        description: descr,
+        placement: 'bottomRight',
+        duration: dur,
+        style: style,
       });
-};
-  const confirm = (id:Number) => {
+  };
+  const confirm = (id: Number) => {
     Modal.confirm({
       title: t('confirm.title'),
       icon: <ExclamationCircleOutlined style={{ fontSize: "300%" }} />,
@@ -94,14 +104,14 @@ const openNotificationWithIcon = (type: string, message: string, dur: number, de
     {
       title: t('user.email'),
       dataIndex: 'email',
-      width: '15%',
+      width: '20%',
       ellipsis: true,
     },
     {
       title: t('user.phone'),
       dataIndex: 'phonenumber',
       render: phonenumber => phonenumber ? `+ ${phonenumber}` : '',
-      width: '15%',
+      width: '13%',
       ellipsis: true,
     },
     {
@@ -130,11 +140,11 @@ const openNotificationWithIcon = (type: string, message: string, dur: number, de
       key: 'action',
       render: (_, record) => (
         <Space size="middle">
-          <Button size="middle" type="primary" onClick={() => { handleEdit(record) }}>{t('user.editsubmit')}</Button>
-          <Button disabled={record.role=='sa'?true:false} size="middle" type="primary" danger={true} onClick={() => { confirm(record.id) }}>{t('user.delete')}</Button>
+          <Button shape="circle" icon={<EditOutlined />} size="large" type="primary" onClick={() => { handleEdit(record) }}></Button>
+          <Button shape="circle" icon={<DeleteOutlined />} disabled={record.role == 'sa' ? true : false} size="large" type="primary" danger={true} onClick={() => { confirm(record.id) }}></Button>
         </Space>
       ),
-      width: '20%',
+      width: '13%',
     },
   ];
   const fetchData = async () => {
@@ -145,11 +155,11 @@ const openNotificationWithIcon = (type: string, message: string, dur: number, de
       const json = await response.json();
       setPagination({
         total: json.length,
-        defaultPageSize: 12, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"]
+        defaultPageSize: 6, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default'
       });
       setData(json);
       setLoading(false);
-      
+
     }
     catch (error) { console.log(error); }
   };
@@ -160,18 +170,18 @@ const openNotificationWithIcon = (type: string, message: string, dur: number, de
 
   return (
     <div>
-      <div><h1>{t('menu.users')}</h1>
+      <div>
         <Table
           columns={columns}
           rowKey={record => record.id}
           dataSource={data}
           pagination={pagination}
           loading={loading}
-          size='large'
+          size='small'
           style={{ width: '100%' }}
           onChange={handleChange}
         />
-        <UserEditSA isModalVisible={editVisible} setIsModalVisible={setEditVisible} user={user} />
+        <UserEditSA isModalVisible={editVisible} setIsModalVisible={setEditVisible} user={user} setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} />
       </div>
     </div>
   )

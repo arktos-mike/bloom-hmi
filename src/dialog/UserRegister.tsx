@@ -1,23 +1,37 @@
 import { Modal, Button, Form, Input, InputNumber, Select, notification } from 'antd'
 import { LockOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { useEffect, useState } from 'react';
 const { Option } = Select;
 
 type Props = {
     isModalVisible: boolean;
     setIsModalVisible: (val: boolean) => void;
+    setShowKeyboard: (val: boolean) => void;
+    inputKeyboard: string;
+    setInputKeyboard: (val: string) => void;
 };
 const UserRegister: React.FC<Props> = ({
     isModalVisible,
-    setIsModalVisible
+    setIsModalVisible,
+    setShowKeyboard,
+    inputKeyboard,
+    setInputKeyboard
 }) => {
     const [form] = Form.useForm()
+    const [activeField, setActiveField] = useState('')
     const { t } = useTranslation();
     const handleCancel = () => {
         setIsModalVisible(false)
         form.resetFields()
     }
-    
+
+    useEffect(() => {
+        if (form && isModalVisible) {
+            form.setFieldsValue({ [activeField]: inputKeyboard })
+        }
+    }, [inputKeyboard])
+
     const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
         if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
             notification[type]({
@@ -33,7 +47,7 @@ const UserRegister: React.FC<Props> = ({
             const response = await fetch('http://localhost:3000/users/register', {
                 method: 'POST',
                 headers: { 'content-type': 'application/json;charset=UTF-8', },
-                body: JSON.stringify({name: values.user, email: values.email, phonenumber: values.phone, role: values.role, password: values.password }),
+                body: JSON.stringify({ name: values.user, email: values.email, phonenumber: values.phone, role: values.role, password: values.password }),
             });
             const json = await response.json();
             openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
@@ -54,9 +68,10 @@ const UserRegister: React.FC<Props> = ({
             cancelButtonProps={{ style: { display: "none" } }}
             visible={isModalVisible}
             destroyOnClose={true}
-            centered={true}
-            afterClose={handleCancel}
+            //centered={true}
+            afterClose={() => setShowKeyboard(false)}
             mask={false}
+            style={{ top: 10 }}
         >
             <div className="sel">
                 <Form
@@ -73,7 +88,7 @@ const UserRegister: React.FC<Props> = ({
                         name="user"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Input placeholder={t('user.user')} size="large" />
+                        <Input placeholder={t('user.user')} size="large" onChange={e => { setInputKeyboard(e.target.value); }} onFocus={(e) => { setActiveField('user'); setInputKeyboard(e.target.value); setShowKeyboard(true); }} />
                     </Form.Item>
 
                     <Form.Item
@@ -81,7 +96,7 @@ const UserRegister: React.FC<Props> = ({
                         name="password"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Input.Password visibilityToggle={true} placeholder={t('user.password')} size="large" prefix={<LockOutlined className="site-form-item-icon" />} />
+                        <Input.Password visibilityToggle={true} placeholder={t('user.password')} size="large" prefix={<LockOutlined className="site-form-item-icon" />} onChange={e => { setInputKeyboard(e.target.value); }} onFocus={(e) => { setActiveField('password'); setInputKeyboard(e.target.value); setShowKeyboard(true); }} />
                     </Form.Item>
 
                     <Form.Item
@@ -89,7 +104,7 @@ const UserRegister: React.FC<Props> = ({
                         name="email"
                         rules={[{ type: 'email', message: t('user.wrongemail') }, { required: false, message: t('user.fill') }]}
                     >
-                        <Input placeholder={t('user.email')} size="large" />
+                        <Input placeholder={t('user.email')} size="large" onChange={e => { setInputKeyboard(e.target.value); }} onFocus={(e) => { setActiveField('email'); setInputKeyboard(e.target.value); setShowKeyboard(true); }} />
                     </Form.Item>
 
                     <Form.Item
@@ -97,7 +112,7 @@ const UserRegister: React.FC<Props> = ({
                         name="phone"
                         rules={[{ required: false, message: t('user.fill') }]}
                     >
-                        <InputNumber addonBefore="+" placeholder={t('user.phone')} style={{ width: '100%' }} size="large" controls={false} />
+                        <InputNumber addonBefore="+" placeholder={t('user.phone')} style={{ width: '100%' }} size="large" controls={false} onChange={value => { setInputKeyboard(value.toString()); }} onFocus={(e) => { setActiveField('phone'); setInputKeyboard(e.target.value); setShowKeyboard(true); }} />
                     </Form.Item>
 
                     <Form.Item

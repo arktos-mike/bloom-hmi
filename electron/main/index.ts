@@ -1,8 +1,6 @@
 import * as dotenv from 'dotenv'
 dotenv.config()
-import { app, BrowserWindow, shell, ipcMain } from 'electron'
-
-import { release } from 'os'
+import { app, BrowserWindow, shell, ipcMain, screen } from 'electron'
 import { join } from 'path'
 
 import './api/server'
@@ -51,14 +49,22 @@ async function createWindow() {
       webSecurity: false
     },
   })
+  win.once('ready-to-show', () => {
+    let devInnerHeight = 1080.0 // InnerHeight at development time
+    let devDevicePixelRatio = 1.0// devicepixelratio during development
+    let devScaleFactor = 1.6 // ScaleFactor at development time
+    let scaleFactor = screen.getPrimaryDisplay().scaleFactor
+    let zoomFactor = (screen.getPrimaryDisplay().size.height / devInnerHeight) * ( 1 / devDevicePixelRatio) * (devScaleFactor / scaleFactor)
+    console.log(scaleFactor)
+    win?.webContents.setZoomFactor(zoomFactor);
+  })
 
   if (app.isPackaged) {
     win.loadFile(indexHtml)
   } else {
     win.loadURL(url)
-    // win.webContents.openDevTools()
+    //win.webContents.openDevTools()
   }
-
   // Test actively push message to the Electron-Renderer
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', new Date().toLocaleString())
@@ -94,6 +100,7 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
 
 // new window example arg: new windows url
 ipcMain.handle('open-win', (event, arg) => {

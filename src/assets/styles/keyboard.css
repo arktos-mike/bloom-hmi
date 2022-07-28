@@ -1,18 +1,18 @@
 .hg-theme-default {
-    background-color: #e6f7ffbe;
+    background-color:#E1F5FE;
     box-sizing: border-box;
     font-family: 'Segoe UI';
     font-size: large;
     font-weight: 600;
     color: #005092;
     overflow: hidden;
-    padding: 10px;
+    padding: 7px;
     touch-action: manipulation;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    width: 100%
+    width: 100%;
 }
 
 .hg-theme-default .hg-button span {
@@ -64,7 +64,7 @@
     box-sizing: border-box;
     cursor: pointer;
     display: flex;
-    height: 65px;
+    height: 60px;
     justify-content: center;
     padding: 5px
 }

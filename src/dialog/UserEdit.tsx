@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Modal, Button, Form, Input, InputNumber, Select, notification } from 'antd'
 import { LockOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -9,19 +9,32 @@ type Props = {
     token: any;
     setToken: (val: any) => void;
     setIsModalVisible: (val: boolean) => void;
+    setShowKeyboard: (val: boolean) => void;
+    inputKeyboard: string;
+    setInputKeyboard: (val: string) => void;
 };
 const UserEdit: React.FC<Props> = ({
     isModalVisible,
     setIsModalVisible,
     token,
     setToken,
+    setShowKeyboard,
+    inputKeyboard,
+    setInputKeyboard
 }) => {
     const [form] = Form.useForm()
+    const [activeField, setActiveField] = useState('')
     const { t } = useTranslation();
     const handleCancel = () => {
         setIsModalVisible(false)
         form.resetFields()
     }
+
+    useEffect(() => {
+        if (form && isModalVisible) {
+            form.setFieldsValue({ [activeField]: inputKeyboard })
+        }
+    }, [inputKeyboard])
 
     const handleDelete = async (id: Number) => {
         try {
@@ -99,9 +112,10 @@ const UserEdit: React.FC<Props> = ({
             okButtonProps={{ type: "primary", danger: true, size: 'large' }}
             visible={isModalVisible}
             destroyOnClose={true}
-            centered={true}
-            afterClose={handleCancel}
+            //centered={true}
+            afterClose={() => setShowKeyboard(false)}
             mask={false}
+            style={{ top: 0 }}
         >
             <div className="sel">
                 <Form
@@ -124,7 +138,7 @@ const UserEdit: React.FC<Props> = ({
                         name="user"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Input placeholder={t('user.user')} size="large" />
+                        <Input placeholder={t('user.user')} size="large" onChange={e => { setInputKeyboard(e.target.value); }} onFocus={(e) => { setActiveField('user'); setInputKeyboard(e.target.value); setShowKeyboard(true); }} />
                     </Form.Item>
 
                     <Form.Item
@@ -132,7 +146,7 @@ const UserEdit: React.FC<Props> = ({
                         name="email"
                         rules={[{ type: 'email', message: t('user.wrongemail') }, { required: false, message: t('user.fill') }]}
                     >
-                        <Input placeholder={t('user.email')} size="large" />
+                        <Input placeholder={t('user.email')} size="large" onChange={e => { setInputKeyboard(e.target.value); }} onFocus={(e) => { setActiveField('email'); setInputKeyboard(e.target.value); setShowKeyboard(true); }} />
                     </Form.Item>
 
                     <Form.Item
@@ -140,7 +154,7 @@ const UserEdit: React.FC<Props> = ({
                         name="phone"
                         rules={[{ required: false, message: t('user.fill') }]}
                     >
-                        <InputNumber addonBefore="+" placeholder={t('user.phone')} style={{ width: '100%' }} size="large" controls={false} />
+                        <InputNumber addonBefore="+" placeholder={t('user.phone')} style={{ width: '100%' }} size="large" controls={false} onChange={value => { setInputKeyboard(value.toString()); }} onFocus={(e) => { setActiveField('phone'); setInputKeyboard(e.target.value); setShowKeyboard(true); }} />
                     </Form.Item>
 
                     <Form.Item
@@ -161,7 +175,7 @@ const UserEdit: React.FC<Props> = ({
                         name="oldpassword"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Input.Password visibilityToggle={true} placeholder={t('user.password')} size="large" prefix={<LockOutlined className="site-form-item-icon" />} />
+                        <Input.Password visibilityToggle={true} placeholder={t('user.password')} size="large" prefix={<LockOutlined className="site-form-item-icon" />} onChange={e => { setInputKeyboard(e.target.value); }} onFocus={(e) => { setActiveField('oldpassword'); setInputKeyboard(e.target.value); setShowKeyboard(true); }} />
                     </Form.Item>
 
                     <Form.Item
@@ -169,7 +183,7 @@ const UserEdit: React.FC<Props> = ({
                         name="newpassword"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Input.Password visibilityToggle={true} placeholder={t('user.password')} size="large" prefix={<LockOutlined className="site-form-item-icon" />} />
+                        <Input.Password visibilityToggle={true} placeholder={t('user.password')} size="large" prefix={<LockOutlined className="site-form-item-icon" />} onChange={e => { setInputKeyboard(e.target.value); }} onFocus={(e) => { setActiveField('newpassword'); setInputKeyboard(e.target.value); setShowKeyboard(true); }} />
                     </Form.Item>
                     <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
                         <Button size="large" type="primary" htmlType="submit" >

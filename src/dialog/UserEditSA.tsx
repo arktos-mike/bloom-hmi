@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Modal, Button, Form, Input, InputNumber, Select, notification } from 'antd'
 import { LockOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -8,13 +8,20 @@ type Props = {
     isModalVisible: boolean;
     user: any;
     setIsModalVisible: (val: boolean) => void;
+    setShowKeyboard: (val: boolean) => void;
+    inputKeyboard: string;
+    setInputKeyboard: (val: string) => void;
 };
 const UserEditSA: React.FC<Props> = ({
     isModalVisible,
     setIsModalVisible,
     user,
+    setShowKeyboard,
+    inputKeyboard,
+    setInputKeyboard
 }) => {
     const [form] = Form.useForm()
+    const [activeField, setActiveField] = useState('')
     const { t } = useTranslation();
     const handleCancel = () => {
         setIsModalVisible(false)
@@ -32,6 +39,12 @@ const UserEditSA: React.FC<Props> = ({
             })
         }
     }, [form, user])
+
+    useEffect(() => {
+        if (form && isModalVisible) {
+            form.setFieldsValue({ [activeField]: inputKeyboard })
+        }
+    }, [inputKeyboard])
 
     const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
         if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
@@ -69,9 +82,10 @@ const UserEditSA: React.FC<Props> = ({
             okButtonProps={{ style: { display: 'none' } }}
             visible={isModalVisible}
             destroyOnClose={true}
-            centered={true}
-            afterClose={handleCancel}
+            //centered={true}
+            afterClose={() => setShowKeyboard(false)}
             getContainer={false}
+            style={{ top: 20 }}
         >
             <div className="sel">
                 <Form
@@ -103,7 +117,7 @@ const UserEditSA: React.FC<Props> = ({
                         name="user"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Input placeholder={t('user.user')} size="large" />
+                        <Input placeholder={t('user.user')} size="large" onChange={e => { setInputKeyboard(e.target.value); }} onFocus={(e) => { setActiveField('user'); setInputKeyboard(e.target.value); setShowKeyboard(true); }} />
                     </Form.Item>
 
                     <Form.Item
@@ -111,7 +125,7 @@ const UserEditSA: React.FC<Props> = ({
                         name="password"
                         rules={[{ required: false, message: t('user.fill') }]}
                     >
-                        <Input.Password visibilityToggle={true} placeholder={t('user.password')} size="large" prefix={<LockOutlined className="site-form-item-icon" />} />
+                        <Input.Password visibilityToggle={true} placeholder={t('user.password')} size="large" prefix={<LockOutlined className="site-form-item-icon" />} onChange={e => { setInputKeyboard(e.target.value); }} onFocus={(e) => { setActiveField('password'); setInputKeyboard(e.target.value); setShowKeyboard(true); }} />
                     </Form.Item>
 
                     <Form.Item
@@ -127,7 +141,7 @@ const UserEditSA: React.FC<Props> = ({
                         name="phone"
                         rules={[{ required: false, message: t('user.fill') }]}
                     >
-                        <InputNumber addonBefore="+" placeholder={t('user.phone')} style={{ width: '100%' }} size="large" controls={false} />
+                        <InputNumber addonBefore="+" placeholder={t('user.phone')} style={{ width: '100%' }} size="large" controls={false} onChange={value => { setInputKeyboard(value.toString()) }} onFocus={(e) => { setActiveField('phone'); setInputKeyboard(e.target.value); setShowKeyboard(true); }} />
                     </Form.Item>
 
                     <Form.Item

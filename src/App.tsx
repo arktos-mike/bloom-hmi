@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react'
 import logo from '/icon.svg'
 import 'styles/app.css'
 import { HashRouter, Route, Link, Routes, useLocation, Navigate } from 'react-router-dom';
-import { Layout, Menu, Select, Drawer, Button, Modal, Input, Form, Checkbox, notification, DatePicker, TimePicker, ConfigProvider, Breadcrumb, InputRef } from 'antd';
-import { EyeOutlined, TeamOutlined, ToolOutlined, SettingOutlined, UserOutlined, LockOutlined, ApartmentOutlined, SendOutlined, AlertOutlined } from '@ant-design/icons';
+import { Layout, Menu, Select, Drawer, Button, Modal, Input, Form, Checkbox, notification, DatePicker, TimePicker, ConfigProvider, Breadcrumb, InputRef, Space } from 'antd';
+import { ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, ToolOutlined, SettingOutlined, UserOutlined, LockOutlined, ApartmentOutlined, SendOutlined, AlertOutlined } from '@ant-design/icons';
 import { FabricPieceIcon } from "./components/IcOn"
 import { useIdleTimer } from 'react-idle-timer'
 import Overview from "./page/overview";
@@ -31,7 +31,6 @@ const { Option } = Select;
 const App: React.FC = () => {
 
   const keyboardRef = useRef<KeyboardReactInterface | null>(null)
-  const inputRef = useRef<InputRef>(null)
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
     if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
       notification[type]({
@@ -105,6 +104,7 @@ const App: React.FC = () => {
   }
   const [showKeyboard, setShowKeyboard] = useState(false)
   const [keyboardLayout, setKeyboardLayout] = useState(enlayout.layout)
+  const [keyboardCollapse, setKeyboardCollapse] = useState(false)
   const [inputKeyboard, setInputKeyboard] = useState('')
   const [lngs, setLngs] = useState({ data: [] })
   const [token, setToken] = useState<string | null>(null)
@@ -121,6 +121,7 @@ const App: React.FC = () => {
   const onKeyPress = (button: string) => {
     //console.log("Button pressed", button);
     if (button === "{shift}" || button === "{lock}") handleShift();
+    if (button === "{enter}") setShowKeyboard(false);
   };
 
   const showDrawer = () => {
@@ -201,7 +202,6 @@ const App: React.FC = () => {
   useEffect(() => {
     setInputKeyboard(inputKeyboard)
     keyboardRef.current?.setInput(inputKeyboard);
-    console.log('SEE ' + inputKeyboard);
   }, [inputKeyboard])
 
   const smallItems = [
@@ -245,7 +245,7 @@ const App: React.FC = () => {
                   ))}
                 </Select>
               </div>
-              <div className="time" onClick={() => { setShowKeyboard(!showKeyboard) }}>
+              <div className="time" onClick={() => { }}>
                 {curTime}{curDate}
               </div>
             </Header>
@@ -258,7 +258,7 @@ const App: React.FC = () => {
                   <Routes>
                     <Route index element={<Overview />} />
                     <Route path={'/settings'} element={<Settings />} />
-                    <Route path={'/users'} element={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == "sa" ? <Users /> : <Navigate to="/" /> : <Navigate to="/" />} />
+                    <Route path={'/users'} element={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == "sa" ? <Users setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                     <Route path="*" element={<Navigate to="/" />} />
                   </Routes>
                   <Drawer
@@ -273,23 +273,32 @@ const App: React.FC = () => {
                     </Menu>
                   </Drawer>
                   <Drawer
+                    autoFocus={false}
+                    //title={inputKeyboard}
                     placement="bottom"
-                    //closable={false}
+                    height={keyboardCollapse ? 41 : 376}
                     mask={false}
+                    //maskStyle={{ backgroundColor: "inherit" , opacity: 0 }}
+                    //maskClosable={true}
                     visible={showKeyboard}
                     onClose={() => { setShowKeyboard(false) }}
-                    destroyOnClose={true}
-                    headerStyle={{padding:0}}
-                    style={{ height: "406x", width: "100%" }}
+                    //destroyOnClose={true}
+                    headerStyle={{ padding: 0 }}
                     bodyStyle={{ margin: "0px", padding: "0px" }}
                     extra={
-                      <Select optionLabelProp="label" defaultValue={'en'} size="large" dropdownStyle={{ fontSize: '40px !important' }} dropdownAlign={{ offset: [-45, 4] }} dropdownMatchSelectWidth={false} onChange={(val) => { lngToLayout(val) }} bordered={false}>
-                        {(lngs.data || []).map(lng => (
-                          <Option key={lng['locale']} value={lng['locale']} label={String(lng['locale']).toUpperCase()}>
-                            <div>{String(lng['locale']).toUpperCase()} - {t('self', { lng: lng['locale'] })}</div></Option>
-                        ))}
-                      </Select>
+                      <>
+                        <Select style={{ color: "#005092" }} optionLabelProp="label" defaultValue={'en'} size="large" dropdownStyle={{ fontSize: '40px !important', zIndex: 2000 }} dropdownAlign={{ offset: [-45, 4] }} dropdownMatchSelectWidth={false} onChange={(val) => { lngToLayout(val) }} 
+                        >
+                          {(lngs.data || []).map(lng => (
+                            <Option key={lng['locale']} value={lng['locale']} label={String(lng['locale']).toUpperCase()}>
+                              <div>{String(lng['locale']).toUpperCase()} - {t('self', { lng: lng['locale'] })}</div></Option>
+                          ))}
+                        </Select>
+                        <Button style={{width: 41}} type="link" icon={keyboardCollapse ? <ToTopOutlined /> : <VerticalAlignBottomOutlined />} onClick={() => { setKeyboardCollapse(!keyboardCollapse) }} />
+                        
+                      </>
                     }
+                    zIndex={2000}
                   >
                     <Keyboard
                       keyboardRef={(r) => (keyboardRef.current = r)}
@@ -299,12 +308,10 @@ const App: React.FC = () => {
                       onKeyPress={onKeyPress}
                       physicalKeyboardHighlight={true}
                       onChange={(input) => {
-                        console.log('KEY ' + input)
                         setInputKeyboard(input);
                       }}
-
                       excludeFromLayout={{
-                        default: ["@", ".com"], shift: ["@", ".com"]
+                        default: [".com"], shift: [".com"]
                       }}
                     />
                   </Drawer>
