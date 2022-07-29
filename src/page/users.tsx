@@ -1,11 +1,11 @@
 import { Button, Modal, notification, Space, Table, Tag } from 'antd';
 import type { ColumnsType, TablePaginationConfig, TableProps } from 'antd/es/table';
-import { ExclamationCircleOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { PlusOutlined, ExclamationCircleOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { FilterValue, SorterResult } from 'antd/es/table/interface';
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import UserEditSA from "../dialog/UserEditSA";
-
+import UserRegister from "../dialog/UserRegister";
 interface DataType {
   id: number;
   name: string;
@@ -18,16 +18,20 @@ type Props = {
   setShowKeyboard: (val: boolean) => void;
   inputKeyboard: string;
   setInputKeyboard: (val: string) => void;
+  token: any;
 };
 
 const Users: React.FC<Props> = ({
   setShowKeyboard,
   inputKeyboard,
-  setInputKeyboard }
+  setInputKeyboard,
+  token
+ }
 ) => {
   const { t } = useTranslation();
   const [user, setUser] = useState({})
   const [editVisible, setEditVisible] = useState(false)
+  const [regVisible, setRegVisible] = useState(false)
   const [data, setData] = useState();
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<TablePaginationConfig>({
@@ -60,6 +64,7 @@ const Users: React.FC<Props> = ({
     setUser(user);
     setEditVisible(true);
   }
+
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
     if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
       notification[type]({
@@ -140,8 +145,8 @@ const Users: React.FC<Props> = ({
       key: 'action',
       render: (_, record) => (
         <Space size="middle">
-          <Button shape="circle" icon={<EditOutlined />} size="large" type="primary" onClick={() => { handleEdit(record) }}></Button>
-          <Button shape="circle" icon={<DeleteOutlined />} disabled={record.role == 'sa' ? true : false} size="large" type="primary" danger={true} onClick={() => { confirm(record.id) }}></Button>
+          <Button shape="circle" icon={< EditOutlined />} size="large" type="primary" onClick={() => { handleEdit(record) }}></Button>
+          {record.id ==(token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id:'')? <Button shape="circle" icon={<PlusOutlined />} size="large" type="primary" style={{ background: "#87d068", borderColor: "#87d068" }} onClick={() => { setRegVisible(true) }}></Button> : <Button shape="circle" icon={<DeleteOutlined />} size="large" type="primary" danger={true} onClick={() => { confirm(record.id) }}></Button>}
         </Space>
       ),
       width: '13%',
@@ -182,6 +187,7 @@ const Users: React.FC<Props> = ({
           onChange={handleChange}
         />
         <UserEditSA isModalVisible={editVisible} setIsModalVisible={setEditVisible} user={user} setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} />
+        <UserRegister isModalVisible={regVisible} setIsModalVisible={setRegVisible} setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} token={token} />
       </div>
     </div>
   )

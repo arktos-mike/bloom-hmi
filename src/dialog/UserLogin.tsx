@@ -34,6 +34,7 @@ const UserLogin: React.FC<Props> = ({
     const [activeField, setActiveField] = useState('')
     const [search, setSearch] = useState('')
     const [editVisible, setEditVisible] = useState(false)
+    const [showList, setShowList] = useState(false)
     const [regVisible, setRegVisible] = useState(false)
     const fetchData = async () => {
         try {
@@ -109,7 +110,7 @@ const UserLogin: React.FC<Props> = ({
             visible={isModalVisible}
             destroyOnClose={true}
             //centered={true}
-            afterClose={() => setShowKeyboard(false)}
+            afterClose={() => { setShowKeyboard(false); setShowList(false) }}
             getContainer={false}
             style={{ top: 20 }}
         >
@@ -134,8 +135,8 @@ const UserLogin: React.FC<Props> = ({
                         name="user"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Select showSearch searchValue={search} onFocus={() => { setActiveField('name'); setInputKeyboard(search); setShowKeyboard(true); }} onSearch={(value) => { setSearch(value); }} onSelect={() => { setSearch(''); }} filterOption={(input, option) => (option!.children as unknown as string).toLowerCase().includes(input.toLowerCase())
-                        } placeholder={t('user.user')} virtual={false} size="large" suffixIcon={<UserOutlined style={{ fontSize: '120%' }} />}>
+                        <Select showSearch open={showList} searchValue={search} onFocus={() => { setActiveField('name'); setInputKeyboard(search); if (!showList || (showList && search)) { setShowKeyboard(true) } setShowList(true) }} onSearch={(value) => { setSearch(value); }} onSelect={() => { setSearch(''); setShowList(false); setShowKeyboard(false) }} filterOption={(input, option) => (option!.children as unknown as string).toLowerCase().includes(input.toLowerCase())
+                        } placeholder={t('user.user')} virtual={true} size="large" suffixIcon={<UserOutlined style={{ fontSize: '120%' }} />}>
                             {(state.data || []).map(user => (
                                 <Option key={user['name']} value={user['name']} label={user['name']}>
                                     {user['name']}</Option>
@@ -162,10 +163,10 @@ const UserLogin: React.FC<Props> = ({
                             {t('user.login')}
                         </Button>
                     </Form.Item>
-                    <Form.Item wrapperCol={{ offset: 8, span: 16 }} >
+                    {token && <Form.Item wrapperCol={{ offset: 8, span: 16 }} >
                         <Button type="link" onClick={() => { setRegVisible(true); }}>{t('user.register')}</Button>
-                        <UserRegister isModalVisible={regVisible} setIsModalVisible={setRegVisible} setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} />
-                    </Form.Item >
+                        <UserRegister isModalVisible={regVisible} setIsModalVisible={setRegVisible} setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} token={token} />
+                    </Form.Item >}
                 </Form>
             </div>
         </Modal>

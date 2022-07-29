@@ -163,10 +163,10 @@ const UserEdit: React.FC<Props> = ({
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
                         <Select disabled={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'sa' ? true : false : false} >
-                            <Option value="weaver">{t('user.weaver')}</Option>
-                            <Option value="fixer">{t('user.fixer')}</Option>
-                            <Option value="manager">{t('user.manager')}</Option>
-                            <Option disabled value="sa">{t('user.admin')}</Option>
+                            <Option disabled={token ? false : true} value="weaver">{t('user.weaver')}</Option>
+                            <Option disabled={token ? ['fixer', 'manager', 'sa'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? false : true : true} value="fixer">{t('user.fixer')}</Option>
+                            <Option disabled={token ? ['manager', 'sa'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? false : true : true} value="manager">{t('user.manager')}</Option>
+                            <Option disabled={token ? (JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'sa' ? false : true) : true} value="sa">{t('user.admin')}</Option>
                         </Select>
                     </Form.Item>
 

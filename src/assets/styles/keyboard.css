@@ -1,3 +1,19 @@
+.numericTheme {
+    margin: 0 auto;
+    background-color:#E1F5FE;
+    font-family: 'Segoe UI';
+    font-size: large;
+    font-weight: 600;
+    color: #005092;
+    padding: 7px;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    width: 30%;
+  }
+
 .hg-theme-default {
     background-color:#E1F5FE;
     box-sizing: border-box;
@@ -15,46 +31,46 @@
     width: 100%;
 }
 
-.hg-theme-default .hg-button span {
+.hg-theme-default,.numericTheme .hg-button span {
     pointer-events: none
 }
 
-.hg-theme-default button.hg-button {
+.hg-theme-default,.numericTheme button.hg-button {
     border-width: 0;
     font-size: inherit;
     outline: 0
 }
 
-.hg-theme-default .hg-button {
+.hg-theme-default,.numericTheme .hg-button {
     display: inline-block;
     flex-grow: 1
 }
 
-.hg-theme-default .hg-row {
+.hg-theme-default,.numericTheme .hg-row {
     display: flex
 }
 
-.hg-theme-default .hg-row:not(:last-child) {
+.hg-theme-default,.numericTheme .hg-row:not(:last-child) {
     margin-bottom: 5px
 }
 
-.hg-theme-default .hg-row .hg-button:not(:last-child) {
+.hg-theme-default,.numericTheme .hg-row .hg-button:not(:last-child) {
     margin-right: 5px
 }
 
-.hg-theme-default .hg-row .hg-button-container {
+.hg-theme-default,.numericTheme .hg-row .hg-button-container {
     margin-right: 5px
 }
 
-.hg-theme-default .hg-row>div:last-child {
+.hg-theme-default,.numericTheme .hg-row>div:last-child {
     margin-right: 0
 }
 
-.hg-theme-default .hg-row .hg-button-container {
+.hg-theme-default,.numericTheme .hg-row .hg-button-container {
     display: flex
 }
 
-.hg-theme-default .hg-button {
+.hg-theme-default,.numericTheme .hg-button {
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
     align-items: center;
     background: #fff;
@@ -69,11 +85,11 @@
     padding: 5px
 }
 
-.hg-theme-default .hg-button.hg-standardBtn {
+.hg-theme-default,.numericTheme .hg-button.hg-standardBtn {
     width: 20px
 }
 
-.hg-theme-default .hg-button.hg-activeButton {
+.hg-theme-default,.numericTheme .hg-button.hg-activeButton {
     background: rgba(158, 208, 255, 0.993)
 }
 
@@ -98,20 +114,20 @@
     max-width: 85px
 }
 
-.hg-theme-default .hg-button.hg-standardBtn.hg-button-at {
+.hg-theme-default,.numericTheme .hg-button.hg-standardBtn.hg-button-at {
     max-width: 45px
 }
 
-.hg-theme-default .hg-button.hg-selectedButton {
+.hg-theme-default,.numericTheme .hg-button.hg-selectedButton {
     background: rgba(5, 25, 70, .53);
     color: #fff
 }
 
-.hg-theme-default .hg-button.hg-standardBtn[data-skbtn=".com"] {
+.hg-theme-default,.numericTheme .hg-button.hg-standardBtn[data-skbtn=".com"] {
     max-width: 82px
 }
 
-.hg-theme-default .hg-button.hg-standardBtn[data-skbtn="@"] {
+.hg-theme-default,.numericTheme .hg-button.hg-standardBtn[data-skbtn="@"] {
     max-width: 60px
 }
 

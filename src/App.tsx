@@ -3,7 +3,7 @@ import logo from '/icon.svg'
 import 'styles/app.css'
 import { HashRouter, Route, Link, Routes, useLocation, Navigate } from 'react-router-dom';
 import { Layout, Menu, Select, Drawer, Button, Modal, Input, Form, Checkbox, notification, DatePicker, TimePicker, ConfigProvider, Breadcrumb, InputRef, Space } from 'antd';
-import { ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, ToolOutlined, SettingOutlined, UserOutlined, LockOutlined, ApartmentOutlined, SendOutlined, AlertOutlined } from '@ant-design/icons';
+import { CloseCircleTwoTone, EyeTwoTone, EyeInvisibleOutlined, GlobalOutlined, CloseOutlined, ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, ToolOutlined, SettingOutlined, UserOutlined, LockOutlined, ApartmentOutlined, SendOutlined, AlertOutlined } from '@ant-design/icons';
 import { FabricPieceIcon } from "./components/IcOn"
 import { useIdleTimer } from 'react-idle-timer'
 import Overview from "./page/overview";
@@ -258,7 +258,7 @@ const App: React.FC = () => {
                   <Routes>
                     <Route index element={<Overview />} />
                     <Route path={'/settings'} element={<Settings />} />
-                    <Route path={'/users'} element={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == "sa" ? <Users setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} /> : <Navigate to="/" /> : <Navigate to="/" />} />
+                    <Route path={'/users'} element={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == "sa" ? <Users setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} token={token} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                     <Route path="*" element={<Navigate to="/" />} />
                   </Routes>
                   <Drawer
@@ -273,37 +273,46 @@ const App: React.FC = () => {
                     </Menu>
                   </Drawer>
                   <Drawer
-                    autoFocus={false}
-                    //title={inputKeyboard}
+                    //autoFocus={false}
+                    title={
+                      //<Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>
+                        <Input.Password
+                          style={{ width: '100%' }} size='small' value={inputKeyboard} bordered={false} allowClear={{ clearIcon: <CloseCircleTwoTone onClick={() => { setInputKeyboard('') }} style={{ fontSize: '150%' }} /> }}
+                          iconRender={visible => (visible ? <EyeTwoTone style={{ fontSize: '150%' }} /> : <EyeInvisibleOutlined style={{ fontSize: '150%' }} />)}
+                        />
+                      //</Space>
+                    }
                     placement="bottom"
                     height={keyboardCollapse ? 41 : 376}
-                    mask={false}
-                    //maskStyle={{ backgroundColor: "inherit" , opacity: 0 }}
-                    //maskClosable={true}
+                    mask={true}
+                    maskStyle={{ backgroundColor: "inherit", opacity: 0 }}
+                    maskClosable={true}
                     visible={showKeyboard}
                     onClose={() => { setShowKeyboard(false) }}
+                    closeIcon={<CloseOutlined style={{ color: '#1890ff', fontSize: '150%' }} />}
                     //destroyOnClose={true}
                     headerStyle={{ padding: 0 }}
-                    bodyStyle={{ margin: "0px", padding: "0px" }}
+                    bodyStyle={{ margin: "0px", padding: "0px", background: '#E1F5FE' }}
                     extra={
                       <>
-                        <Select style={{ color: "#005092" }} optionLabelProp="label" defaultValue={'en'} size="large" dropdownStyle={{ fontSize: '40px !important', zIndex: 2000 }} dropdownAlign={{ offset: [-45, 4] }} dropdownMatchSelectWidth={false} onChange={(val) => { lngToLayout(val) }} 
+                        <Select style={{ color: "#005092" }} optionLabelProp="label" defaultValue={'en'} size="large" dropdownStyle={{ fontSize: '40px !important', zIndex: 2000 }} dropdownAlign={{ offset: [-45, 4] }} dropdownMatchSelectWidth={false} onChange={(val) => { lngToLayout(val) }} bordered={false} suffixIcon={<GlobalOutlined style={{ color: '#1890ff', fontSize: '130%' }} />}
                         >
                           {(lngs.data || []).map(lng => (
                             <Option key={lng['locale']} value={lng['locale']} label={String(lng['locale']).toUpperCase()}>
                               <div>{String(lng['locale']).toUpperCase()} - {t('self', { lng: lng['locale'] })}</div></Option>
                           ))}
                         </Select>
-                        <Button style={{width: 41}} type="link" icon={keyboardCollapse ? <ToTopOutlined /> : <VerticalAlignBottomOutlined />} onClick={() => { setKeyboardCollapse(!keyboardCollapse) }} />
-                        
+                        <Button style={{ width: 41 }} type="link" icon={keyboardCollapse ? <ToTopOutlined style={{ fontSize: '150%' }} /> : <VerticalAlignBottomOutlined style={{ fontSize: '150%' }} />} onClick={() => { setKeyboardCollapse(!keyboardCollapse) }} />
+
                       </>
                     }
                     zIndex={2000}
                   >
                     <Keyboard
                       keyboardRef={(r) => (keyboardRef.current = r)}
-                      layout={keyboardLayout}
-                      //layout={numeric.layout}
+                      //layout={keyboardLayout}
+                      layout={numeric.layout}
+                      theme="numericTheme"
                       layoutName={layout}
                       onKeyPress={onKeyPress}
                       physicalKeyboardHighlight={true}

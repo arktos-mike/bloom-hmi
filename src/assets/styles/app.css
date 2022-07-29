@@ -71,6 +71,9 @@
   font-size: 20px;
   line-height: 160%;
 }
+.ant-select-arrow .anticon:not(.ant-select-suffix) {
+  pointer-events: none;
+}
 
 .table-col-title {
     background-color: #E1F5FE;

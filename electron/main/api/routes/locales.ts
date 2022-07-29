@@ -12,7 +12,7 @@ router.get('/lng', async (req, res) => {
 })
 
 router.get('/', async (req, res) => {
-    const { rows } = await db.query('SELECT locale FROM locales');
+    const { rows } = await db.query('SELECT locale FROM locales ORDER BY locale');
     res.status(200).send(rows)
 })
 

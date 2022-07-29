@@ -153,7 +153,7 @@ const UserEditSA: React.FC<Props> = ({
                             <Option value="weaver">{t('user.weaver')}</Option>
                             <Option value="fixer">{t('user.fixer')}</Option>
                             <Option value="manager">{t('user.manager')}</Option>
-                            <Option disabled value="sa">{t('user.admin')}</Option>
+                            <Option value="sa">{t('user.admin')}</Option>
                         </Select>
                     </Form.Item>
 
