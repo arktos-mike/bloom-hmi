@@ -284,7 +284,7 @@ const App: React.FC = () => {
                     </Menu>
                   </Drawer>
                   <Drawer
-                    //autoFocus={false}
+                    autoFocus={false}
                     title={
                       <Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>
                         <div className='sel' style={{ position: 'absolute', opacity: 0, height: 0, overflow: 'hidden' }}><span className="text" ref={span}>{inputKeyboard}</span></div>
@@ -326,7 +326,7 @@ const App: React.FC = () => {
                       theme={keyboardNum ? "numericTheme" : "hg-theme-default"}
                       layoutName={layout}
                       onKeyPress={onKeyPress}
-                      physicalKeyboardHighlight={true}
+                      physicalKeyboardHighlightPress={true}
                       onChange={(input) => {
                         setInputKeyboard(input);
                       }}
