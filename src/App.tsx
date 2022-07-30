@@ -299,7 +299,6 @@ const App: React.FC = () => {
                     visible={showKeyboard}
                     onClose={() => { setShowKeyboard(false) }}
                     closeIcon={<CloseOutlined style={{ color: '#1890ff', fontSize: '150%' }} />}
-                    //destroyOnClose={true}
                     headerStyle={{ padding: 0 }}
                     bodyStyle={{ margin: "0px", padding: "0px", background: '#E1F5FE' }}
                     extra={
@@ -326,6 +325,7 @@ const App: React.FC = () => {
                       theme={keyboardNum ? "numericTheme" : "hg-theme-default"}
                       layoutName={layout}
                       onKeyPress={onKeyPress}
+                      physicalKeyboardHighlight={true}
                       physicalKeyboardHighlightPress={true}
                       onChange={(input) => {
                         setInputKeyboard(input);

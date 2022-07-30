@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
-import { Modal, Button, Form, Input, Checkbox, notification, Select, InputRef } from 'antd'
+import { useState, useEffect } from 'react'
+import { Modal, Button, Form, Input, Checkbox, notification, Select } from 'antd'
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import UserEdit from "./UserEdit";
@@ -39,6 +39,7 @@ const UserLogin: React.FC<Props> = ({
     const [search, setSearch] = useState('')
     const [editVisible, setEditVisible] = useState(false)
     const [showList, setShowList] = useState(false)
+    const [listNotEmpty, setListNotEmpty] = useState(false)
     const [regVisible, setRegVisible] = useState(false)
     const fetchData = async () => {
         try {
@@ -59,7 +60,7 @@ const UserLogin: React.FC<Props> = ({
         if (form && isModalVisible) {
             if (activeField == 'name') {
                 setSearch(inputKeyboard);
-                if (search || inputKeyboard) setShowList(true);
+                if (search || inputKeyboard) { setShowList(true) }
             } else {
                 form.setFieldsValue({ [activeField]: inputKeyboard })
             }
@@ -140,10 +141,10 @@ const UserLogin: React.FC<Props> = ({
                         name="user"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Select showSearch open={showList} searchValue={search} onFocus={() => { setActiveField('name'); setInputKeyboard(search); if (!showList || (showList && search)) { setKeyboardNum(false); setKeyboardShowInput(true); setShowKeyboard(true); } }} onSearch={(value) => { setSearch(value); setInputKeyboard(value); }} onSelect={() => { setShowList(false); setShowKeyboard(false); }} filterOption={(input, option) => (option!.children as unknown as string).toLowerCase().includes(input.toLowerCase())
-                        } placeholder={t('user.user')} virtual={true} size="large" suffixIcon={<UserOutlined style={{ fontSize: '120%' }} />}>
+                        <Select showSearch open={showList} searchValue={search} onFocus={() => { setActiveField('name'); setInputKeyboard(search); if (!showList || (showList && search && !listNotEmpty)) { setKeyboardNum(false); setKeyboardShowInput(true); setShowKeyboard(true); } }} onSearch={(value) => { setSearch(value); setInputKeyboard(value); }} onSelect={() => { setListNotEmpty(false); setShowList(false); setShowKeyboard(false); }}
+                            filterOption={(input, option) => (option!.children as unknown as string).toLowerCase().includes(input.toLowerCase())} placeholder={t('user.user')} virtual={true} size="large" suffixIcon={<UserOutlined style={{ fontSize: '120%' }} />}>
                             {(state.data || []).map(user => (
-                                <Option key={user['name']} value={user['name']} label={user['name']}>
+                                <Option key={user['name']} value={user['name']} label={user['name']} onMouseEnter={()=>{setListNotEmpty(true)}}>
                                     {user['name']}</Option>
                             ))}
                         </Select>
