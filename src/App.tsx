@@ -288,7 +288,7 @@ const App: React.FC = () => {
                     title={
                       <Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>
                         <div className='sel' style={{ position: 'absolute', opacity: 0, height: 0, overflow: 'hidden' }}><span className="text" ref={span}>{inputKeyboard}</span></div>
-                        {keyboardShowInput && <Input style={{ color: "#005092", width: inputWidth }} size='small' value={inputKeyboard} bordered={false} />}
+                        {keyboardShowInput && <Input style={{ color: "#005092", width: inputWidth, marginLeft:190 }} size='small' value={inputKeyboard} bordered={false} />}
                       </Space>
                     }
                     placement="bottom"
