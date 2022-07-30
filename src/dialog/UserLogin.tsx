@@ -144,7 +144,7 @@ const UserLogin: React.FC<Props> = ({
                         <Select showSearch open={showList} searchValue={search} onFocus={() => { setActiveField('name'); setInputKeyboard(search); if (!showList || (showList && search && !listNotEmpty)) { setKeyboardNum(false); setKeyboardShowInput(true); setShowKeyboard(true); } }} onSearch={(value) => { setSearch(value); setInputKeyboard(value); }} onSelect={() => { setListNotEmpty(false); setShowList(false); setShowKeyboard(false); }}
                             filterOption={(input, option) => (option!.children as unknown as string).toLowerCase().includes(input.toLowerCase())} placeholder={t('user.user')} virtual={true} size="large" suffixIcon={<UserOutlined style={{ fontSize: '120%' }} />}>
                             {(state.data || []).map(user => (
-                                <Option key={user['name']} value={user['name']} label={user['name']} onMouseEnter={()=>{setListNotEmpty(true)}}>
+                                <Option key={user['name']} value={user['name']} label={user['name']} onMouseEnter={() => { setListNotEmpty(true) }}>
                                     {user['name']}</Option>
                             ))}
                         </Select>
