@@ -179,7 +179,7 @@ const writeModbusData = async function (tagName, val) {
           await client.writeCoils(tag.addr, val);
           port.mbsState = MBS_STATE_GOOD_WRITE;
           mbsStatus = "success";
-          console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
+          //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
         } catch (e) {
           port.mbsState = MBS_STATE_FAIL_WRITE;
           mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
@@ -206,7 +206,7 @@ const writeModbusData = async function (tagName, val) {
           await client.writeRegisters(tag.addr, buffer);
           port.mbsState = MBS_STATE_GOOD_WRITE;
           mbsStatus = "success";
-          console.log("[" + port.path + "]" + "[#" + slave.sId + "][WRITE]" + tag.name + " = " + val);
+          //console.log("[" + port.path + "]" + "[#" + slave.sId + "][WRITE]" + tag.name + " = " + val);
         } catch (e) {
           port.mbsState = MBS_STATE_FAIL_WRITE;
           mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
@@ -231,7 +231,7 @@ const readModbusData = async function (client, port, slave) {
               mbsStatus = "success";
               let val = data.buffer[0];
               db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 and tag->>$4=$5', [val, 'dev', slave.name, 'name', tag.name]);
-              console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
+              //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             } catch (e) {
               port.mbsState = MBS_STATE_FAIL_READ;
@@ -261,7 +261,7 @@ const readModbusData = async function (client, port, slave) {
                   break;
               }
               db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 and tag->>$4=$5', [val, 'dev', slave.name, 'name', tag.name]);
-              console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
+              //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             } catch (e) {
               port.mbsState = MBS_STATE_FAIL_READ;
@@ -281,7 +281,7 @@ const readModbusData = async function (client, port, slave) {
               mbsStatus = "success";
               let val = data.buffer[0];
               db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 and tag->>$4=$5', [val, 'dev', slave.name, 'name', tag.name]);
-              console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
+              //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             } catch (e) {
               port.mbsState = MBS_STATE_FAIL_READ;
@@ -311,7 +311,7 @@ const readModbusData = async function (client, port, slave) {
                   break;
               }
               db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 and tag->>$4=$5', [val, 'dev', slave.name, 'name', tag.name]);
-              console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
+              //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             } catch (e) {
               port.mbsState = MBS_STATE_FAIL_READ;

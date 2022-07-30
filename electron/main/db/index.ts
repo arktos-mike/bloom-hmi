@@ -10,7 +10,7 @@ const pool = new Pool({
   port: process.env['PGPORT'] ||5432,
 });
 pool.on('connect', () => {
-  console.log('Connection to the DB is successful.');
+  //console.log('Connection to the DB is successful.');
 });
 const query = (text, params?, callback?) => pool.query(text, params, callback);
 export default { query }

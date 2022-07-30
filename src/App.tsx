@@ -31,6 +31,8 @@ const { Option } = Select;
 const App: React.FC = () => {
 
   const keyboardRef = useRef<KeyboardReactInterface | null>(null)
+  const span = useRef<HTMLSpanElement | null>(null);
+
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
     if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
       notification[type]({
@@ -102,8 +104,12 @@ const App: React.FC = () => {
       </Breadcrumb>
     );
   }
+  const [inputWidth, setInputWidth] = useState<number | undefined>(0)
   const [showKeyboard, setShowKeyboard] = useState(false)
   const [keyboardLayout, setKeyboardLayout] = useState(enlayout.layout)
+  const [keyboardLng, setKeyboardLng] = useState('en')
+  const [keyboardNum, setKeyboardNum] = useState(false)
+  const [keyboardShowInput, setKeyboardShowInput] = useState(false)
   const [keyboardCollapse, setKeyboardCollapse] = useState(false)
   const [inputKeyboard, setInputKeyboard] = useState('')
   const [lngs, setLngs] = useState({ data: [] })
@@ -119,7 +125,6 @@ const App: React.FC = () => {
   };
 
   const onKeyPress = (button: string) => {
-    //console.log("Button pressed", button);
     if (button === "{shift}" || button === "{lock}") handleShift();
     if (button === "{enter}") setShowKeyboard(false);
   };
@@ -131,25 +136,26 @@ const App: React.FC = () => {
   const showUserDialog = () => {
     setUserDialogVisible(true);
   }
-  const lngToLayout = (lng: string) => {
-    switch (lng) {
+
+  const lngToLayout = () => {
+    switch (keyboardLng) {
       case 'ru':
-        setKeyboardLayout(rulayout.layout)
+        keyboardNum ? setKeyboardLayout(numeric('ru').layout) : setKeyboardLayout(rulayout.layout)
         break;
       case 'tr':
-        setKeyboardLayout(trlayout.layout)
+        keyboardNum ? setKeyboardLayout(numeric('tr').layout) : setKeyboardLayout(trlayout.layout)
         break;
       case 'en':
-        setKeyboardLayout(enlayout.layout)
+        keyboardNum ? setKeyboardLayout(numeric('en').layout) : setKeyboardLayout(enlayout.layout)
         break;
       case 'es':
-        setKeyboardLayout(eslayout.layout)
+        keyboardNum ? setKeyboardLayout(numeric('es').layout) : setKeyboardLayout(eslayout.layout)
         break;
       default:
         break;
     }
-
   }
+
   const lngChange = async (lang: string) => {
     try {
       i18n.changeLanguage(lang)
@@ -201,8 +207,13 @@ const App: React.FC = () => {
 
   useEffect(() => {
     setInputKeyboard(inputKeyboard)
-    keyboardRef.current?.setInput(inputKeyboard);
+    keyboardRef.current?.setInput(inputKeyboard)
+    setInputWidth(span.current?.offsetWidth?span.current?.offsetWidth+5:5)
   }, [inputKeyboard])
+
+  useEffect(() => {
+    lngToLayout()
+  }, [keyboardNum, keyboardLng])
 
   const smallItems = [
     { label: <Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'overview' },
@@ -273,14 +284,12 @@ const App: React.FC = () => {
                     </Menu>
                   </Drawer>
                   <Drawer
-                    //autoFocus={false}
+                    autoFocus={false}
                     title={
-                      //<Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>
-                        <Input.Password
-                          style={{ width: '100%' }} size='small' value={inputKeyboard} bordered={false} allowClear={{ clearIcon: <CloseCircleTwoTone onClick={() => { setInputKeyboard('') }} style={{ fontSize: '150%' }} /> }}
-                          iconRender={visible => (visible ? <EyeTwoTone style={{ fontSize: '150%' }} /> : <EyeInvisibleOutlined style={{ fontSize: '150%' }} />)}
-                        />
-                      //</Space>
+                      <Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>
+                        <div className='sel' style={{position: 'absolute', opacity:0, height:0, overflow:'hidden'}}><span className="text" ref={span}>{inputKeyboard}</span></div>
+                        {keyboardShowInput && <Input style={{ color: "#005092", width:inputWidth }} size='small' value={inputKeyboard} bordered={false} />}
+                      </Space>
                     }
                     placement="bottom"
                     height={keyboardCollapse ? 41 : 376}
@@ -295,7 +304,10 @@ const App: React.FC = () => {
                     bodyStyle={{ margin: "0px", padding: "0px", background: '#E1F5FE' }}
                     extra={
                       <>
-                        <Select style={{ color: "#005092" }} optionLabelProp="label" defaultValue={'en'} size="large" dropdownStyle={{ fontSize: '40px !important', zIndex: 2000 }} dropdownAlign={{ offset: [-45, 4] }} dropdownMatchSelectWidth={false} onChange={(val) => { lngToLayout(val) }} bordered={false} suffixIcon={<GlobalOutlined style={{ color: '#1890ff', fontSize: '130%' }} />}
+                        {inputKeyboard && <Button style={{ width: 41 }} type="link" onClick={() => { setInputKeyboard(''); }} icon={<CloseCircleTwoTone style={{ fontSize: '130%' }} />}></Button>}
+                        <Button style={{ width: 41 }} type="link" onClick={() => { setKeyboardShowInput(!keyboardShowInput); }} icon={keyboardShowInput ? <EyeTwoTone style={{ fontSize: '130%' }} /> : <EyeInvisibleOutlined style={{ fontSize: '130%' }} />}></Button>
+                        <Button style={{ width: 41, color: "#1890ff", marginRight: '15px', fontSize: '18px' }} type="link" onClick={() => { setKeyboardNum(!keyboardNum); }} >{keyboardNum ? 'ABC' : '123'}</Button>
+                        <Select style={{ color: "#005092" }} value={keyboardLng} optionLabelProp="label" size="large" dropdownStyle={{ fontSize: '40px !important', zIndex: 2000 }} dropdownAlign={{ offset: [-45, 4] }} dropdownMatchSelectWidth={false} onChange={(val) => { setKeyboardLng(val); }} bordered={false} suffixIcon={<GlobalOutlined style={{ color: '#1890ff', fontSize: '130%' }} />}
                         >
                           {(lngs.data || []).map(lng => (
                             <Option key={lng['locale']} value={lng['locale']} label={String(lng['locale']).toUpperCase()}>
@@ -310,17 +322,22 @@ const App: React.FC = () => {
                   >
                     <Keyboard
                       keyboardRef={(r) => (keyboardRef.current = r)}
-                      //layout={keyboardLayout}
-                      layout={numeric.layout}
-                      theme="numericTheme"
+                      layout={keyboardLayout}
+                      theme={keyboardNum ? "numericTheme" : "hg-theme-default"}
                       layoutName={layout}
                       onKeyPress={onKeyPress}
                       physicalKeyboardHighlight={true}
                       onChange={(input) => {
                         setInputKeyboard(input);
                       }}
+                      display={{
+                        '{bksp}': '🠔',
+                        '{enter}': '⤶',
+                        '{lock}': '⇧',
+                        '{space}': '﹈',
+                      }}
                       excludeFromLayout={{
-                        default: [".com"], shift: [".com"]
+                        default: [".com", "{tab}", "{shift}"], shift: [".com", "{tab}", "{shift}"]
                       }}
                     />
                   </Drawer>
