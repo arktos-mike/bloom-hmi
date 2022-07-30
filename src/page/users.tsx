@@ -19,14 +19,18 @@ type Props = {
   inputKeyboard: string;
   setInputKeyboard: (val: string) => void;
   token: any;
+  setKeyboardNum: (val: boolean) => void;
+  setKeyboardShowInput: (val: boolean) => void;
 };
 
 const Users: React.FC<Props> = ({
   setShowKeyboard,
   inputKeyboard,
   setInputKeyboard,
+  setKeyboardNum,
+  setKeyboardShowInput,
   token
- }
+}
 ) => {
   const { t } = useTranslation();
   const [user, setUser] = useState({})
@@ -146,7 +150,7 @@ const Users: React.FC<Props> = ({
       render: (_, record) => (
         <Space size="middle">
           <Button shape="circle" icon={< EditOutlined />} size="large" type="primary" onClick={() => { handleEdit(record) }}></Button>
-          {record.id ==(token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id:'')? <Button shape="circle" icon={<PlusOutlined />} size="large" type="primary" style={{ background: "#87d068", borderColor: "#87d068" }} onClick={() => { setRegVisible(true) }}></Button> : <Button shape="circle" icon={<DeleteOutlined />} size="large" type="primary" danger={true} onClick={() => { confirm(record.id) }}></Button>}
+          {record.id == (token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id : '') ? <Button shape="circle" icon={<PlusOutlined />} size="large" type="primary" style={{ background: "#87d068", borderColor: "#87d068" }} onClick={() => { setRegVisible(true) }}></Button> : <Button shape="circle" icon={<DeleteOutlined />} size="large" type="primary" danger={true} onClick={() => { confirm(record.id) }}></Button>}
         </Space>
       ),
       width: '13%',
@@ -186,8 +190,8 @@ const Users: React.FC<Props> = ({
           style={{ width: '100%' }}
           onChange={handleChange}
         />
-        <UserEditSA isModalVisible={editVisible} setIsModalVisible={setEditVisible} user={user} setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} />
-        <UserRegister isModalVisible={regVisible} setIsModalVisible={setRegVisible} setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} token={token} />
+        <UserEditSA isModalVisible={editVisible} setIsModalVisible={setEditVisible} user={user} setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} setKeyboardNum={setKeyboardNum} setKeyboardShowInput={setKeyboardShowInput} />
+        <UserRegister isModalVisible={regVisible} setIsModalVisible={setRegVisible} setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} token={token} setKeyboardNum={setKeyboardNum} setKeyboardShowInput={setKeyboardShowInput} />
       </div>
     </div>
   )

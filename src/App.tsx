@@ -208,7 +208,7 @@ const App: React.FC = () => {
   useEffect(() => {
     setInputKeyboard(inputKeyboard)
     keyboardRef.current?.setInput(inputKeyboard)
-    setInputWidth(span.current?.offsetWidth?span.current?.offsetWidth+5:5)
+    setInputWidth(span.current?.offsetWidth ? span.current?.offsetWidth + 5 : 5)
   }, [inputKeyboard])
 
   useEffect(() => {
@@ -246,7 +246,7 @@ const App: React.FC = () => {
               </div>
               <div className="user">
                 <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} /><span className="text" style={{ color: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "" }}>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</span>
-                <UserLogin token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} />
+                <UserLogin token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} setKeyboardNum={setKeyboardNum} setKeyboardShowInput={setKeyboardShowInput} />
               </div>
               <div className="lang">
                 <Select optionLabelProp="label" value={i18n.language} size="large" dropdownStyle={{ fontSize: '40px !important' }} dropdownAlign={{ offset: [-40, 4] }} dropdownMatchSelectWidth={false} style={{ color: "white" }} onChange={lngChange} bordered={false}>
@@ -269,7 +269,7 @@ const App: React.FC = () => {
                   <Routes>
                     <Route index element={<Overview />} />
                     <Route path={'/settings'} element={<Settings />} />
-                    <Route path={'/users'} element={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == "sa" ? <Users setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} token={token} /> : <Navigate to="/" /> : <Navigate to="/" />} />
+                    <Route path={'/users'} element={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == "sa" ? <Users setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} token={token} setKeyboardNum={setKeyboardNum} setKeyboardShowInput={setKeyboardShowInput} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                     <Route path="*" element={<Navigate to="/" />} />
                   </Routes>
                   <Drawer
@@ -284,11 +284,11 @@ const App: React.FC = () => {
                     </Menu>
                   </Drawer>
                   <Drawer
-                    autoFocus={false}
+                    //autoFocus={false}
                     title={
                       <Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>
-                        <div className='sel' style={{position: 'absolute', opacity:0, height:0, overflow:'hidden'}}><span className="text" ref={span}>{inputKeyboard}</span></div>
-                        {keyboardShowInput && <Input style={{ color: "#005092", width:inputWidth }} size='small' value={inputKeyboard} bordered={false} />}
+                        <div className='sel' style={{ position: 'absolute', opacity: 0, height: 0, overflow: 'hidden' }}><span className="text" ref={span}>{inputKeyboard}</span></div>
+                        {keyboardShowInput && <Input style={{ color: "#005092", width: inputWidth }} size='small' value={inputKeyboard} bordered={false} />}
                       </Space>
                     }
                     placement="bottom"
