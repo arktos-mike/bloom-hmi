@@ -166,18 +166,23 @@ const App: React.FC = () => {
     catch (error) { console.log(error); }
   }
 
-  const curDate = today.toLocaleDateString(i18n.language, { day: 'numeric', month: 'numeric', year: 'numeric', });
-  const curTime = `${today.toLocaleTimeString(i18n.language, { hour: 'numeric', minute: 'numeric', second: 'numeric' })}\n\n`;
+  const curDate = today.toLocaleDateString(i18n.language == 'en' ? 'en-GB' : i18n.language, { day: 'numeric', month: 'numeric', year: 'numeric', });
+  const curTime = `${today.toLocaleTimeString(i18n.language == 'en' ? 'en-GB' : i18n.language, { hour: 'numeric', minute: 'numeric', hour12: false })}\n\n`;
 
-  useEffect(() => {
-    const timer = setInterval(() => { // Creates an interval which will update the current data every minute
-      // This will trigger a rerender every component that uses the useDate hook.
+  const clock = async () => {
+    let curTime = new Date();
+    let sec = (60 - curTime.getSeconds()) * 1000;
+    await setTimeout(() => {
       setDate(new Date());
-    }, 1000);
-    return () => {
-      clearInterval(timer); // Return a funtion to clear the timer so that it will stop being called on unmount
-    }
-  }, []);
+      const timer = setInterval(() => { // Creates an interval which will update the current data every minute
+        // This will trigger a rerender every component that uses the useDate hook.
+        setDate(new Date());
+      }, 60000);
+      return () => {
+        clearInterval(timer); // Return a funtion to clear the timer so that it will stop being called on unmount
+      }
+    }, sec);
+  }
 
   const fetchLngs = async () => {
     try {
@@ -190,7 +195,8 @@ const App: React.FC = () => {
   }
 
   useEffect(() => {
-    fetchLngs()
+    clock();
+    fetchLngs();
   }, [])
 
   useEffect(() => {
@@ -245,19 +251,11 @@ const App: React.FC = () => {
               <div className="mode" style={{ backgroundColor: '#00000000' }}>
               </div>
               <div className="user">
-                <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} /><span className="text" style={{ color: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "" }}>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</span>
+                <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} style={{ background: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "", borderColor: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "" }} /><span className="text" >{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</span>
                 <UserLogin token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} setKeyboardNum={setKeyboardNum} setKeyboardShowInput={setKeyboardShowInput} />
               </div>
-              <div className="lang">
-                <Select optionLabelProp="label" value={i18n.language} size="large" dropdownStyle={{ fontSize: '40px !important' }} dropdownAlign={{ offset: [-40, 4] }} dropdownMatchSelectWidth={false} style={{ color: "white" }} onChange={lngChange} bordered={false}>
-                  {(lngs.data || []).map(lng => (
-                    <Option key={lng['locale']} value={lng['locale']} label={String(lng['locale']).toUpperCase()}>
-                      <div>{String(lng['locale']).toUpperCase()} - {t('self', { lng: lng['locale'] })}</div></Option>
-                  ))}
-                </Select>
-              </div>
-              <div className="time" onClick={() => { }}>
-                {curTime}{curDate}
+              <div className="clock" onClick={() => { }}>
+                <div className="time">{curTime}</div><div className="date">{curDate}</div>
               </div>
             </Header>
             <div className="site-drawer-render-in-current-wrapper">
@@ -288,7 +286,7 @@ const App: React.FC = () => {
                     title={
                       <Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>
                         <div className='sel' style={{ position: 'absolute', opacity: 0, height: 0, overflow: 'hidden' }}><span className="text" ref={span}>{inputKeyboard}</span></div>
-                        {keyboardShowInput && <Input style={{ color: "#005092", width: inputWidth, marginLeft:190 }} size='small' value={inputKeyboard} bordered={false} />}
+                        {keyboardShowInput && <Input style={{ color: "#005092", width: inputWidth, marginLeft: 190 }} size='small' value={inputKeyboard} bordered={false} />}
                       </Space>
                     }
                     placement="bottom"
@@ -305,7 +303,7 @@ const App: React.FC = () => {
                       <>
                         {inputKeyboard && <Button style={{ width: 41 }} type="link" onClick={() => { setInputKeyboard(''); }} icon={<CloseCircleTwoTone style={{ fontSize: '130%' }} />}></Button>}
                         <Button style={{ width: 41 }} type="link" onClick={() => { setKeyboardShowInput(!keyboardShowInput); }} icon={keyboardShowInput ? <EyeTwoTone style={{ fontSize: '130%' }} /> : <EyeInvisibleOutlined style={{ fontSize: '130%' }} />}></Button>
-                        <Button style={{ width: 41, color: "#1890ff", marginRight: '15px', fontSize: '18px' }} type="link" onClick={() => { setKeyboardNum(!keyboardNum); }} >{keyboardNum ? 'ABC' : '123'}</Button>
+                        <Button style={{ width: 41, color: "#1890ff", fontSize: '20px', padding: 0 }} type="link" onClick={() => { setKeyboardNum(!keyboardNum); }} >{keyboardNum ? 'ABC' : '123'}</Button>
                         <Select style={{ color: "#005092" }} value={keyboardLng} optionLabelProp="label" size="large" dropdownStyle={{ fontSize: '40px !important', zIndex: 2000 }} dropdownAlign={{ offset: [-45, 4] }} dropdownMatchSelectWidth={false} onChange={(val) => { setKeyboardLng(val); }} bordered={false} suffixIcon={<GlobalOutlined style={{ color: '#1890ff', fontSize: '130%' }} />}
                         >
                           {(lngs.data || []).map(lng => (

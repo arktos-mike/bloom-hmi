@@ -96,15 +96,23 @@
    pointer-events: none;
  }
 
-.time {
+.clock {
   padding-top: 5px;
   text-align: center;
-  width: 95px;
-  color: #ffffff;
-  
-  line-height: 160%;
-  font-size: medium;
+  width: 80px;
 }
+.clock .time {
+  color: #ffffff;
+  line-height: 160%;
+  font-size: x-large;
+  font-weight: 500;
+}
+.clock .date {
+  color: #A6ADB4;
+  line-height: 100%;
+  font-size: small;
+}
+
 .mode {
   color: #ffffff !important;
   display: inline-flex;
@@ -236,6 +244,10 @@
   font-size: 24px !important;
   padding-top: 6.5px !important;
   padding-bottom: 6.5px !important;
+}
+
+.ant-select-selection-item{
+  font-size: 20px !important;
 }
 
 .ant-input, .ant-picker, .ant-picker input{
