@@ -6,6 +6,7 @@ import mountRoutes from './routes'
 import db from '../db'
 import * as bcrypt from 'bcrypt';
 import createTableText from './createdb'
+import { networkInterfaces } from 'os'
 import { SerialPort } from 'serialport'
 import ModbusRTU from 'modbus-serial'
 const client1 = new ModbusRTU();
@@ -56,7 +57,31 @@ let com2 = { path: '', conf: {}, scan: 0, timeout: 0, mbsState: MBS_STATE_STEADY
 const dbInit = async () => {
   // create table
   await db.query(createTableText)
-  const ipConf = { opIP: "192.168.1.10", plcIP1: "192.168.1.6", plcIP2: "192.168.1.7" }
+  const nets:any = networkInterfaces();
+  const netResults = {};
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+      if (net.family === 'IPv4' && !net.internal) {
+        if (!netResults[name]) {
+          netResults[name] = [];
+        }
+        netResults[name].push(net);
+      }
+    }
+  }
+  let opIP
+  switch (process.platform) {
+    case 'linux':
+      if (netResults['eth0'] && netResults['eth0'][0]) opIP = netResults['eth0'][0]
+      else if (netResults['wlan0'] && netResults['wlan0'][0]) opIP = netResults['wlan0'][0]
+      break;
+    case 'win32':
+      if (netResults['Ethernet'] && netResults['Ethernet'][0]) opIP = netResults['Ethernet'][0]
+      else if (netResults[0] && netResults[0][0]) opIP = netResults[0][0]
+      break;
+  }
+  const ipConf = { opIP: opIP, plcIP1: "192.168.1.6", plcIP2: "192.168.1.7" }
   await SerialPort.list().then(async function (ports) {
     if (ports[0] !== undefined) { com1.path = ports[0].path; } //else { com1.path = "COM3"; }
     if (ports[1] !== undefined) { com2.path = ports[1].path; } //else { com2.path = "COM3"; }
@@ -77,14 +102,15 @@ const dbInit = async () => {
       { self: "English", menu: { overview: "OVERVIEW", settings: "SETTINGS", system: "CONNECTIONS", alarms: "ALARMS" }, notifications: { idle: "User inactive" }, footer: "© TEHMASHHOLDING Cheboksary, Russia" },
       { self: "Español", menu: { overview: "GENERAL", settings: "CONFIGURACIÓN", system: "CONEXIONES", alarms: "ALARMAS" }, notifications: { idle: "Usuario inactivo" }, footer: "© TEHMASHHOLDING Cheboksary, Rusia" },
       { self: "Русский", menu: { overview: "ОБЗОР", settings: "НАСТРОЙКИ", system: "СОЕДИНЕНИЯ", alarms: "АВАРИИ" }, notifications: { idle: "Пользователь неактивен" }, footer: "© ТЕХМАШХОЛДИНГ г.Чебоксары" },
-      { self: "Türkçe", menu: { overview: "GENEL", settings: "AYARLAR", system: "BAĞLANTILAR", alarms: "ALARMLAR"  }, notifications: { idle: "Kullanıcı etkin değil" }, footer: "© TEHMASHHOLDİNG Cheboksary, Rusya Federasyonu" },
+      { self: "Türkçe", menu: { overview: "GENEL", settings: "AYARLAR", system: "BAĞLANTILAR", alarms: "ALARMLAR" }, notifications: { idle: "Kullanıcı etkin değil" }, footer: "© TEHMASHHOLDİNG Cheboksary, Rusya Federasyonu" },
     ]
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['rtuConf', rtuConf])
     await db.query('INSERT INTO tags SELECT * FROM UNNEST($1::jsonb[]) ON CONFLICT (tag) DO NOTHING;', [tags])
     bcrypt.hash('123456', 10, async (err, hash) => {
-    await db.query(`INSERT INTO users (id, name, password, role) VALUES(1,'Admin',$1,'sa') ON CONFLICT (id) DO NOTHING;`, [hash])});
+      await db.query(`INSERT INTO users (id, name, password, role) VALUES(1,'Admin',$1,'sa') ON CONFLICT (id) DO NOTHING;`, [hash])
+    });
     await db.query('INSERT INTO locales SELECT UNNEST($1::text[]), UNNEST($2::jsonb[]), UNNEST($3::boolean[]) ON CONFLICT (locale) DO NOTHING;', [['en', 'es', 'ru', 'tr'], locales, [false, false, true, false]])
 
     const comRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['comConf']);
@@ -190,7 +216,7 @@ const writeModbusData = async function (tagName, val) {
         try {
           const size = getByteLength(tag.type);
           const buffer = Buffer.allocUnsafe(size);
-          val=Number(val.replace(',','.'))
+          val = Number(val.replace(',', '.'))
           if (tag.type === "int16") {
             slave.swapWords ? buffer.writeInt16LE(val) : buffer.writeInt16BE(val);
           } else if (tag.type === "word") {

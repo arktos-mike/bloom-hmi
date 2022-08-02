@@ -112,7 +112,21 @@
   line-height: 100%;
   font-size: small;
 }
-
+.username {
+  color: #ffffff;
+  line-height: 130%;
+  font-size: medium;
+  font-weight: 500;
+  padding-left: 5px;
+  text-align: center;
+}
+.userrole{
+  color: #A6ADB4;
+  line-height: 130%;
+  font-size: small;
+  padding-left: 5px;
+  text-align: center;
+}
 .mode {
   color: #ffffff !important;
   display: inline-flex;
@@ -165,6 +179,10 @@
 .ant-checkbox {
   transform: scale(2);
   margin: 7px;
+}
+
+.ant-picker-dropdown .ant-picker-panel-container {
+  transform: scale(1.5) !important ;
 }
 
 .ant-form-item {
