@@ -1,8 +1,8 @@
-import { Button, Card, Col, Form, InputNumber, notification, Row, Select, } from 'antd';
+import { Card, Col, Form, InputNumber, notification, Row, Select, } from 'antd';
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import { DesktopOutlined, DeploymentUnitOutlined, BorderlessTableOutlined, GlobalOutlined, CalendarOutlined, ClockCircleOutlined, SyncOutlined } from '@ant-design/icons';
-import { DatePicker, TimePicker, Calendar } from '../components';
+import { DatePicker, TimePicker, Button } from '../components';
 import format from 'dayjs';
 import dayjs from 'dayjs';
 
@@ -17,6 +17,7 @@ type Props = {
   setInputKeyboard: (val: string) => void;
   setKeyboardNum: (val: boolean) => void;
   setKeyboardShowInput: (val: boolean) => void;
+  token: any;
 };
 
 const Settings: React.FC<Props> = ({
@@ -25,6 +26,7 @@ const Settings: React.FC<Props> = ({
   setInputKeyboard,
   setKeyboardNum,
   setKeyboardShowInput,
+  token,
 }) => {
   const { t, i18n } = useTranslation();
 
@@ -181,7 +183,7 @@ const Settings: React.FC<Props> = ({
         </Col>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('panel.actions')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
-            <Button type="primary" size='large' onClick={onReboot} icon={<SyncOutlined style={{ fontSize: '200%' }} />}>{t('system.reboot')}</Button>
+            <Button confirm userRights={['fixer', 'sa', 'manager']} token={token} onClick={onReboot} icon={<SyncOutlined style={{ fontSize: '200%' }} />} text="system.reboot" />
           </Card>
         </Col>
       </Row>
@@ -221,9 +223,7 @@ const Settings: React.FC<Props> = ({
                 <InputNumber placeholder={t('ip.mask')} style={{ width: '100%' }} controls={false} onChange={value => { setInputKeyboard(value.toString()); }} onFocus={(e) => { setActiveField('mask'); setInputKeyboard(e.target.value); setShowKeyboard(true); setKeyboardNum(true); setKeyboardShowInput(true); }} />
               </Form.Item>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                <Button size="large" type="primary" htmlType="submit" >
-                  {t('ip.submit')}
-                </Button>
+                <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="ip.submit" />
               </Form.Item>
             </Form>
           </Card>
@@ -261,9 +261,7 @@ const Settings: React.FC<Props> = ({
                 <TimePicker size="large" style={{ width: '100%' }} />
               </Form.Item>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                <Button size="large" type="primary" htmlType="submit" >
-                  {t('time.submit')}
-                </Button>
+                <Button userRights={['sa', 'manager']} token={token}  htmlType="submit" text="time.submit" />
               </Form.Item>
             </Form>
           </Card>

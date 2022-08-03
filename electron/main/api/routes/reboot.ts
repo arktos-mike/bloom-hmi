@@ -27,6 +27,12 @@ router.post('/', async (req, res) => {
                             message: "notifications.reboot",
                         });
                     }
+                    else {
+                        res.status(500).json({
+                            error: "Could not reboot", 
+                            message: "notifications.servererror",
+                        });
+                    }
                 });
                 break;
         }

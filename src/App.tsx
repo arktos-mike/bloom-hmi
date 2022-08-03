@@ -4,7 +4,7 @@ import 'styles/app.css'
 import { HashRouter, Route, Link, Routes, useLocation, Navigate } from 'react-router-dom';
 import { Layout, Menu, Select, Drawer, Button, Modal, Input, Form, Checkbox, notification, DatePicker, TimePicker, ConfigProvider, Breadcrumb, InputRef, Space } from 'antd';
 import { CloseCircleTwoTone, EyeTwoTone, EyeInvisibleOutlined, GlobalOutlined, CloseOutlined, ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, ToolOutlined, SettingOutlined, UserOutlined, LockOutlined, ApartmentOutlined, SendOutlined, AlertOutlined } from '@ant-design/icons';
-import { FabricPieceIcon } from "./components/IcOn"
+import { FabricPieceIcon } from "./components/Icons"
 import { useIdleTimer } from 'react-idle-timer'
 import Overview from "./page/overview";
 import Settings from "./page/settings";
@@ -224,7 +224,7 @@ const App: React.FC = () => {
     { label: <Link onClick={showDrawer} to="/">{t('menu.overview')}</Link>, title: '', key: 'overview', icon: <EyeOutlined style={{ fontSize: '100%' }} /> },
     { label: <Link onClick={showDrawer} to="/settings">{t('menu.settings')}</Link>, title: '', key: 'settings', icon: <SettingOutlined style={{ fontSize: '100%' }} /> },
     { label: <Link onClick={showDrawer} to="/alarms">{t('menu.alarms')}</Link>, title: '', key: 'alarms', icon: <AlertOutlined style={{ fontSize: '100%' }} /> },
-    { label: <Link onClick={showDrawer} to="/system">{t('menu.system')}</Link>, title: '', key: 'system', icon: <ApartmentOutlined style={{ fontSize: '100%' }} /> },
+    { label: <Link onClick={showDrawer} to="/system">{t('menu.system')}</Link>, title: '', key: 'system', icon: <FabricPieceIcon style={{ fontSize: '110%' }} /> },
   ];
 
   return (
@@ -256,7 +256,7 @@ const App: React.FC = () => {
                 <div className="site-layout-content">
                   <Routes>
                     <Route index element={<Overview />} />
-                    <Route path={'/settings'} element={<Settings setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} setKeyboardNum={setKeyboardNum} setKeyboardShowInput={setKeyboardShowInput} />} />
+                    <Route path={'/settings'} element={<Settings setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} setKeyboardNum={setKeyboardNum} setKeyboardShowInput={setKeyboardShowInput} token={token} />} />
                     <Route path={'/users'} element={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == "sa" ? <Users setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} token={token} setKeyboardNum={setKeyboardNum} setKeyboardShowInput={setKeyboardShowInput} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                     <Route path="*" element={<Navigate to="/" />} />
                   </Routes>
