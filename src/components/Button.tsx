@@ -35,9 +35,8 @@ const Component = (props: any) => {
     }
     return (
         <div style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} >
-            <Button onMouseDown={() => { props.onPress && props.onPress() }} onTouchStart={() => { props.onPress && props.onPress() }} onMouseUp={() => { props.onRelease && props.onRelease() }} onMouseLeave={() => { props.onRelease && props.onRelease() }} onTouchEnd={() => { props.onRelease && props.onRelease() }} onClick={() => { props.confirm ? confirm(props.onClick) : props.onClick && props.onClick() }} type="primary" icon={props.icon} htmlType={props.htmlType} size='large' >{t(props.text)}</Button>
+            <Button onMouseDown={props.onPress} onTouchStart={props.onPress} onMouseUp={props.onRelease} onMouseLeave={props.onRelease} onTouchEnd={props.onRelease} onClick={() => { props.confirm ? confirm(props.onClick) : props.onClick && props.onClick() }} type="primary" icon={props.icon} htmlType={props.htmlType} size='large' >{t(props.text)}</Button>
         </div>
-
     );
 }
 export default Component;

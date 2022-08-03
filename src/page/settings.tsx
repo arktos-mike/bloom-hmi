@@ -1,8 +1,8 @@
-import { Card, Col, Form, InputNumber, notification, Row, Select, } from 'antd';
+import { Card, Col, Form, notification, Row, Select, } from 'antd';
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import { DesktopOutlined, DeploymentUnitOutlined, BorderlessTableOutlined, GlobalOutlined, CalendarOutlined, ClockCircleOutlined, SyncOutlined } from '@ant-design/icons';
-import { DatePicker, TimePicker, Button } from '../components';
+import { DatePicker, TimePicker, Button, InputNumber, } from '../components';
 import format from 'dayjs';
 import dayjs from 'dayjs';
 
@@ -147,7 +147,7 @@ const Settings: React.FC<Props> = ({
 
   useEffect(() => {
     if (formIP) {
-      formIP.setFieldsValue({ [activeField]: inputKeyboard })
+      //formIP.setFieldsValue({ [activeField]: inputKeyboard })
     }
   }, [inputKeyboard, activeField])
 
@@ -198,6 +198,7 @@ const Settings: React.FC<Props> = ({
               style={{ width: '100%' }}
               onFinish={onIPChange}
               preserve={false}
+              colon={false}
             >
               <Form.Item label={<DesktopOutlined style={{ fontSize: '130%' }} />} >
                 <span style={{ fontSize: '20px' }}>{opIP?.address}</span>
@@ -213,14 +214,14 @@ const Settings: React.FC<Props> = ({
                 label={t('ip.ip')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <InputNumber placeholder={t('ip.ip')} style={{ width: '100%' }} controls={false} onChange={value => { setInputKeyboard(value.toString()); }} onFocus={(e) => { setActiveField('ip'); setInputKeyboard(e.target.value); setShowKeyboard(true); setKeyboardNum(true); setKeyboardShowInput(true); }} />
+                <InputNumber userRights={['sa', 'manager']} token={token} placeholder='ip.ip' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setInputKeyboard(value.toString()); }} onFocus={(e: any) => { setActiveField('ip'); setInputKeyboard(e.target.value); setShowKeyboard(true); setKeyboardNum(true); setKeyboardShowInput(true); }} />
               </Form.Item>
               <Form.Item
                 name="mask"
                 label={t('ip.mask')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <InputNumber placeholder={t('ip.mask')} style={{ width: '100%' }} controls={false} onChange={value => { setInputKeyboard(value.toString()); }} onFocus={(e) => { setActiveField('mask'); setInputKeyboard(e.target.value); setShowKeyboard(true); setKeyboardNum(true); setKeyboardShowInput(true); }} />
+                <InputNumber userRights={['sa', 'manager']} token={token} placeholder='ip.mask' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setInputKeyboard(value.toString()); }} onFocus={(e: any) => { setActiveField('mask'); setInputKeyboard(e.target.value); setShowKeyboard(true); setKeyboardNum(true); setKeyboardShowInput(true); }} />
               </Form.Item>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
                 <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="ip.submit" />
@@ -238,6 +239,7 @@ const Settings: React.FC<Props> = ({
               form={form}
               onFinish={onFinish}
               preserve={false}
+              colon={false}
             >
               <Form.Item label={<CalendarOutlined style={{ fontSize: '130%' }} />} >
                 <span style={{ fontSize: '20px' }}>{curDate}</span>
@@ -261,7 +263,7 @@ const Settings: React.FC<Props> = ({
                 <TimePicker size="large" style={{ width: '100%' }} />
               </Form.Item>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                <Button userRights={['sa', 'manager']} token={token}  htmlType="submit" text="time.submit" />
+                <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="time.submit" />
               </Form.Item>
             </Form>
           </Card>
