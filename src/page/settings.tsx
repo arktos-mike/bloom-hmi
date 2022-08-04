@@ -12,21 +12,15 @@ const cardBodyStyle = { flex: 1, display: 'flex', alignItems: 'center', justifyC
 const { Option } = Select;
 
 type Props = {
-  setShowKeyboard: (val: boolean) => void;
-  inputKeyboard: string;
-  setInputKeyboard: (val: string) => void;
-  setKeyboardNum: (val: boolean) => void;
-  setKeyboardShowInput: (val: boolean) => void;
   token: any;
+  activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean };
+  setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean }) => void;
 };
 
 const Settings: React.FC<Props> = ({
-  setShowKeyboard,
-  inputKeyboard,
-  setInputKeyboard,
-  setKeyboardNum,
-  setKeyboardShowInput,
   token,
+  activeInput,
+  setActiveInput,
 }) => {
   const { t, i18n } = useTranslation();
 
@@ -45,7 +39,6 @@ const Settings: React.FC<Props> = ({
   const [form] = Form.useForm()
   const [formIP] = Form.useForm()
   const [opIP, setOpIP] = useState({ address: '', netmask: '', mac: '' })
-  const [activeField, setActiveField] = useState('')
   const [lngs, setLngs] = useState({ data: [] })
   const [today, setDate] = useState(new Date())
 
@@ -116,6 +109,7 @@ const Settings: React.FC<Props> = ({
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
       if (!response.ok) { throw Error(response.statusText); }
+      fetchIP();
     }
     catch (error) { console.log(error) }
   }
@@ -146,10 +140,10 @@ const Settings: React.FC<Props> = ({
   }, [])
 
   useEffect(() => {
-    if (formIP) {
-      //formIP.setFieldsValue({ [activeField]: inputKeyboard })
+    if (formIP && activeInput.form == 'ip') {
+      formIP.setFieldsValue({ [activeInput.id]: activeInput.input })
     }
-  }, [inputKeyboard, activeField])
+  }, [activeInput])
 
   useEffect(() => {
     if (formIP) {
@@ -214,14 +208,14 @@ const Settings: React.FC<Props> = ({
                 label={t('ip.ip')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <InputNumber userRights={['sa', 'manager']} token={token} placeholder='ip.ip' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setInputKeyboard(value.toString()); }} onFocus={(e: any) => { setActiveField('ip'); setInputKeyboard(e.target.value); setShowKeyboard(true); setKeyboardNum(true); setKeyboardShowInput(true); }} />
+                <InputNumber userRights={['sa', 'manager']} token={token} placeholder='ip.ip' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'ip', num: true, showInput: true, input: e.target.value }) }} />
               </Form.Item>
               <Form.Item
                 name="mask"
                 label={t('ip.mask')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <InputNumber userRights={['sa', 'manager']} token={token} placeholder='ip.mask' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setInputKeyboard(value.toString()); }} onFocus={(e: any) => { setActiveField('mask'); setInputKeyboard(e.target.value); setShowKeyboard(true); setKeyboardNum(true); setKeyboardShowInput(true); }} />
+                <InputNumber userRights={['sa', 'manager']} token={token} placeholder='ip.mask' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'mask', num: true, showInput: true, input: e.target.value }) }} />
               </Form.Item>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
                 <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="ip.submit" />

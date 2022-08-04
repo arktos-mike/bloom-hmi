@@ -13,11 +13,8 @@ type Props = {
     setToken: (val: any) => void;
     setRemember: (val: boolean) => void;
     setIsModalVisible: (val: boolean) => void;
-    setShowKeyboard: (val: boolean) => void;
-    setKeyboardNum: (val: boolean) => void;
-    setKeyboardShowInput: (val: boolean) => void;
-    inputKeyboard: string;
-    setInputKeyboard: (val: string) => void;
+    activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean };
+    setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean }) => void;
 };
 
 const UserLogin: React.FC<Props> = ({
@@ -26,16 +23,12 @@ const UserLogin: React.FC<Props> = ({
     token,
     setToken,
     setRemember,
-    setShowKeyboard,
-    setKeyboardNum,
-    setKeyboardShowInput,
-    inputKeyboard,
-    setInputKeyboard
+    activeInput,
+    setActiveInput,
 }) => {
 
     const [form] = Form.useForm()
     const [state, setState] = useState({ data: [] })
-    const [activeField, setActiveField] = useState('')
     const [search, setSearch] = useState('')
     const [editVisible, setEditVisible] = useState(false)
     const [showList, setShowList] = useState(false)
@@ -57,15 +50,15 @@ const UserLogin: React.FC<Props> = ({
     }, [isModalVisible, editVisible, regVisible])
 
     useEffect(() => {
-        if (form && isModalVisible) {
-            if (activeField == 'name') {
-                setSearch(inputKeyboard);
-                if (search || inputKeyboard) { setShowList(true) }
+        if (form && isModalVisible && activeInput.form == 'login') {
+            if (activeInput.id == 'name') {
+                setSearch(activeInput.input);
+                if (search || activeInput.input) { setShowList(true) }
             } else {
-                form.setFieldsValue({ [activeField]: inputKeyboard })
+                form.setFieldsValue({ [activeInput.id]: activeInput.input })
             }
         }
-    }, [inputKeyboard, activeField])
+    }, [activeInput])
 
     const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
         if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
@@ -116,13 +109,13 @@ const UserLogin: React.FC<Props> = ({
             visible={isModalVisible}
             destroyOnClose={true}
             //centered={true}
-            afterClose={() => { setShowKeyboard(false); setShowList(false) }}
+            afterClose={() => { setShowList(false) }}
             getContainer={false}
             style={{ top: 20 }}
         >
             <div className="sel">
                 <Form
-                    name="basic"
+                    name="login"
                     labelCol={{ span: 8 }}
                     wrapperCol={{ span: 16 }}
                     initialValues={{ remember: true }}
@@ -141,7 +134,7 @@ const UserLogin: React.FC<Props> = ({
                         name="user"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Select showSearch open={showList} searchValue={search} onFocus={() => { setActiveField('name'); setInputKeyboard(search); if (!showList || (showList && search && !listNotEmpty)) { setKeyboardNum(false); setKeyboardShowInput(true); setShowKeyboard(true); } }} onSearch={(value) => { setSearch(value); setInputKeyboard(value); }} onSelect={() => { setListNotEmpty(false); setShowList(false); setShowKeyboard(false); }}
+                        <Select showSearch open={showList} searchValue={search} onFocus={() => { if (!showList || (showList && search && !listNotEmpty)) { setActiveInput({ showKeyboard: true, num: false, showInput: true, form: 'login', id: 'name', input: search }) } else { setActiveInput({ ...activeInput, form: 'login', id: 'name', input: search }); } console.log('onFocus ' + activeInput); }} onSearch={(value) => { setSearch(value); setActiveInput({ ...activeInput, input: value }); }} onSelect={() => { setListNotEmpty(false); setShowList(false); setActiveInput({ ...activeInput, showKeyboard: false }); }}
                             filterOption={(input, option) => (option!.children as unknown as string).toLowerCase().includes(input.toLowerCase())} placeholder={t('user.user')} virtual={true} size="large" suffixIcon={<UserOutlined style={{ fontSize: '120%' }} />}>
                             {(state.data || []).map(user => (
                                 <Option key={user['name']} value={user['name']} label={user['name']} onMouseEnter={() => { setListNotEmpty(true) }}>
@@ -155,14 +148,14 @@ const UserLogin: React.FC<Props> = ({
                         name="password"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Input.Password onChange={e => { setInputKeyboard(e.target.value); }} onFocus={(e) => { setActiveField('password'); setInputKeyboard(e.target.value); setKeyboardNum(false); setKeyboardShowInput(false); setShowKeyboard(true); }} visibilityToggle={true} placeholder={t('user.password')} prefix={<LockOutlined className="site-form-item-icon" />} />
+                        <Input.Password onChange={e => { setActiveInput({ ...activeInput, input: e.target.value }); }} onFocus={(e) => { setActiveInput({ showKeyboard: true, form: 'login', id: 'password', num: false, showInput: false, input: e.target.value }) }} visibilityToggle={true} placeholder={t('user.password')} prefix={<LockOutlined className="site-form-item-icon" />} />
                     </Form.Item>
                     <Form.Item name="remember" valuePropName="checked" wrapperCol={{ offset: 8, span: 16 }}>
                         <Checkbox>{t('user.remember')}</Checkbox>
                     </Form.Item>
                     <Form.Item wrapperCol={{ offset: 8, span: 16 }} hidden={!token} >
                         <Button type="link" onClick={() => { setEditVisible(true); }}>{t('user.change')}</Button>
-                        <UserEdit isModalVisible={editVisible} setIsModalVisible={setEditVisible} token={token} setToken={setToken} setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} setKeyboardNum={setKeyboardNum} setKeyboardShowInput={setKeyboardShowInput} />
+                        <UserEdit isModalVisible={editVisible} setIsModalVisible={setEditVisible} token={token} setToken={setToken} activeInput={activeInput} setActiveInput={setActiveInput} />
                     </Form.Item >
                     <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
                         <Button size="large" type="primary" htmlType="submit" >
@@ -171,7 +164,7 @@ const UserLogin: React.FC<Props> = ({
                     </Form.Item>
                     {token && <Form.Item wrapperCol={{ offset: 8, span: 16 }} >
                         <Button type="link" onClick={() => { setRegVisible(true); }}>{t('user.register')}</Button>
-                        <UserRegister isModalVisible={regVisible} setIsModalVisible={setRegVisible} setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} token={token} setKeyboardNum={setKeyboardNum} setKeyboardShowInput={setKeyboardShowInput} />
+                        <UserRegister isModalVisible={regVisible} setIsModalVisible={setRegVisible} activeInput={activeInput} setActiveInput={setActiveInput} token={token} />
                     </Form.Item >}
                 </Form>
             </div>

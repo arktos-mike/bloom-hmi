@@ -106,12 +106,13 @@ const App: React.FC = () => {
   }
   const [inputWidth, setInputWidth] = useState<number | undefined>(0)
   const [showKeyboard, setShowKeyboard] = useState(false)
+  const [activeInput, setActiveInput] = useState({ form: '', id: '', num: false, showInput: true, input: '', showKeyboard: false })
   const [keyboardLayout, setKeyboardLayout] = useState(enlayout.layout)
   const [keyboardLng, setKeyboardLng] = useState('en')
   const [keyboardNum, setKeyboardNum] = useState(false)
   const [keyboardShowInput, setKeyboardShowInput] = useState(false)
   const [keyboardCollapse, setKeyboardCollapse] = useState(false)
-  const [inputKeyboard, setInputKeyboard] = useState('')
+  const [bufferKeyboard, setBufferKeyboard] = useState('')
   const [lngs, setLngs] = useState({ data: [] })
   const [token, setToken] = useState<string | null>(null)
   const [remember, setRemember] = useState(true)
@@ -126,7 +127,7 @@ const App: React.FC = () => {
 
   const onKeyPress = (button: string) => {
     if (button === "{shift}" || button === "{lock}") handleShift();
-    if (button === "{enter}") setShowKeyboard(false);
+    if (button === "{enter}") { setActiveInput({ ...activeInput, input: bufferKeyboard }); setShowKeyboard(false); }
   };
 
   const showDrawer = () => {
@@ -202,10 +203,18 @@ const App: React.FC = () => {
   }, [showKeyboard])
 
   useEffect(() => {
-    setInputKeyboard(inputKeyboard)
-    keyboardRef.current?.setInput(inputKeyboard)
     setInputWidth(span.current?.offsetWidth ? span.current?.offsetWidth + 5 : 5)
-  }, [inputKeyboard])
+    keyboardRef.current?.setInput(bufferKeyboard)
+  }, [bufferKeyboard])
+
+  useEffect(() => {
+    keyboardRef.current?.setInput(activeInput.input);
+    setBufferKeyboard(activeInput.input);
+    setKeyboardShowInput(activeInput.showInput);
+    setKeyboardNum(activeInput.num);
+    setShowKeyboard(activeInput.showKeyboard);
+    console.log(activeInput)
+  }, [activeInput])
 
   useEffect(() => {
     lngToLayout()
@@ -242,7 +251,7 @@ const App: React.FC = () => {
               </div>
               <div className="user">
                 <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} style={{ background: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "", borderColor: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "" }} /><table><tbody><tr><td><div className='username'>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</div></td></tr><tr><td><div className='userrole'>{t(token ? 'user.' + JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : '')}</div></td></tr></tbody></table>
-                <UserLogin token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} setKeyboardNum={setKeyboardNum} setKeyboardShowInput={setKeyboardShowInput} />
+                <UserLogin token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} activeInput={activeInput} setActiveInput={setActiveInput} />
               </div>
               <div className="clock">
                 <div className="time">{curTime}</div><div className="date">{curDate}</div>
@@ -256,8 +265,8 @@ const App: React.FC = () => {
                 <div className="site-layout-content">
                   <Routes>
                     <Route index element={<Overview />} />
-                    <Route path={'/settings'} element={<Settings setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} setKeyboardNum={setKeyboardNum} setKeyboardShowInput={setKeyboardShowInput} token={token} />} />
-                    <Route path={'/users'} element={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == "sa" ? <Users setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} token={token} setKeyboardNum={setKeyboardNum} setKeyboardShowInput={setKeyboardShowInput} /> : <Navigate to="/" /> : <Navigate to="/" />} />
+                    <Route path={'/settings'} element={<Settings token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
+                    <Route path={'/users'} element={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == "sa" ? <Users activeInput={activeInput} setActiveInput={setActiveInput} token={token} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                     <Route path="*" element={<Navigate to="/" />} />
                   </Routes>
                   <Drawer
@@ -273,10 +282,11 @@ const App: React.FC = () => {
                   </Drawer>
                   <Drawer
                     autoFocus={false}
+                    //destroyOnClose={true}
                     title={
                       <Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>
-                        <div className='sel' style={{ position: 'absolute', opacity: 0, height: 0, overflow: 'hidden' }}><span className="text" ref={span}>{inputKeyboard}</span></div>
-                        {keyboardShowInput && <Input style={{ color: "#005092", width: inputWidth, marginLeft: 190 }} size='small' value={inputKeyboard} bordered={false} />}
+                        <div className='sel' style={{ position: 'absolute', opacity: 0, height: 0, overflow: 'hidden', whiteSpace: 'pre' }}><span className="text" ref={span}>{bufferKeyboard}</span></div>
+                        {keyboardShowInput ? <Input style={{ color: "#005092", width: inputWidth, marginLeft: 190 }} size='small' value={bufferKeyboard} bordered={false} /> : <Input.Password style={{ color: "#005092", width: inputWidth, marginLeft: 190 }} size='small' value={bufferKeyboard} bordered={false} visibilityToggle={false} />}
                       </Space>
                     }
                     placement="bottom"
@@ -285,13 +295,13 @@ const App: React.FC = () => {
                     maskStyle={{ backgroundColor: "inherit", opacity: 0 }}
                     maskClosable={true}
                     visible={showKeyboard}
-                    onClose={() => { setShowKeyboard(false) }}
+                    onClose={() => { setShowKeyboard(false); /*setBufferKeyboard(inputKeyboard);*/setBufferKeyboard(activeInput.input) }}
                     closeIcon={<CloseOutlined style={{ color: '#1890ff', fontSize: '150%' }} />}
                     headerStyle={{ padding: 0 }}
                     bodyStyle={{ margin: "0px", padding: "0px", background: '#E1F5FE' }}
                     extra={
                       <>
-                        {inputKeyboard && <Button style={{ width: 41 }} type="link" onClick={() => { setInputKeyboard(''); }} icon={<CloseCircleTwoTone style={{ fontSize: '130%' }} />}></Button>}
+                        {bufferKeyboard && <Button style={{ width: 41 }} type="link" onClick={() => { setBufferKeyboard(''); }} icon={<CloseCircleTwoTone style={{ fontSize: '130%' }} />}></Button>}
                         <Button style={{ width: 41 }} type="link" onClick={() => { setKeyboardShowInput(!keyboardShowInput); }} icon={keyboardShowInput ? <EyeTwoTone style={{ fontSize: '130%' }} /> : <EyeInvisibleOutlined style={{ fontSize: '130%' }} />}></Button>
                         <Button style={{ width: 41, color: "#1890ff", fontSize: '20px', padding: 0 }} type="link" onClick={() => { setKeyboardNum(!keyboardNum); }} >{keyboardNum ? 'ABC' : '123'}</Button>
                         <Select style={{ color: "#005092" }} value={keyboardLng} optionLabelProp="label" size="large" dropdownStyle={{ fontSize: '40px !important', zIndex: 2000 }} dropdownAlign={{ offset: [-45, 4] }} dropdownMatchSelectWidth={false} onChange={(val) => { setKeyboardLng(val); }} bordered={false} suffixIcon={<GlobalOutlined style={{ color: '#1890ff', fontSize: '130%' }} />}
@@ -316,7 +326,10 @@ const App: React.FC = () => {
                       physicalKeyboardHighlight={true}
                       physicalKeyboardHighlightPress={true}
                       onChange={(input) => {
-                        setInputKeyboard(input);
+                        setBufferKeyboard(input);
+                        if (activeInput.form == 'login' && activeInput.id == 'name') {
+                          setActiveInput({ ...activeInput, input: input })
+                        }
                       }}
                       display={{
                         '{bksp}': '🠔',

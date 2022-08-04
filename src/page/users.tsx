@@ -15,20 +15,14 @@ interface DataType {
 }
 
 type Props = {
-  setShowKeyboard: (val: boolean) => void;
-  inputKeyboard: string;
-  setInputKeyboard: (val: string) => void;
+  activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean };
+  setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean }) => void;
   token: any;
-  setKeyboardNum: (val: boolean) => void;
-  setKeyboardShowInput: (val: boolean) => void;
 };
 
 const Users: React.FC<Props> = ({
-  setShowKeyboard,
-  inputKeyboard,
-  setInputKeyboard,
-  setKeyboardNum,
-  setKeyboardShowInput,
+  activeInput,
+  setActiveInput,
   token
 }
 ) => {
@@ -190,8 +184,8 @@ const Users: React.FC<Props> = ({
           style={{ width: '100%' }}
           onChange={handleChange}
         />
-        <UserEditSA isModalVisible={editVisible} setIsModalVisible={setEditVisible} user={user} setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} setKeyboardNum={setKeyboardNum} setKeyboardShowInput={setKeyboardShowInput} />
-        <UserRegister isModalVisible={regVisible} setIsModalVisible={setRegVisible} setShowKeyboard={setShowKeyboard} inputKeyboard={inputKeyboard} setInputKeyboard={setInputKeyboard} token={token} setKeyboardNum={setKeyboardNum} setKeyboardShowInput={setKeyboardShowInput} />
+        <UserEditSA isModalVisible={editVisible} setIsModalVisible={setEditVisible} user={user} activeInput={activeInput} setActiveInput={setActiveInput} />
+        <UserRegister isModalVisible={regVisible} setIsModalVisible={setRegVisible} activeInput={activeInput} setActiveInput={setActiveInput} token={token} />
       </div>
     </div>
   )
