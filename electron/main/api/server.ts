@@ -77,8 +77,9 @@ const dbInit = async () => {
       else if (netResults['wlan0'] && netResults['wlan0'][0]) opIP = netResults['wlan0'][0]
       break;
     case 'win32':
-      if (netResults['Ethernet'] && netResults['Ethernet'][0]) opIP = netResults['Ethernet'][0]
-      else if (netResults[0] && netResults[0][0]) opIP = netResults[0][0]
+      if (netResults['Ethernet'] && netResults['Ethernet'][0]) {opIP = netResults['Ethernet'][0]}
+      else if (netResults[Object.keys(netResults)[0]]) {opIP = netResults[Object.keys(netResults)[0]][0]; console.log(opIP)}
+      else if (netResults[0] && netResults[0][0]) {opIP = netResults[0][0]; console.log(opIP)}
       break;
   }
   const ipConf = { opIP: opIP, plcIP1: "192.168.1.6", plcIP2: "192.168.1.7" }

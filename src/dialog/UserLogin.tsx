@@ -53,7 +53,7 @@ const UserLogin: React.FC<Props> = ({
         if (form && isModalVisible && activeInput.form == 'login') {
             if (activeInput.id == 'name') {
                 setSearch(activeInput.input);
-                if (search || activeInput.input) { setShowList(true) }
+                if (search || activeInput.input) { setShowList(true); }
             } else {
                 form.setFieldsValue({ [activeInput.id]: activeInput.input })
             }
@@ -134,7 +134,7 @@ const UserLogin: React.FC<Props> = ({
                         name="user"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Select showSearch open={showList} searchValue={search} onFocus={() => { if (!showList || (showList && search && !listNotEmpty)) { setActiveInput({ showKeyboard: true, num: false, showInput: true, form: 'login', id: 'name', input: search }) } else { setActiveInput({ ...activeInput, form: 'login', id: 'name', input: search }); } console.log('onFocus ' + activeInput); }} onSearch={(value) => { setSearch(value); setActiveInput({ ...activeInput, input: value }); }} onSelect={() => { setListNotEmpty(false); setShowList(false); setActiveInput({ ...activeInput, showKeyboard: false }); }}
+                        <Select showSearch open={showList} searchValue={search} onFocus={() => { if (!showList || (showList && search && !listNotEmpty)) { setActiveInput({ showKeyboard: true, num: false, showInput: true, form: 'login', id: 'name', input: search }) } else { setActiveInput({ ...activeInput, form: 'login', id: 'name', input: search }); } }} onSearch={(value) => { setSearch(value); setActiveInput({ ...activeInput, input: value }); }} onSelect={() => { setListNotEmpty(false); setShowList(false); setSearch(''); setActiveInput({ ...activeInput, showKeyboard: false, input: '' }); }}
                             filterOption={(input, option) => (option!.children as unknown as string).toLowerCase().includes(input.toLowerCase())} placeholder={t('user.user')} virtual={true} size="large" suffixIcon={<UserOutlined style={{ fontSize: '120%' }} />}>
                             {(state.data || []).map(user => (
                                 <Option key={user['name']} value={user['name']} label={user['name']} onMouseEnter={() => { setListNotEmpty(true) }}>
