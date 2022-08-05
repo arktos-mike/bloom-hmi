@@ -1,22 +1,8 @@
-import { Input, Modal, notification } from "antd";
-import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { Input, notification } from "antd";
 import { useTranslation } from 'react-i18next';
 
 const Component = (props: any) => {
     const { t } = useTranslation();
-    const confirm = (onOk: any) => {
-        Modal.confirm({
-            title: t('confirm.title'),
-            icon: <ExclamationCircleOutlined style={{ fontSize: "300%" }} />,
-            content: t('confirm.descr'),
-            okText: t('confirm.ok'),
-            cancelText: t('confirm.cancel'),
-            centered: true,
-            okButtonProps: { size: 'large', danger: true },
-            cancelButtonProps: { size: 'large' },
-            onOk: onOk,
-        });
-    };
     const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
         if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
             notification[type]({
