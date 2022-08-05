@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import logo from '/icon.svg'
 import 'styles/app.css'
-import { HashRouter, Route, Link, Routes, useLocation, Navigate } from 'react-router-dom';
+import { Route, Link, Routes, useLocation, Navigate } from 'react-router-dom';
 import { Layout, Menu, Select, Drawer, Button, Modal, Input, Form, Checkbox, notification, DatePicker, TimePicker, ConfigProvider, Breadcrumb, InputRef, Space } from 'antd';
 import { CloseCircleTwoTone, EyeTwoTone, EyeInvisibleOutlined, GlobalOutlined, CloseOutlined, ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, ToolOutlined, SettingOutlined, UserOutlined, LockOutlined, ApartmentOutlined, SendOutlined, AlertOutlined } from '@ant-design/icons';
 import { FabricPieceIcon } from "./components/Icons"
@@ -32,7 +32,7 @@ const App: React.FC = () => {
 
   const keyboardRef = useRef<KeyboardReactInterface | null>(null)
   const span = useRef<HTMLSpanElement | null>(null);
-
+  const location = useLocation();
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
     if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
       notification[type]({
@@ -114,6 +114,7 @@ const App: React.FC = () => {
   const [token, setToken] = useState<string | null>(null)
   const [remember, setRemember] = useState(true)
   const [today, setDate] = useState(new Date())
+  const [loc, setLoc] = useState('overview')
   const [visible, setVisible] = useState(false)
   const [userDialogVisible, setUserDialogVisible] = useState(false)
   const [layout, setLayout] = useState('default')
@@ -227,14 +228,13 @@ const App: React.FC = () => {
 
   return (
     <div>
-      <HashRouter>
         <ConfigProvider locale={i18n.language === 'en' ? enlocale : i18n.language === 'ru' ? rulocale : i18n.language === 'tr' ? trlocale : i18n.language === 'es' ? eslocale : enlocale}>
           <Layout className="layout">
             <Header style={{ position: 'fixed', zIndex: 1, width: '100%', padding: 0, display: 'inline-flex', justifyContent: "space-between" }}>
               <div className="logo" onClick={showDrawer}>
                 <img src={logo} className="applogo" alt=""></img>
               </div>
-              <Menu style={{ flex: 'auto', fontSize: '150%' }} theme='dark' mode="horizontal" selectedKeys={[location.hash == '#/' ? 'overview' : location.hash.split("/")[1]]} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == "sa" ? smallItemsSA : smallItems : smallItems}>
+              <Menu style={{ flex: 'auto', fontSize: '150%' }} theme='dark' mode="horizontal" selectedKeys={[location.pathname == '/' ? 'overview' : location.pathname.split("/").filter((item) => item)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == "sa" ? smallItemsSA : smallItems : smallItems}>
               </Menu>
               <div className="mode" style={{ backgroundColor: '#00000000' }}>
               </div>
@@ -266,7 +266,7 @@ const App: React.FC = () => {
                     style={{ position: 'absolute', }}
                     bodyStyle={{ margin: "0px", padding: "0px" }}
                   >
-                    <Menu style={{ fontSize: '150%' }} mode="inline" items={bigItems} selectedKeys={[location.hash == '#/' ? 'overview' : location.hash.split("/")[1]]} defaultSelectedKeys={['overview']}>
+                    <Menu style={{ fontSize: '150%' }} mode="inline" items={bigItems} selectedKeys={[location.pathname == '/' ? 'overview' : location.pathname.split("/").filter((item) => item)[0]]} defaultSelectedKeys={['overview']}>
                     </Menu>
                   </Drawer>
                   <Drawer
@@ -337,7 +337,6 @@ const App: React.FC = () => {
             </div>
           </Layout>
         </ConfigProvider>
-      </HashRouter >
     </div >
   )
 }
