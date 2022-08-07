@@ -9,8 +9,8 @@ type Props = {
     token: any;
     setToken: (val: any) => void;
     setIsModalVisible: (val: boolean) => void;
-    activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean };
-    setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean }) => void;
+    activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string };
+    setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string }) => void;
 };
 const UserEdit: React.FC<Props> = ({
     isModalVisible,
@@ -134,7 +134,7 @@ const UserEdit: React.FC<Props> = ({
                         name="user"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Input placeholder={t('user.user')} size="large" onChange={e => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e) => { setActiveInput({ showKeyboard: true, form: 'edit', id: 'user', num: false, showInput: true, input: e.target.value }); }} />
+                        <Input placeholder={t('user.user')} size="large" onChange={e => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e) => { setActiveInput({ showKeyboard: true, form: 'edit', id: 'user', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder }); }} />
                     </Form.Item>
 
                     <Form.Item
@@ -142,7 +142,7 @@ const UserEdit: React.FC<Props> = ({
                         name="email"
                         rules={[{ type: 'email', message: t('user.wrongemail') }, { required: false, message: t('user.fill') }]}
                     >
-                        <Input placeholder={t('user.email')} size="large" onChange={e => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e) => { setActiveInput({ showKeyboard: true, form: 'edit', id: 'email', num: false, showInput: true, input: e.target.value }); }} />
+                        <Input placeholder={t('user.email')} size="large" onChange={e => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e) => { setActiveInput({ showKeyboard: true, form: 'edit', id: 'email', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder }); }} />
                     </Form.Item>
 
                     <Form.Item
@@ -150,7 +150,7 @@ const UserEdit: React.FC<Props> = ({
                         name="phone"
                         rules={[{ required: false, message: t('user.fill') }]}
                     >
-                        <InputNumber addonBefore="+" placeholder={t('user.phone')} style={{ width: '100%' }} size="large" controls={false} onChange={value => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e) => { setActiveInput({ showKeyboard: true, form: 'edit', id: 'phone', num: true, showInput: true, input: e.target.value }) }} />
+                        <InputNumber addonBefore="+" placeholder={t('user.phone')} style={{ width: '100%' }} size="large" controls={false} onChange={value => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e) => { setActiveInput({ showKeyboard: true, form: 'edit', id: 'phone', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder }) }} />
                     </Form.Item>
 
                     <Form.Item
@@ -171,7 +171,7 @@ const UserEdit: React.FC<Props> = ({
                         name="oldpassword"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Input.Password visibilityToggle={true} placeholder={t('user.password')} size="large" prefix={<LockOutlined className="site-form-item-icon" />} onChange={e => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e) => { setActiveInput({ showKeyboard: true, form: 'edit', id: 'oldpassword', num: false, showInput: false, input: e.target.value }) }} />
+                        <Input.Password visibilityToggle={true} placeholder={t('user.password')} size="large" prefix={<LockOutlined className="site-form-item-icon" />} onChange={e => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e) => { setActiveInput({ showKeyboard: true, form: 'edit', id: 'oldpassword', num: false, showInput: false, input: e.target.value, descr: e.target.placeholder }) }} />
                     </Form.Item>
 
                     <Form.Item
@@ -179,7 +179,7 @@ const UserEdit: React.FC<Props> = ({
                         name="newpassword"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Input.Password visibilityToggle={true} placeholder={t('user.password')} size="large" prefix={<LockOutlined className="site-form-item-icon" />} onChange={e => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e) => { setActiveInput({ showKeyboard: true, form: 'edit', id: 'newpassword', num: false, showInput: false, input: e.target.value }) }} />
+                        <Input.Password visibilityToggle={true} placeholder={t('user.password')} size="large" prefix={<LockOutlined className="site-form-item-icon" />} onChange={e => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e) => { setActiveInput({ showKeyboard: true, form: 'edit', id: 'newpassword', num: false, showInput: false, input: e.target.value, descr: e.target.placeholder }) }} />
                     </Form.Item>
                     <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
                         <Button size="large" type="primary" htmlType="submit" >

@@ -15,8 +15,8 @@ interface DataType {
 }
 
 type Props = {
-  activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean };
-  setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean }) => void;
+  activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string };
+  setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string }) => void;
   token: any;
 };
 

@@ -139,6 +139,13 @@
   text-align: center;
 }
 
+.descr {
+  color: #A6ADB4;
+  font-size: medium;
+  text-align: center;
+  line-height:40px;
+}
+
 .mode {
   color: #ffffff !important;
   display: inline-flex;

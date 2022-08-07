@@ -13,8 +13,8 @@ type Props = {
     setToken: (val: any) => void;
     setRemember: (val: boolean) => void;
     setIsModalVisible: (val: boolean) => void;
-    activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean };
-    setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean }) => void;
+    activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string };
+    setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string }) => void;
 };
 
 const UserLogin: React.FC<Props> = ({
@@ -134,7 +134,7 @@ const UserLogin: React.FC<Props> = ({
                         name="user"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Select showSearch open={showList} searchValue={search} onFocus={() => { if (!showList || (showList && search && !listNotEmpty)) { setActiveInput({ showKeyboard: true, num: false, showInput: true, form: 'login', id: 'name', input: search }) } else { setActiveInput({ ...activeInput, form: 'login', id: 'name', input: search }); } }} onSearch={(value) => { setSearch(value); setActiveInput({ ...activeInput, input: value }); }} onSelect={() => { setListNotEmpty(false); setShowList(false); setSearch(''); setActiveInput({ ...activeInput, showKeyboard: false, input: '' }); }}
+                        <Select showSearch open={showList} searchValue={search} onFocus={() => { if (!showList || (showList && search && !listNotEmpty)) { setActiveInput({ showKeyboard: true, num: false, showInput: true, form: 'login', id: 'name', input: search, descr: t('user.user') }) } else { setActiveInput({ ...activeInput, form: 'login', id: 'name', input: search }); } }} onSearch={(value) => { setSearch(value); setActiveInput({ ...activeInput, input: value }); }} onSelect={() => { setListNotEmpty(false); setShowList(false); setSearch(''); setActiveInput({ ...activeInput, showKeyboard: false, input: '' }); }}
                             filterOption={(input, option) => (option!.children as unknown as string).toLowerCase().includes(input.toLowerCase())} placeholder={t('user.user')} virtual={true} size="large" suffixIcon={<UserOutlined style={{ fontSize: '120%' }} />}>
                             {(state.data || []).map(user => (
                                 <Option key={user['name']} value={user['name']} label={user['name']} onMouseEnter={() => { setListNotEmpty(true) }}>
@@ -148,7 +148,7 @@ const UserLogin: React.FC<Props> = ({
                         name="password"
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Input.Password onChange={e => { setActiveInput({ ...activeInput, input: e.target.value }); }} onFocus={(e) => { setActiveInput({ showKeyboard: true, form: 'login', id: 'password', num: false, showInput: false, input: e.target.value }) }} visibilityToggle={true} placeholder={t('user.password')} prefix={<LockOutlined className="site-form-item-icon" />} />
+                        <Input.Password onChange={e => { setActiveInput({ ...activeInput, input: e.target.value }); }} onFocus={(e) => { setActiveInput({ showKeyboard: true, form: 'login', id: 'password', num: false, showInput: false, input: e.target.value, descr: e.target.placeholder }) }} visibilityToggle={true} placeholder={t('user.password')} prefix={<LockOutlined className="site-form-item-icon" />} />
                     </Form.Item>
                     <Form.Item name="remember" valuePropName="checked" wrapperCol={{ offset: 8, span: 16 }}>
                         <Checkbox>{t('user.remember')}</Checkbox>

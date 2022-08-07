@@ -13,8 +13,8 @@ const { Option } = Select;
 
 type Props = {
   token: any;
-  activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean };
-  setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean }) => void;
+  activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string };
+  setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string }) => void;
 };
 
 const Settings: React.FC<Props> = ({
@@ -208,14 +208,14 @@ const Settings: React.FC<Props> = ({
                 label={t('ip.ip')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <InputNumber userRights={['sa', 'manager']} token={token} placeholder='ip.ip' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'ip', num: true, showInput: true, input: e.target.value }) }} />
+                <InputNumber userRights={['sa', 'manager']} token={token} placeholder='ip.ip' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'ip', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder }) }} />
               </Form.Item>
               <Form.Item
                 name="mask"
                 label={t('ip.mask')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <InputNumber userRights={['sa', 'manager']} token={token} placeholder='ip.mask' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'mask', num: true, showInput: true, input: e.target.value }) }} />
+                <InputNumber userRights={['sa', 'manager']} token={token} placeholder='ip.mask' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'mask', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder }) }} />
               </Form.Item>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
                 <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="ip.submit" />
