@@ -114,7 +114,6 @@ const App: React.FC = () => {
   const [token, setToken] = useState<string | null>(null)
   const [remember, setRemember] = useState(true)
   const [today, setDate] = useState(new Date())
-  const [loc, setLoc] = useState('overview')
   const [visible, setVisible] = useState(false)
   const [userDialogVisible, setUserDialogVisible] = useState(false)
   const [layout, setLayout] = useState('default')
@@ -204,7 +203,7 @@ const App: React.FC = () => {
   useEffect(() => {
     keyboardRef.current?.setInput(activeInput.input);
     setBufferKeyboard(activeInput.input);
-  }, [activeInput])
+  }, [activeInput.form,activeInput.id,activeInput.input])
 
   useEffect(() => {
     lngToLayout()
