@@ -127,6 +127,11 @@ const App: React.FC = () => {
     if (button === "{shift}" || button === "{lock}") handleShift();
     if (button === "{enter}") { setActiveInput({ ...activeInput, input: bufferKeyboard, showKeyboard: false }); }
   };
+  const onKeyReleased = (button: string) => {
+    if (activeInput.num && button === "-") {
+      bufferKeyboard.charAt(0) == '-' ? setBufferKeyboard(bufferKeyboard.substring(1).slice(0,-1)) : setBufferKeyboard('-' + bufferKeyboard.slice(0,-1))
+    }
+  };
 
   const showDrawer = () => {
     setVisible(!visible);
@@ -315,6 +320,7 @@ const App: React.FC = () => {
                     theme={activeInput.num ? "numericTheme" : "hg-theme-default"}
                     layoutName={layout}
                     onKeyPress={onKeyPress}
+                    onKeyReleased={onKeyReleased}
                     physicalKeyboardHighlight={true}
                     physicalKeyboardHighlightPress={true}
                     onChange={(input) => {
@@ -323,12 +329,7 @@ const App: React.FC = () => {
                         setActiveInput({ ...activeInput, input: input })
                       }
                     }}
-                    display={{
-                      '{bksp}': '🠔',
-                      '{enter}': '⤶',
-                      '{lock}': '⇧',
-                      '{space}': '﹈',
-                    }}
+                    display={activeInput.num ? { '-': '+/-', '{bksp}': '🠔', '{enter}': '⤶', '{lock}': '⇧', '{space}': '﹈', } : { '{bksp}': '🠔', '{enter}': '⤶', '{lock}': '⇧', '{space}': '﹈', }}
                     excludeFromLayout={{
                       default: [".com", "{tab}", "{shift}"], shift: [".com", "{tab}", "{shift}"]
                     }}
