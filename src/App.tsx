@@ -106,11 +106,12 @@ const App: React.FC = () => {
     );
   }
   const [inputWidth, setInputWidth] = useState<number | undefined>(0)
-  const [activeInput, setActiveInput] = useState({ form: '', id: '', num: false, showInput: true, input: '', showKeyboard: false, descr: '' })
+  const [activeInput, setActiveInput] = useState({ form: '', id: '', num: false, showInput: true, input: '', showKeyboard: false, descr: '', pattern: 'default' })
   const [keyboardLayout, setKeyboardLayout] = useState(enlayout.layout)
   const [keyboardLng, setKeyboardLng] = useState('en')
   const [keyboardCollapse, setKeyboardCollapse] = useState(false)
   const [bufferKeyboard, setBufferKeyboard] = useState('')
+  const [bufferTemp, setBufferTemp] = useState('')
   const [lngs, setLngs] = useState({ data: [] })
   const [token, setToken] = useState<string | null>(null)
   const [remember, setRemember] = useState(true)
@@ -126,10 +127,13 @@ const App: React.FC = () => {
   const onKeyPress = (button: string) => {
     if (button === "{shift}" || button === "{lock}") handleShift();
     if (button === "{enter}") { setActiveInput({ ...activeInput, input: bufferKeyboard, showKeyboard: false }); }
+    if (['default', 'float', 'dec-'].includes(activeInput.pattern) && activeInput.num && button === "-") {
+      bufferKeyboard.charAt(0) == '-' ? setBufferTemp(bufferKeyboard.substring(1)) : setBufferTemp(bufferKeyboard)
+    }
   };
   const onKeyReleased = (button: string) => {
-    if (activeInput.num && button === "-") {
-      bufferKeyboard.charAt(0) == '-' ? setBufferKeyboard(bufferKeyboard.substring(1).slice(0,-1)) : setBufferKeyboard('-' + bufferKeyboard.slice(0,-1))
+    if (['default', 'float', 'dec-'].includes(activeInput.pattern) && activeInput.num && button === "-") {
+      bufferKeyboard.charAt(0) == '-' ? setBufferKeyboard(bufferTemp) : setBufferKeyboard('-' + bufferTemp)
     }
   };
 
@@ -333,6 +337,18 @@ const App: React.FC = () => {
                     excludeFromLayout={{
                       default: [".com", "{tab}", "{shift}"], shift: [".com", "{tab}", "{shift}"]
                     }}
+                    inputName={activeInput.pattern}
+                    inputPattern={{
+                      'default': /.*/,
+                      'username': /^[\p{L}\s]*$/gu,
+                      'phonenumber': /^[0-9]{1,15}$/,
+                      'email': /^[a-zA-Z0-9.!@#$%&’*+/=?^_`{|}~-]*$/,
+                      'float': /[+-]?([0-9\.\,])+/,
+                      'ip': /^[0-9\.]{1,15}$/,
+                      'dec-': /^-?(0|[1-9]\d*)$/,
+                      'dec+': /^(0|[1-9]\d*)$/,
+                    }
+                    }
                   />
                 </Drawer>
               </div>
