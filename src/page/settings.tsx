@@ -1,7 +1,7 @@
 import { Card, Col, Form, notification, Row, Select, } from 'antd';
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next';
-import { DesktopOutlined, DeploymentUnitOutlined, BorderlessTableOutlined, GlobalOutlined, CalendarOutlined, ClockCircleOutlined, SyncOutlined } from '@ant-design/icons';
+import { DesktopOutlined, WifiOutlined, GlobalOutlined, CalendarOutlined, ClockCircleOutlined, SyncOutlined } from '@ant-design/icons';
 import { DatePicker, TimePicker, Button, InputNumber, } from '../components';
 import format from 'dayjs';
 import dayjs from 'dayjs';
@@ -38,7 +38,7 @@ const Settings: React.FC<Props> = ({
 
   const [form] = Form.useForm()
   const [formIP] = Form.useForm()
-  const [opIP, setOpIP] = useState({ address: '', netmask: '', mac: '' })
+  const [opIP, setOpIP] = useState({ name: '', type: '', ip_address: '', netmask: '', gateway_ip: '', mac_address: '' })
   const [lngs, setLngs] = useState({ data: [] })
   const [today, setDate] = useState(new Date())
 
@@ -99,12 +99,12 @@ const Settings: React.FC<Props> = ({
     catch (error) { console.log(error) }
   }
 
-  const onIPChange = async (values: { ip: any; mask: any; }) => {
+  const onIPChange = async (values: { ip: any; mask: any; gw: any; }) => {
     try {
       const response = await fetch('http://localhost:3000/config/update', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
-        body: JSON.stringify({ opIP: { address: values.ip, netmask: values.mask } }),
+        body: JSON.stringify({ opIP: { ip_address: values.ip, netmask: values.mask, gateway_ip: values.gw } }),
       });
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
@@ -147,7 +147,7 @@ const Settings: React.FC<Props> = ({
 
   useEffect(() => {
     if (formIP) {
-      formIP.setFieldsValue({ ip: opIP.address, mask: opIP.netmask })
+      formIP.setFieldsValue({ ip: opIP.ip_address, mask: opIP.netmask, gw: opIP.gateway_ip })
     }
   }, [opIP])
 
@@ -194,14 +194,8 @@ const Settings: React.FC<Props> = ({
               preserve={false}
               colon={false}
             >
-              <Form.Item label={<DesktopOutlined style={{ fontSize: '130%' }} />} >
-                <span style={{ fontSize: '20px' }}>{opIP?.address}</span>
-              </Form.Item>
-              <Form.Item label={<DeploymentUnitOutlined style={{ fontSize: '130%' }} />} >
-                <span style={{ fontSize: '20px' }}>{opIP?.netmask}</span>
-              </Form.Item>
-              <Form.Item label={<BorderlessTableOutlined style={{ fontSize: '130%' }} />} >
-                <span style={{ fontSize: '20px' }}>{opIP?.mac}</span>
+              <Form.Item label={opIP.type == "Wireless" ? <WifiOutlined style={{ fontSize: '130%' }} /> : <DesktopOutlined style={{ fontSize: '130%' }} />} >
+                <span style={{ fontSize: '20px' }}>{opIP.mac_address + " " + opIP.name + " " + opIP.ip_address + " " + opIP.netmask + " " + opIP.gateway_ip}</span>
               </Form.Item>
               <Form.Item
                 name="ip"
@@ -216,6 +210,13 @@ const Settings: React.FC<Props> = ({
                 rules={[{ required: true, message: t('user.fill') }]}
               >
                 <InputNumber userRights={['sa', 'manager']} token={token} placeholder='ip.mask' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'mask', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+              </Form.Item>
+              <Form.Item
+                name="gw"
+                label={t('ip.gw')}
+                rules={[{ required: true, message: t('user.fill') }]}
+              >
+                <InputNumber userRights={['sa', 'manager']} token={token} placeholder='ip.gw' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'gw', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
               </Form.Item>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
                 <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="ip.submit" />

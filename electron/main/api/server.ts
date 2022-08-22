@@ -6,7 +6,7 @@ import mountRoutes from './routes'
 import db from '../db'
 import * as bcrypt from 'bcrypt';
 import createTableText from './createdb'
-import { networkInterfaces } from 'os'
+import network from 'network'
 import { SerialPort } from 'serialport'
 import ModbusRTU from 'modbus-serial'
 const client1 = new ModbusRTU();
@@ -57,32 +57,11 @@ let com2 = { path: '', conf: {}, scan: 0, timeout: 0, mbsState: MBS_STATE_STEADY
 const dbInit = async () => {
   // create table
   await db.query(createTableText)
-  const nets:any = networkInterfaces();
-  const netResults = {};
-  for (const name of Object.keys(nets)) {
-    for (const net of nets[name]) {
-      // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
-      if (net.family === 'IPv4' && !net.internal) {
-        if (!netResults[name]) {
-          netResults[name] = [];
-        }
-        netResults[name].push(net);
-      }
-    }
-  }
-  let opIP
-  switch (process.platform) {
-    case 'linux':
-      if (netResults['eth0'] && netResults['eth0'][0]) opIP = netResults['eth0'][0]
-      else if (netResults['wlan0'] && netResults['wlan0'][0]) opIP = netResults['wlan0'][0]
-      break;
-    case 'win32':
-      if (netResults['Ethernet'] && netResults['Ethernet'][0]) {opIP = netResults['Ethernet'][0]}
-      else if (netResults[Object.keys(netResults)[0]]) {opIP = netResults[Object.keys(netResults)[0]][0]; console.log(opIP)}
-      else if (netResults[0] && netResults[0][0]) {opIP = netResults[0][0]; console.log(opIP)}
-      break;
-  }
-  const ipConf = { opIP: opIP, plcIP1: "192.168.1.6", plcIP2: "192.168.1.7" }
+  await network.get_active_interface(async function (err, obj) {
+    const ipConf = { opIP: obj, plcIP1: "192.168.1.6", plcIP2: "192.168.1.7" }
+    await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
+  })
+
   await SerialPort.list().then(async function (ports) {
     if (ports[0] !== undefined) { com1.path = ports[0].path; } //else { com1.path = "COM3"; }
     if (ports[1] !== undefined) { com2.path = ports[1].path; } //else { com2.path = "COM3"; }
@@ -105,7 +84,7 @@ const dbInit = async () => {
       { self: "Русский", menu: { overview: "ОБЗОР", settings: "НАСТРОЙКИ", system: "СОЕДИНЕНИЯ", alarms: "АВАРИИ" }, notifications: { idle: "Пользователь неактивен" }, footer: "© ТЕХМАШХОЛДИНГ г.Чебоксары" },
       { self: "Türkçe", menu: { overview: "GENEL", settings: "AYARLAR", system: "BAĞLANTILAR", alarms: "ALARMLAR" }, notifications: { idle: "Kullanıcı etkin değil" }, footer: "© TEHMASHHOLDİNG Cheboksary, Rusya Federasyonu" },
     ]
-    await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
+
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['rtuConf', rtuConf])
     await db.query('INSERT INTO tags SELECT * FROM UNNEST($1::jsonb[]) ON CONFLICT (tag) DO NOTHING;', [tags])
