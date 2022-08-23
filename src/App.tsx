@@ -8,6 +8,7 @@ import { FabricPieceIcon } from "./components/Icons"
 import { useIdleTimer } from 'react-idle-timer'
 import Overview from "./page/overview";
 import Settings from "./page/settings";
+import SettingsDev from "./page/settings_dev";
 import Users from "./page/users";
 import UserLogin from "./dialog/UserLogin";
 import './i18n/config';
@@ -263,7 +264,7 @@ const App: React.FC = () => {
               <div className="site-layout-content">
                 <Routes>
                   <Route index element={<Overview />} />
-                  <Route path={'/settings'} element={<Settings token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
+                  <Route path={'/settings'} element={<SettingsDev token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
                   <Route path={'/users'} element={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == "sa" ? <Users activeInput={activeInput} setActiveInput={setActiveInput} token={token} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>

@@ -20,7 +20,7 @@ const Component = (props: any) => {
                 addonBefore={props.descr ? props.tag === null ? props.descr : t('tags.' + props.tag?.name.replace(/[0-9]/g, '') + '.descr') : null}
                 addonAfter={props.eng ? props.tag === null ? props.eng : t('tags.' + props.tag?.name.replace(/[0-9]/g, '') + '.eng') : null}
                 prefix={props.prefix}
-                value={props.tag ? props.tag?.val : props.value}
+                value={props.tag?.val ? props.tag?.val : props.value}
                 placeholder={t(props.placeholder)}
                 style={{ width: "100%", textAlign: "right" }}
                 disabled
@@ -33,7 +33,7 @@ const Component = (props: any) => {
                 addonBefore={props.descr ? props.tag === null ? props.descr : t('tags.' + props.tag?.name.replace(/[0-9]/g, '') + '.descr') : null}
                 addonAfter={props.eng ? props.tag === null ? props.eng : t('tags.' + props.tag?.name.replace(/[0-9]/g, '') + '.eng') : null}
                 prefix={props.prefix}
-                value={props.tag ? props.tag?.val : props.value}
+                value={props.tag?.val ? props.tag?.val : props.value}
                 placeholder={t(props.placeholder)}
                 onChange={props.onChange}
                 onFocus={props.onFocus}

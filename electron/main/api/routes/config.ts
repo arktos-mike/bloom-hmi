@@ -38,37 +38,78 @@ router.get('/', async (req, res) => {
 })
 
 router.post('/update', async (req, res) => {
-    const { opIP } = req.body;
     try {
-        await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, address}', '"' + opIP.ip_address + '"']);
-        await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, netmask}', '"' + opIP.netmask + '"']);
+        if (req.body.opIP) {
 
-        switch (process.platform) {
-            case 'linux':
-                sudo.exec("ip addr flush dev eth0 && ifconfig eth0 " + opIP.ip_address + " netmask " + opIP.netmask + " && ip route add default via " + opIP.gateway_ip + " dev eth0", options, (error, data, getter) => {
-                    if (!error) {
-                        res.status(200).json({
-                            message: "notifications.confupdate",
-                        });
-                    }
-                });
-                break;
-            case 'win32':
-                console.log(maskToPrefixLength(opIP.netmask))
-                sudo.exec("powershell -command \"Remove-NetIPAddress -InterfaceAlias Ethernet -Confirm:$false; Remove-NetRoute -InterfaceAlias Ethernet -Confirm:$false; New-NetIPAddress -InterfaceAlias Ethernet -AddressFamily IPv4 " + opIP.ip_address + " -PrefixLength " + maskToPrefixLength(opIP.netmask) + " -DefaultGateway " + opIP.gateway_ip + " -Type Unicast  -Confirm:$false\"", options, (error, data, getter) => {
-                    if (!error) {
-                        res.status(200).json({
-                            message: "notifications.confupdate",
-                        });
-                    }
-                    else {
-                        res.status(500).json({
-                            error: "Could not change opIP",
-                            message: "notifications.servererror",
-                        });
-                    }
-                });
-                break;
+            const { opIP } = req.body;
+
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, address}', '"' + opIP.ip_address + '"']);
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, netmask}', '"' + opIP.netmask + '"']);
+
+            switch (process.platform) {
+                case 'linux':
+                    sudo.exec("ip addr flush dev eth0 && ifconfig eth0 " + opIP.ip_address + " netmask " + opIP.netmask + " && ip route add default via " + opIP.gateway_ip + " dev eth0", options, (error, data, getter) => {
+                        if (!error) {
+                            res.status(200).json({
+                                message: "notifications.confupdate",
+                            });
+                        }
+                    });
+                    break;
+                case 'win32':
+                    console.log(maskToPrefixLength(opIP.netmask))
+                    sudo.exec("powershell -command \"Remove-NetIPAddress -InterfaceAlias Ethernet -Confirm:$false; Remove-NetRoute -InterfaceAlias Ethernet -Confirm:$false; New-NetIPAddress -InterfaceAlias Ethernet -AddressFamily IPv4 " + opIP.ip_address + " -PrefixLength " + maskToPrefixLength(opIP.netmask) + " -DefaultGateway " + opIP.gateway_ip + " -Type Unicast  -Confirm:$false\"", options, (error, data, getter) => {
+                        if (!error) {
+                            res.status(200).json({
+                                message: "notifications.confupdate",
+                            });
+                        }
+                        else {
+                            res.status(500).json({
+                                error: "Could not change opIP",
+                                message: "notifications.servererror",
+                            });
+                        }
+                    });
+                    break;
+            }
+        }
+        else if (req.body.opCOM1) {
+
+            const { opCOM1 } = req.body;
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM1, path}', '"' + opCOM1.path + '"']);
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM1, scan}', opCOM1.scan]);
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM1, timeout}', opCOM1.timeout]);
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM1, conf, baudRate}', opCOM1.conf.baudRate]);
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM1, conf, dataBits}', '"' + opCOM1.conf.dataBits]);
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM1, conf, stopBits}', opCOM1.conf.stopBits]);
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM1, conf, parity}', '"' + opCOM1.conf.parity + '"']);
+            res.status(200).json({
+                message: "notifications.confupdate",
+            });
+        }
+        else if (req.body.opCOM2) {
+            const { opCOM2 } = req.body;
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM2, path}', '"' + opCOM2.path + '"']);
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM2, scan}', opCOM2.scan]);
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM2, timeout}', opCOM2.timeout]);
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM2, conf, baudRate}', opCOM2.conf.baudRate]);
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM2, conf, dataBits}', opCOM2.conf.dataBits]);
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM2, conf, stopBits}', opCOM2.conf.stopBits]);
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM2, conf, parity}', '"' + opCOM2.conf.parity + '"']);
+            res.status(200).json({
+                message: "notifications.confupdate",
+            });
+        }
+        else if (req.body.rtu1) {
+            const { rtu1 } = req.body;
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['rtuConf', '{rtu1, com}', '"' + rtu1.com + '"']);
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['rtuConf', '{rtu1, sId}', rtu1.sId]);
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['rtuConf', '{rtu1, swapBytes}', rtu1.swapBytes]);
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['rtuConf', '{rtu1, swapWords}', rtu1.swapWords]);
+            res.status(200).json({
+                message: "notifications.confupdate",
+            });
         }
     }
     catch (err) {
