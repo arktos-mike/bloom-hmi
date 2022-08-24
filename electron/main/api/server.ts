@@ -3,6 +3,7 @@ dotenv.config()
 import cors from 'cors'
 import express from 'express'
 import mountRoutes from './routes'
+import {updFlag,resetFlag} from './routes'
 import db from '../db'
 import * as bcrypt from 'bcrypt';
 import createTableText from './createdb'
@@ -66,7 +67,7 @@ const dbInit = async () => {
     if (ports[0] !== undefined) { com1.path = ports[0].path; } //else { com1.path = "COM3"; }
     if (ports[1] !== undefined) { com2.path = ports[1].path; } //else { com2.path = "COM3"; }
     const comConf = { opCOM1: { path: com1.path, conf: { baudRate: 115200, parity: "none", dataBits: 8, stopBits: 1 }, scan: 1000, timeout: 0 }, opCOM2: { path: "COM3", conf: { baudRate: 115200, parity: "none", dataBits: 8, stopBits: 1 }, scan: 1000, timeout: 0 } }
-    const rtuConf = { rtu1: { com: 'opCOM2', sId: 1, swapBytes: true, swapWords: true }, rtu2: { com: 'opCOM2', sId: 2, swapBytes: true, swapWords: true } }
+    const rtuConf = { rtu1: { com: 'opCOM2', sId: 1, swapBytes: true, swapWords: true } }
     const tags = [
       { name: "picksLastRun", group: "monitoring", dev: "rtu1", addr: "0", type: "dword", reg: "r", min: 0, max: 4294967295, dec: 0 },
       { name: "speedMainDrive", group: "monitoring", dev: "rtu1", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 },
@@ -120,7 +121,6 @@ const dbInit = async () => {
   });
 }
 dbInit();
-
 //==============================================================
 const connectClient = async function (client, port) {
   // set requests parameters
@@ -382,6 +382,11 @@ const runModbus = async function (client, port) {
   if (port.act === port.slaves.length) {
     port.act = 0;
   }
+  console.log(updFlag)
+  try {
+  if (updFlag) {await client.close(()=>{});await dbInit();resetFlag();}
+  }
+  catch{}
   await delay(port.scan);
   runModbus(client, port);
 };

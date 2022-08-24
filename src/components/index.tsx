@@ -8,3 +8,4 @@ export { default as InputPassword } from './InputPassword';
 export { default as Checkbox } from './Checkbox';
 export { default as Options } from './Options';
 export { default as Display } from './Display';
+export { default as Select } from './Select';

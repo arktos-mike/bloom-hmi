@@ -17,7 +17,7 @@ type Props = {
   setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string }) => void;
 };
 
-const Settings: React.FC<Props> = ({
+const SettingsOp: React.FC<Props> = ({
   token,
   activeInput,
   setActiveInput,
@@ -247,7 +247,7 @@ const Settings: React.FC<Props> = ({
                 label={t('time.date')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <DatePicker size="large" style={{ width: '100%' }} format='L' />
+                <DatePicker userRights={['sa', 'manager']} token={token} />
               </Form.Item>
 
               <Form.Item
@@ -255,7 +255,7 @@ const Settings: React.FC<Props> = ({
                 label={t('time.time')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <TimePicker size="large" style={{ width: '100%' }} />
+                <TimePicker userRights={['sa', 'manager']} token={token} />
               </Form.Item>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
                 <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="time.submit" />
@@ -268,4 +268,4 @@ const Settings: React.FC<Props> = ({
   )
 }
 
-export default Settings
+export default SettingsOp

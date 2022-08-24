@@ -4,6 +4,10 @@ import sudo from 'sudo-prompt'
 const options = {
     name: 'Electron',
 };
+export let updFlag = false;
+export const resetFlag =  () => {
+    updFlag = false;
+}
 // create a new express-promise-router
 // this has the same API as the normal express router except
 // it allows you to use async functions as route handlers
@@ -107,6 +111,7 @@ router.post('/update', async (req, res) => {
             await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['rtuConf', '{rtu1, sId}', rtu1.sId]);
             await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['rtuConf', '{rtu1, swapBytes}', rtu1.swapBytes]);
             await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['rtuConf', '{rtu1, swapWords}', rtu1.swapWords]);
+            updFlag = true;
             res.status(200).json({
                 message: "notifications.confupdate",
             });

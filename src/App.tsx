@@ -7,7 +7,7 @@ import { CloseCircleTwoTone, EyeTwoTone, EyeInvisibleOutlined, GlobalOutlined, C
 import { FabricPieceIcon } from "./components/Icons"
 import { useIdleTimer } from 'react-idle-timer'
 import Overview from "./page/overview";
-import Settings from "./page/settings";
+import SettingsOp from "./page/settings_op";
 import SettingsDev from "./page/settings_dev";
 import Users from "./page/users";
 import UserLogin from "./dialog/UserLogin";
@@ -222,16 +222,14 @@ const App: React.FC = () => {
 
   const smallItems = [
     { label: <Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'overview' },
-    { label: <Link to="/settings"><SettingOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'settings' },
   ];
   const smallItemsSA = [
     { label: <Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'overview' },
-    { label: <Link to="/settings"><SettingOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'settings' },
     { label: <Link to="/users"><TeamOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'users' },
   ];
   const bigItems = [
     { label: <Link onClick={showDrawer} to="/">{t('menu.overview')}</Link>, title: '', key: 'overview', icon: <EyeOutlined style={{ fontSize: '100%' }} /> },
-    { label: <Link onClick={showDrawer} to="/settings">{t('menu.settings')}</Link>, title: '', key: 'settings', icon: <SettingOutlined style={{ fontSize: '100%' }} /> },
+    { label: t('menu.settings'), title: '', key: 'settings', icon: <SettingOutlined style={{ fontSize: '100%' }} />, children: [{ label: <Link onClick={showDrawer} to="/settings/settingsOp">{t('menu.settingsOp')}</Link>, title: '', key: 'settingsOp', }, { label: <Link onClick={showDrawer} to="/settings/settingsDev">{t('menu.settingsDev')}</Link>, title: '', key: 'settingsDev', }] },
     { label: <Link onClick={showDrawer} to="/alarms">{t('menu.alarms')}</Link>, title: '', key: 'alarms', icon: <AlertOutlined style={{ fontSize: '100%' }} /> },
     { label: <Link onClick={showDrawer} to="/system">{t('menu.system')}</Link>, title: '', key: 'system', icon: <FabricPieceIcon style={{ fontSize: '110%' }} /> },
   ];
@@ -264,7 +262,8 @@ const App: React.FC = () => {
               <div className="site-layout-content">
                 <Routes>
                   <Route index element={<Overview />} />
-                  <Route path={'/settings'} element={<SettingsDev token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
+                  <Route path={'/settings/settingsOp'} element={<SettingsOp token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
+                  <Route path={'/settings/settingsDev'} element={<SettingsDev token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
                   <Route path={'/users'} element={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == "sa" ? <Users activeInput={activeInput} setActiveInput={setActiveInput} token={token} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>

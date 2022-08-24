@@ -1,9 +1,6 @@
-import { Dayjs } from 'dayjs';
-import dayjsGenerateConfig from 'rc-picker/lib/generate/dayjs';
-import generatePicker from 'antd/es/date-picker/generatePicker';
-import { notification } from "antd";
+import { Select, notification } from "antd";
 import { useTranslation } from 'react-i18next';
-const DatePicker = generatePicker<Dayjs>(dayjsGenerateConfig);
+
 const Component = (props: any) => {
     const { t } = useTranslation();
     const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
@@ -16,13 +13,25 @@ const Component = (props: any) => {
                 style: style,
             });
     }
+
     if (props.userRights && (props.token ? props.userRights.includes(JSON.parse(Buffer.from(props.token.split('.')[1], 'base64').toString()).role) ? false : true : true)) {
         return (<div style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => { openNotificationWithIcon('error', t('notifications.rightserror'), 2); }}>
-            <DatePicker disabled size="large" style={{ width: '100%' }} format='L' />
+            <Select size="large" className="narrow"
+                value={props.tag?.val ? props.tag?.val : props.value}
+                options={props.options}
+                disabled
+            />
         </div>);
     }
     return (
-        <DatePicker size="large" style={{ width: '100%' }} format='L' />
+        <div style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Select size="large" className="narrow"
+                value={props.tag?.val ? props.tag?.val : props.value}
+                onChange={props.onChange}
+                options={props.options}
+            />
+        </div>
     );
+
 }
 export default Component;
