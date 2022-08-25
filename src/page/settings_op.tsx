@@ -177,7 +177,7 @@ const SettingsOp: React.FC<Props> = ({
         </Col>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('panel.actions')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
-            <Button confirm userRights={['fixer', 'sa', 'manager']} token={token} onClick={onReboot} icon={<SyncOutlined style={{ fontSize: '200%' }} />} text="system.reboot" />
+            <Button confirm userRights={['fixer', 'admin', 'manager']} token={token} onClick={onReboot} icon={<SyncOutlined style={{ fontSize: '200%' }} />} text="system.reboot" />
           </Card>
         </Col>
       </Row>
@@ -202,24 +202,24 @@ const SettingsOp: React.FC<Props> = ({
                 label={t('ip.ip')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <InputNumber userRights={['sa', 'manager']} token={token} placeholder='ip.ip' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'ip', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                <InputNumber userRights={['admin', 'manager']} token={token} placeholder='ip.ip' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'ip', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
               </Form.Item>
               <Form.Item
                 name="mask"
                 label={t('ip.mask')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <InputNumber userRights={['sa', 'manager']} token={token} placeholder='ip.mask' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'mask', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                <InputNumber userRights={['admin', 'manager']} token={token} placeholder='ip.mask' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'mask', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
               </Form.Item>
               <Form.Item
                 name="gw"
                 label={t('ip.gw')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <InputNumber userRights={['sa', 'manager']} token={token} placeholder='ip.gw' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'gw', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                <InputNumber userRights={['admin', 'manager']} token={token} placeholder='ip.gw' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'gw', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
               </Form.Item>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="user.submit" />
+                <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
               </Form.Item>
             </Form>
           </Card>
@@ -247,7 +247,7 @@ const SettingsOp: React.FC<Props> = ({
                 label={t('time.date')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <DatePicker userRights={['sa', 'manager']} token={token} />
+                <DatePicker userRights={['admin', 'manager']} token={token} />
               </Form.Item>
 
               <Form.Item
@@ -255,10 +255,10 @@ const SettingsOp: React.FC<Props> = ({
                 label={t('time.time')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <TimePicker userRights={['sa', 'manager']} token={token} />
+                <TimePicker userRights={['admin', 'manager']} token={token} />
               </Form.Item>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="time.submit" />
+                <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="time.submit" />
               </Form.Item>
             </Form>
           </Card>

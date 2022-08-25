@@ -145,11 +145,11 @@ const UserEditSA: React.FC<Props> = ({
                         label={t('user.role')}
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
-                        <Select disabled={user.role == 'sa' ? true : false} >
+                        <Select disabled={user.role == 'admin' ? true : false} >
                             <Option value="weaver">{t('user.weaver')}</Option>
                             <Option value="fixer">{t('user.fixer')}</Option>
                             <Option value="manager">{t('user.manager')}</Option>
-                            <Option value="sa">{t('user.admin')}</Option>
+                            <Option value='admin'>{t('user.admin')}</Option>
                         </Select>
                     </Form.Item>
 

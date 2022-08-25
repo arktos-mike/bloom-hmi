@@ -180,28 +180,28 @@ const SettingsDev: React.FC<Props> = ({
                 label={t('com.path')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <Input className="narrow" userRights={['sa', 'manager']} token={token} placeholder='com.path' style={{ width: '100%' }} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'com', id: 'path', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'default' }) }} />
+                <Input className="narrow" userRights={['admin', 'manager']} token={token} placeholder='com.path' style={{ width: '100%' }} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'com', id: 'path', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'default' }) }} />
               </Form.Item>
               <Form.Item
                 name="scan"
                 label={t('com.scan')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <InputNumber className="narrow" eng tag={{ name: 'comTime' }} userRights={['sa', 'manager']} token={token} placeholder='com.scan' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'com', id: 'scan', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
+                <InputNumber className="narrow" eng tag={{ name: 'comTime' }} userRights={['admin', 'manager']} token={token} placeholder='com.scan' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'com', id: 'scan', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
               </Form.Item>
               <Form.Item
                 name="timeout"
                 label={t('com.timeout')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <InputNumber className="narrow" eng tag={{ name: 'comTime' }} userRights={['sa', 'manager']} token={token} placeholder='com.timeout' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'com', id: 'timeout', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
+                <InputNumber className="narrow" eng tag={{ name: 'comTime' }} userRights={['admin', 'manager']} token={token} placeholder='com.timeout' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'com', id: 'timeout', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
               </Form.Item>
               <Form.Item
                 name="baudRate"
                 label={t('com.baudRate')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <Select userRights={['sa', 'manager']} token={token} options={[{ label: 9600, value: 9600 }, { label: 19200, value: 19200 }, { label: 38400, value: 38400 }, { label: 57600, value: 57600 }, { label: 115200, value: 115200 }, { label: 230400, value: 230400 },]
+                <Select userRights={['admin', 'manager']} token={token} options={[{ label: 9600, value: 9600 }, { label: 19200, value: 19200 }, { label: 38400, value: 38400 }, { label: 57600, value: 57600 }, { label: 115200, value: 115200 }, { label: 230400, value: 230400 },]
                 }>
                 </Select>
               </Form.Item>
@@ -210,24 +210,24 @@ const SettingsDev: React.FC<Props> = ({
                 label={t('com.dataBits')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <Select userRights={['sa', 'manager']} token={token} options={[{ label: 5, value: 5 }, { label: 6, value: 6 }, { label: 7, value: 7 }, { label: 8, value: 8 }]} />
+                <Select userRights={['admin', 'manager']} token={token} options={[{ label: 5, value: 5 }, { label: 6, value: 6 }, { label: 7, value: 7 }, { label: 8, value: 8 }]} />
               </Form.Item>
               <Form.Item
                 name="stopBits"
                 label={t('com.stopBits')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <Select userRights={['sa', 'manager']} token={token} options={[{ label: 1, value: 1 }, { label: 1.5, value: 1.5 }, { label: 2, value: 2 }]} />
+                <Select userRights={['admin', 'manager']} token={token} options={[{ label: 1, value: 1 }, { label: 1.5, value: 1.5 }, { label: 2, value: 2 }]} />
               </Form.Item>
               <Form.Item
                 name="parity"
                 label={t('com.parity.parity')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <Select userRights={['sa', 'manager']} token={token} options={[{ label: t('com.parity.none'), value: "none" }, { label: t('com.parity.even'), value: "even" }, { label: t('com.parity.mark'), value: "mark" }, { label: t('com.parity.odd'), value: "odd" }, { label: t('com.parity.space'), value: "space" }]} />
+                <Select userRights={['admin', 'manager']} token={token} options={[{ label: t('com.parity.none'), value: "none" }, { label: t('com.parity.even'), value: "even" }, { label: t('com.parity.mark'), value: "mark" }, { label: t('com.parity.odd'), value: "odd" }, { label: t('com.parity.space'), value: "space" }]} />
               </Form.Item>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="user.submit" />
+                <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
               </Form.Item>
             </Form>
           </Card>
@@ -251,7 +251,7 @@ const SettingsDev: React.FC<Props> = ({
                   style={{ display: 'inline-block', width: 'calc(50% - 8px)' }}
                   rules={[{ required: true, message: t('user.fill') }]}
                 >
-                  <Select userRights={['sa', 'manager']} token={token} options={[{ label: "COM1", value: "opCOM1" }, { label: "COM2", value: "opCOM2" }]} />
+                  <Select userRights={['admin', 'manager']} token={token} options={[{ label: "COM1", value: "opCOM1" }, { label: "COM2", value: "opCOM2" }]} />
                 </Form.Item>
                 <Form.Item
                   name="sId"
@@ -259,19 +259,19 @@ const SettingsDev: React.FC<Props> = ({
                   style={{ display: 'inline-block', width: 'calc(50%)', marginLeft: 8 }}
                   rules={[{ required: true, message: t('user.fill') }]}
                 >
-                  <InputNumber className="narrow" userRights={['sa', 'manager']} token={token} placeholder='rtu.sId' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'rtu', id: 'sId', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
+                  <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} placeholder='rtu.sId' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'rtu', id: 'sId', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
                 </Form.Item>
               </Form.Item>
               <Form.Item label=" " >
                 <Form.Item name="swapBytes" style={{ display: 'inline-block', width: 'calc(50% - 8px)' }} valuePropName="checked" >
-                  <Checkbox userRights={['sa', 'manager']} token={token} text='rtu.swapBytes' ></Checkbox>
+                  <Checkbox userRights={['admin', 'manager']} token={token} text='rtu.swapBytes' ></Checkbox>
                 </Form.Item>
                 <Form.Item name="swapWords" style={{ display: 'inline-block', width: 'calc(50% - 8px)', margin: '0 8px' }} valuePropName="checked" >
-                  <Checkbox userRights={['sa', 'manager']} token={token} text='rtu.swapWords'></Checkbox>
+                  <Checkbox userRights={['admin', 'manager']} token={token} text='rtu.swapWords'></Checkbox>
                 </Form.Item>
               </Form.Item>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="user.submit" />
+                <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
               </Form.Item>
             </Form>
           </Card>
@@ -292,10 +292,10 @@ const SettingsDev: React.FC<Props> = ({
                 required={true}
               >
                 <Form.Item name="ip" rules={[{ required: true, message: t('user.fill') }]} style={{ display: 'inline-block', width: 'calc(70% - 8px)' }} >
-                  <InputNumber className="narrow" userRights={['sa', 'manager']} token={token} placeholder='tcp.ip' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'ip', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                  <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} placeholder='tcp.ip' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'ip', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
                 </Form.Item>
                 <Form.Item name="port" rules={[{ required: true, message: t('user.fill') }]} style={{ display: 'inline-block', width: 'calc(30% )', marginLeft: '8px' }} >
-                  <InputNumber className="narrow" userRights={['sa', 'manager']} token={token} placeholder='tcp.port' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'port', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
+                  <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} placeholder='tcp.port' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'port', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
                 </Form.Item>
               </Form.Item>
               <Form.Item
@@ -303,18 +303,18 @@ const SettingsDev: React.FC<Props> = ({
                 label={t('rtu.sId')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <InputNumber className="narrow" userRights={['sa', 'manager']} token={token} placeholder='rtu.sId' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'sId', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
+                <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} placeholder='rtu.sId' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'sId', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
               </Form.Item>
               <Form.Item label=" ">
                 <Form.Item name="swapBytes" style={{ display: 'inline-block', width: 'calc(50% - 8px)' }} valuePropName="checked" >
-                  <Checkbox userRights={['sa', 'manager']} token={token} text='rtu.swapBytes' ></Checkbox>
+                  <Checkbox userRights={['admin', 'manager']} token={token} text='rtu.swapBytes' ></Checkbox>
                 </Form.Item>
                 <Form.Item name="swapWords" style={{ display: 'inline-block', width: 'calc(50% - 8px)', margin: '0 8px' }} valuePropName="checked" >
-                  <Checkbox userRights={['sa', 'manager']} token={token} text='rtu.swapWords'></Checkbox>
+                  <Checkbox userRights={['admin', 'manager']} token={token} text='rtu.swapWords'></Checkbox>
                 </Form.Item>
               </Form.Item>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }} >
-                <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="user.submit" />
+                <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
               </Form.Item>
             </Form>
           </Card>

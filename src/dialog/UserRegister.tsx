@@ -120,9 +120,9 @@ const UserRegister: React.FC<Props> = ({
                     >
                         <Select placeholder={t('user.role')}>
                             <Option disabled={token ? false : true} value="weaver">{t('user.weaver')}</Option>
-                            <Option disabled={token ? ['fixer', 'manager', 'sa'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? false : true : true} value="fixer">{t('user.fixer')}</Option>
-                            <Option disabled={token ? ['manager', 'sa'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? false : true : true} value="manager">{t('user.manager')}</Option>
-                            <Option disabled={token ? (JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'sa' ? false : true) : true} value="sa">{t('user.admin')}</Option>
+                            <Option disabled={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? false : true : true} value="fixer">{t('user.fixer')}</Option>
+                            <Option disabled={token ? ['manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? false : true : true} value="manager">{t('user.manager')}</Option>
+                            <Option disabled={token ? (JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? false : true) : true} value='admin'>{t('user.admin')}</Option>
                         </Select>
                     </Form.Item>
 
