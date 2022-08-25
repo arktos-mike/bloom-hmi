@@ -7,6 +7,10 @@ import { updFlagCOM1, updFlagCOM2, resetFlagCOM1, resetFlagCOM2 } from './routes
 import db from '../db'
 import * as bcrypt from 'bcrypt';
 import createTableText from './createdb'
+import rulocale from './rulocale'
+import enlocale from './enlocale'
+import trlocale from './trlocale'
+import eslocale from './eslocale'
 import network from 'network'
 import { SerialPort } from 'serialport'
 import ModbusRTU from 'modbus-serial'
@@ -78,20 +82,14 @@ const dbInit = async () => {
       { name: "modeControl", group: "setting", dev: "rtu1", addr: "12", type: "word", reg: "rw", min: 0, max: 2, dec: 0 },
       { name: "stopAngle", group: "visual", dev: "rtu1", addr: "13", type: "word", reg: "r", min: 0, max: 359, dec: 0 },
     ]
-    const locales = [
-      { self: "English", menu: { overview: "OVERVIEW", settings: "SETTINGS", system: "CONNECTIONS", alarms: "ALARMS" }, notifications: { idle: "User inactive" }, footer: "© TEHMASHHOLDING Cheboksary, Russia" },
-      { self: "Español", menu: { overview: "GENERAL", settings: "CONFIGURACIÓN", system: "CONEXIONES", alarms: "ALARMAS" }, notifications: { idle: "Usuario inactivo" }, footer: "© TEHMASHHOLDING Cheboksary, Rusia" },
-      { self: "Русский", menu: { overview: "ОБЗОР", settings: "НАСТРОЙКИ", system: "СОЕДИНЕНИЯ", alarms: "АВАРИИ" }, notifications: { idle: "Пользователь неактивен" }, footer: "© ТЕХМАШХОЛДИНГ г.Чебоксары" },
-      { self: "Türkçe", menu: { overview: "GENEL", settings: "AYARLAR", system: "BAĞLANTILAR", alarms: "ALARMLAR" }, notifications: { idle: "Kullanıcı etkin değil" }, footer: "© TEHMASHHOLDİNG Cheboksary, Rusya Federasyonu" },
-    ]
-
+    
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['rtuConf', rtuConf])
     await db.query('INSERT INTO tags SELECT * FROM UNNEST($1::jsonb[]) ON CONFLICT (tag) DO NOTHING;', [tags])
     bcrypt.hash('123456', 10, async (err, hash) => {
       await db.query(`INSERT INTO users (id, name, password, role) VALUES(1,'Admin',$1,'sa') ON CONFLICT (id) DO NOTHING;`, [hash])
     });
-    await db.query('INSERT INTO locales SELECT UNNEST($1::text[]), UNNEST($2::jsonb[]), UNNEST($3::boolean[]) ON CONFLICT (locale) DO NOTHING;', [['en', 'es', 'ru', 'tr'], locales, [false, false, true, false]])
+    await db.query('INSERT INTO locales SELECT UNNEST($1::text[]), UNNEST($2::jsonb[]), UNNEST($3::boolean[]) ON CONFLICT (locale) DO NOTHING;', [['en', 'es', 'ru', 'tr'], [enlocale,eslocale,rulocale,trlocale], [false, false, true, false]])
 
     const comRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['comConf']);
     com1 = Object.assign(com1, comRows.rows[0].data.opCOM1, { act: 0 });

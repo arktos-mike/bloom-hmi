@@ -221,13 +221,13 @@ const SettingsDev: React.FC<Props> = ({
               </Form.Item>
               <Form.Item
                 name="parity"
-                label={t('com.parity')}
+                label={t('com.parity.parity')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
                 <Select userRights={['sa', 'manager']} token={token} options={[{ label: t('com.parity.none'), value: "none" }, { label: t('com.parity.even'), value: "even" }, { label: t('com.parity.mark'), value: "mark" }, { label: t('com.parity.odd'), value: "odd" }, { label: t('com.parity.space'), value: "space" }]} />
               </Form.Item>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="com.submit" />
+                <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="user.submit" />
               </Form.Item>
             </Form>
           </Card>
@@ -271,7 +271,7 @@ const SettingsDev: React.FC<Props> = ({
                 </Form.Item>
               </Form.Item>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="rtu.submit" />
+                <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="user.submit" />
               </Form.Item>
             </Form>
           </Card>
@@ -300,21 +300,21 @@ const SettingsDev: React.FC<Props> = ({
               </Form.Item>
               <Form.Item
                 name="sId"
-                label={t('tcp.sId')}
+                label={t('rtu.sId')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <InputNumber className="narrow" userRights={['sa', 'manager']} token={token} placeholder='tcp.sId' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'sId', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
+                <InputNumber className="narrow" userRights={['sa', 'manager']} token={token} placeholder='rtu.sId' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'sId', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
               </Form.Item>
               <Form.Item label=" ">
                 <Form.Item name="swapBytes" style={{ display: 'inline-block', width: 'calc(50% - 8px)' }} valuePropName="checked" >
-                  <Checkbox userRights={['sa', 'manager']} token={token} text='tcp.swapBytes' ></Checkbox>
+                  <Checkbox userRights={['sa', 'manager']} token={token} text='rtu.swapBytes' ></Checkbox>
                 </Form.Item>
                 <Form.Item name="swapWords" style={{ display: 'inline-block', width: 'calc(50% - 8px)', margin: '0 8px' }} valuePropName="checked" >
-                  <Checkbox userRights={['sa', 'manager']} token={token} text='tcp.swapWords'></Checkbox>
+                  <Checkbox userRights={['sa', 'manager']} token={token} text='rtu.swapWords'></Checkbox>
                 </Form.Item>
               </Form.Item>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }} >
-                <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="tcp.submit" />
+                <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="user.submit" />
               </Form.Item>
             </Form>
           </Card>

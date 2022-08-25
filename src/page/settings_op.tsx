@@ -219,7 +219,7 @@ const SettingsOp: React.FC<Props> = ({
                 <InputNumber userRights={['sa', 'manager']} token={token} placeholder='ip.gw' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'gw', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
               </Form.Item>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="ip.submit" />
+                <Button userRights={['sa', 'manager']} token={token} htmlType="submit" text="user.submit" />
               </Form.Item>
             </Form>
           </Card>
