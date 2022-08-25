@@ -1,5 +1,5 @@
 // ./routes/index.ts
-export { updFlag, resetFlag } from './config'
+export { updFlagCOM1, updFlagCOM2, resetFlagCOM1, resetFlagCOM2 } from './config'
 import config from './config'
 import locales from './locales'
 import users from './users'

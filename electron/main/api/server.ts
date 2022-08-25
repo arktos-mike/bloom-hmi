@@ -3,7 +3,7 @@ dotenv.config()
 import cors from 'cors'
 import express from 'express'
 import mountRoutes from './routes'
-import {updFlag,resetFlag} from './routes'
+import { updFlagCOM1, updFlagCOM2, resetFlagCOM1, resetFlagCOM2 } from './routes'
 import db from '../db'
 import * as bcrypt from 'bcrypt';
 import createTableText from './createdb'
@@ -12,7 +12,6 @@ import { SerialPort } from 'serialport'
 import ModbusRTU from 'modbus-serial'
 const client1 = new ModbusRTU();
 const client2 = new ModbusRTU();
-
 const api = express()
 api.use(express.json())
 api.use(express.urlencoded({ extended: true }))
@@ -97,7 +96,10 @@ const dbInit = async () => {
     const comRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['comConf']);
     com1 = Object.assign(com1, comRows.rows[0].data.opCOM1, { act: 0 });
     com2 = Object.assign(com2, comRows.rows[0].data.opCOM2, { act: 0 });
+    com1.slaves = []
+    com2.slaves = []
     const rtuRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['rtuConf']);
+
     for (let prop in rtuRows.rows[0].data) {
       switch (rtuRows.rows[0].data[prop].com) {
         case "opCOM1":
@@ -114,16 +116,23 @@ const dbInit = async () => {
         // nothing to do
       }
     }
-    com1.mbsState = MBS_STATE_INIT;
-    com2.mbsState = MBS_STATE_INIT;
-    if (com1.slaves.length > 0) { runModbus(client1, com1) }
-    if (com2.slaves.length > 0) { runModbus(client2, com2) }
+
+    if (com1.mbsState == MBS_STATE_STEADY && com1.slaves.length > 0) {
+      com1.mbsState = MBS_STATE_INIT;
+      runModbus(client1, com1)
+    }
+    if ((com2.mbsState == MBS_STATE_STEADY && com2.slaves.length > 0)) {
+      com2.mbsState = MBS_STATE_INIT;
+      runModbus(client2, com2)
+    }
+
   });
 }
 dbInit();
 //==============================================================
 const connectClient = async function (client, port) {
   // set requests parameters
+  if (port.timeout == 0) { port.timeout = 1000 }
   await client.setTimeout(port.timeout);
   // try to connect
   try {
@@ -338,9 +347,17 @@ function delay(ms) {
 }
 //==============================================================
 const runModbus = async function (client, port) {
+  if (port.path == com1.path && updFlagCOM1) {
+    await dbInit(); if (port.timeout == 0) { port.timeout = 1000 }
+    await client.setTimeout(port.timeout); await resetFlagCOM1();
+  }
+  if (port.path == com2.path && updFlagCOM2) {
+    await dbInit(); if (port.timeout == 0) { port.timeout = 1000 }
+    await client.setTimeout(port.timeout); await resetFlagCOM2();
+  }
   let nextAction;
   let slave = port.slaves[port.act];
-  if (slave.tags.length > 0) {
+  if (port.slaves.length > 0 && slave?.tags?.length > 0) {
     switch (port.mbsState) {
       case MBS_STATE_INIT:
         nextAction = await connectClient(client, port);
@@ -378,15 +395,12 @@ const runModbus = async function (client, port) {
       port.mbsState = MBS_STATE_IDLE;
     }
   }
+  else if (port.slaves.length == 0) { if (client.isOpen) client.close(() => { console.log("[" + port.path + "]closed") }) }
   port.act++;
   if (port.act === port.slaves.length) {
     port.act = 0;
   }
-  console.log(updFlag)
-  try {
-  if (updFlag) {await client.close(()=>{});await dbInit();resetFlag();}
-  }
-  catch{}
   await delay(port.scan);
+  //console.log("runmodbus" + port.path + port.mbsState + port.slaves.length)
   runModbus(client, port);
 };

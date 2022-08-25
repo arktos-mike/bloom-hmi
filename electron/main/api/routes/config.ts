@@ -4,9 +4,13 @@ import sudo from 'sudo-prompt'
 const options = {
     name: 'Electron',
 };
-export let updFlag = false;
-export const resetFlag =  () => {
-    updFlag = false;
+export let updFlagCOM1 = false;
+export let updFlagCOM2 = false;
+export const resetFlagCOM1 =  () => {
+    updFlagCOM1 = false;
+}
+export const resetFlagCOM2 =  () => {
+    updFlagCOM2 = false;
 }
 // create a new express-promise-router
 // this has the same API as the normal express router except
@@ -85,9 +89,10 @@ router.post('/update', async (req, res) => {
             await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM1, scan}', opCOM1.scan]);
             await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM1, timeout}', opCOM1.timeout]);
             await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM1, conf, baudRate}', opCOM1.conf.baudRate]);
-            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM1, conf, dataBits}', '"' + opCOM1.conf.dataBits]);
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM1, conf, dataBits}', opCOM1.conf.dataBits]);
             await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM1, conf, stopBits}', opCOM1.conf.stopBits]);
             await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM1, conf, parity}', '"' + opCOM1.conf.parity + '"']);
+            updFlagCOM1 = true;
             res.status(200).json({
                 message: "notifications.confupdate",
             });
@@ -101,6 +106,7 @@ router.post('/update', async (req, res) => {
             await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM2, conf, dataBits}', opCOM2.conf.dataBits]);
             await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM2, conf, stopBits}', opCOM2.conf.stopBits]);
             await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['comConf', '{opCOM2, conf, parity}', '"' + opCOM2.conf.parity + '"']);
+            updFlagCOM2 = true;
             res.status(200).json({
                 message: "notifications.confupdate",
             });
@@ -111,7 +117,8 @@ router.post('/update', async (req, res) => {
             await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['rtuConf', '{rtu1, sId}', rtu1.sId]);
             await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['rtuConf', '{rtu1, swapBytes}', rtu1.swapBytes]);
             await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['rtuConf', '{rtu1, swapWords}', rtu1.swapWords]);
-            updFlag = true;
+            updFlagCOM1 = true;
+            updFlagCOM2 = true;
             res.status(200).json({
                 message: "notifications.confupdate",
             });

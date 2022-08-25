@@ -54,8 +54,8 @@ async function createWindow() {
     let devDevicePixelRatio = 1.0// devicepixelratio during development
     let devScaleFactor = 1.6 // ScaleFactor at development time
     let scaleFactor = screen.getPrimaryDisplay().scaleFactor
-    let zoomFactor = (screen.getPrimaryDisplay().size.height / devInnerHeight) * ( 1 / devDevicePixelRatio) * (devScaleFactor / scaleFactor)
-    console.log(scaleFactor)
+    let zoomFactor = (screen.getPrimaryDisplay().size.height / devInnerHeight) * (1 / devDevicePixelRatio) * (devScaleFactor / scaleFactor)
+    //console.log(scaleFactor)
     win?.webContents.setZoomFactor(zoomFactor);
   })
 
@@ -101,6 +101,9 @@ app.on('activate', () => {
   }
 })
 
+process.on("uncaughtException", (err) => {
+  console.log(err);
+});
 
 // new window example arg: new windows url
 ipcMain.handle('open-win', (event, arg) => {
