@@ -13,6 +13,17 @@ const locale = {
   "tags": {
     "comTime": {
       "eng": "ms"
+    },
+    "speedMainDrive": {
+      "eng": "rpm"
+    },
+    "mode": {
+      "init": "Giriş",
+      "stop": "Dur",
+      "ready": "Ayarlama",
+      "run": "Koş",
+      "alarm": "Alarm",
+      "unknown": "Bilinmeyen"
     }
   },
   "time": {

@@ -6,13 +6,24 @@ const locale = {
     "close": "CLOSE",
     "overview": "OVERVIEW",
     "settings": "SETTINGS",
-	"settingsOp": "OPERATOR PANEL",
-	"users": "USER ADMINISTRATION",
-	"settingsDev": "DATA AQUISITION"
+    "settingsOp": "OPERATOR PANEL",
+    "users": "USER ADMINISTRATION",
+    "settingsDev": "DATA AQUISITION"
   },
   "tags": {
     "comTime": {
       "eng": "ms"
+    },
+    "speedMainDrive": {
+      "eng": "rpm"
+    },
+    "mode": {
+      "init": "Init",
+      "stop": "Stop",
+      "ready": "Tuning",
+      "run": "Run",
+      "alarm": "Alarm",
+      "unknown": "Unknown"
     }
   },
   "time": {
@@ -37,19 +48,19 @@ const locale = {
     "remember": "Remember me",
     "newpassword": "New password",
     "oldpassword": "Old password",
-	"wrongemail": "Invalid email",
-	"id": "ID",
-	"name": "Username",
-	"email": "Email",
-	"phone": "Phone",
-	"role": "Role",
-	"weaver": "Weaver",
-	"manager": "Manager",
-	"action": "Action",
-	"register": "New user registration",
-	"delete": "DELETE USER",
-	"editsubmit": "EDIT",
-	"regsubmit": "REGISTER"
+    "wrongemail": "Invalid email",
+    "id": "ID",
+    "name": "Username",
+    "email": "Email",
+    "phone": "Phone",
+    "role": "Role",
+    "weaver": "Weaver",
+    "manager": "Manager",
+    "action": "Action",
+    "register": "New user registration",
+    "delete": "DELETE USER",
+    "editsubmit": "EDIT",
+    "regsubmit": "REGISTER"
   },
   "confirm": {
     "ok": "YES",
@@ -64,14 +75,14 @@ const locale = {
     "reboot": "Reboot pending",
     "usererror": "Incorrect password",
     "rightserror": "Insufficient user rights",
-	"confupdate": "Settings changed",
-	"servererror": "Server error",
-	"dberror": "Database error",
-	"userexist": "User already exists",
-	"userregistered": "User registered",
-	"notregistered": "Failed to register user",
-	"userdel": "User deleted",
-	"userupdate": "User updated"
+    "confupdate": "Settings changed",
+    "servererror": "Server error",
+    "dberror": "Database error",
+    "userexist": "User already exists",
+    "userregistered": "User registered",
+    "notregistered": "Failed to register user",
+    "userdel": "User deleted",
+    "userupdate": "User updated"
   },
   "com": {
     "path": "Port path",
@@ -80,14 +91,14 @@ const locale = {
     "baudRate": "Baud rate",
     "dataBits": "Data bits",
     "stopBits": "Stop bits",
-	"parity":  {
-		"parity": "Parity control",
-		"none": "none",
-		"even": "even",
-		"mark": "mark",
-		"odd": "odd",
-		"space": "space"
-	}
+    "parity": {
+      "parity": "Parity control",
+      "none": "none",
+      "even": "even",
+      "mark": "mark",
+      "odd": "odd",
+      "space": "space"
+    }
   },
   "rtu": {
     "com": "COM-port",
@@ -109,12 +120,12 @@ const locale = {
     "com": "COM Port settings",
     "rtu": "ModbusRTU settings",
     "tcp": "ModbusTCP settings",
-	"language": "Language selection",
+    "language": "Language selection",
     "actions": "Actions",
     "network": "Network settings"
   },
   "system": {
-	"reboot": "REBOOT DEVICE"
+    "reboot": "REBOOT DEVICE"
   }
 }
 export default locale

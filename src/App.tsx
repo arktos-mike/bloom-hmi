@@ -3,8 +3,8 @@ import logo from '/icon.svg'
 import 'styles/app.css'
 import { Route, Link, Routes, useLocation, Navigate } from 'react-router-dom';
 import { Layout, Menu, Select, Drawer, Button, Input, notification, ConfigProvider, Breadcrumb, Space } from 'antd';
-import { CloseCircleTwoTone, EyeTwoTone, EyeInvisibleOutlined, GlobalOutlined, CloseOutlined, ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
-import { FabricPieceIcon } from "./components/Icons"
+import { AimOutlined, DashboardOutlined, CloseCircleTwoTone, EyeTwoTone, EyeInvisibleOutlined, GlobalOutlined, CloseOutlined, ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
+import { FabricPieceIcon, AngleIcon, SpeedIcon } from "./components/Icons"
 import { useIdleTimer } from 'react-idle-timer'
 import Overview from "./page/overview";
 import SettingsOp from "./page/settings_op";
@@ -109,7 +109,7 @@ const App: React.FC = () => {
   const [visible, setVisible] = useState(false)
   const [userDialogVisible, setUserDialogVisible] = useState(false)
   const [layout, setLayout] = useState('default')
-
+  const [tags, setTags] = useState({ data: [] })
   const handleShift = () => {
     setLayout(layout === "default" ? "shift" : "default")
   };
@@ -154,6 +154,17 @@ const App: React.FC = () => {
     }
   }
 
+  const modeCode = (code: Number) => {
+    let obj;
+    if (code == 0) { obj = { color: '#000000FF', text: t('tags.mode.init'), icon: <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> } }
+    else if (code == 1) { obj = { color: '#43A047FF', text: t('tags.mode.run'), icon: <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> } }
+    else if (code == 2) { obj = { color: '#FFB300FF', text: t('tags.mode.stop'), icon: <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> } }
+    else if (code == 3) { obj = { color: '#3949ABFF', text: t('tags.mode.ready'), icon: <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> } }
+    else if (code == 4) { obj = { color: '#E53935FF', text: t('tags.mode.alarm'), icon: <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> } }
+    else { obj = { color: '#00000000', text: t('tags.mode.unknown'), icon: <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> } }
+    return obj;
+  }
+
   const curDate = today.toLocaleDateString(i18n.language == 'en' ? 'en-GB' : i18n.language, { day: 'numeric', month: 'numeric', year: 'numeric', });
   const curTime = `${today.toLocaleTimeString(i18n.language == 'en' ? 'en-GB' : i18n.language, { hour: 'numeric', minute: 'numeric', hour12: false })}\n\n`;
 
@@ -182,10 +193,36 @@ const App: React.FC = () => {
     catch (error) { console.log(error); }
   }
 
+  const fetchTags = async (tagNames: string[]) => {
+    try {
+      const response = await fetch('http://localhost:3000/tags/filter', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json;charset=UTF-8', },
+        body: JSON.stringify({ name: tagNames }),
+      });
+      if (!response.ok) { throw Error(response.statusText); }
+      const json = await response.json();
+      (json || []).map((tag: any) => (
+        tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec'])));
+      setTags({ data: json });
+    }
+    catch (error) { console.log(error); }
+  }
+
+  const getTagVal = (tagName: string) => {
+    let obj = tags.data.find(o => o['tag']['name'] == tagName)
+    if (obj) { return obj['val']; }
+    else { return 0 };
+  }
+
   useEffect(() => {
     clock();
     fetchLngs();
   }, [])
+
+  useEffect(() => {
+    fetchTags(['modeCode', 'stopAngle', 'speedMainDrive']);
+  }, [tags])
 
   useEffect(() => {
     setToken(token)
@@ -229,10 +266,9 @@ const App: React.FC = () => {
             <div className="logo" onClick={showDrawer}>
               <img src={logo} className="applogo" alt=""></img>
             </div>
-            <Menu style={{ flex: 'auto', fontSize: '150%' }} theme='dark' mode="horizontal" selectedKeys={[location.pathname == '/' ? 'overview' : location.pathname.split("/").filter((item) => item)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : smallItems : smallItems}>
-            </Menu>
-            <div className="mode" style={{ backgroundColor: '#00000000' }}>
-            </div>
+            <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={[location.pathname == '/' ? 'overview' : location.pathname.split("/").filter((item) => item)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : smallItems : smallItems} />
+            <div className="speed">{getTagVal('modeCode') == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{getTagVal('modeCode') == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}</div><div className="sub">{getTagVal('modeCode') == 1 ? t('tags.speedMainDrive.eng') : '°'}</div>
+            <div className="mode" style={{ backgroundColor: modeCode(getTagVal('modeCode')).color }}>{modeCode(getTagVal('modeCode')).text}</div>
             <div className="user">
               <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} style={{ background: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "", borderColor: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "" }} /><table><tbody><tr><td><div className='username'>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</div></td></tr><tr><td><div className='userrole'>{t(token ? 'user.' + JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : '')}</div></td></tr></tbody></table>
               <UserLogin token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} activeInput={activeInput} setActiveInput={setActiveInput} />
