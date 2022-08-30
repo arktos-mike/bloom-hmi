@@ -35,13 +35,21 @@
   font-style: normal;
 }
 
-*, html, body {
-  -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-     -khtml-user-select: none; /* Konqueror HTML */
-       -moz-user-select: none; /* Old versions of Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently
+*,
+html,
+body {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Safari */
+  -khtml-user-select: none;
+  /* Konqueror HTML */
+  -moz-user-select: none;
+  /* Old versions of Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
                                   supported by Chrome, Edge, Opera and Firefox */
 }
 
@@ -119,6 +127,33 @@
   width: 80px;
 }
 
+.shift {
+  padding-top: 5px;
+  text-align: center;
+  width: 150px;
+}
+
+.shift .text {
+  color: #ffffff;
+  line-height: 160%;
+  font-size: large;
+  font-weight: 500;
+  padding-inline: 5px;
+}
+
+.shift .text .percent {
+  color: #ffffff93;
+  font-size: medium;
+  display: inline-flex;
+}
+
+.shift .progress {
+  color: #FFFFFF93;
+  line-height: 100%;
+  font-size: small;
+  padding-inline: 5px;
+}
+
 .speed {
   color: #ffffff;
   font-size: x-large;
@@ -134,14 +169,21 @@
   font-weight: 500;
 }
 
+.stopwatch {
+  color: #FFFFFF93;
+  line-height: 100%;
+  font-size: large;
+  font-weight: 500;
+}
+
 .clock .date {
-  color: #A6ADB4;
+  color: #FFFFFF93;
   line-height: 100%;
   font-size: small;
 }
 
 .sub {
-  color: #A6ADB4;
+  color: #ffffff93;
   line-height: 100%;
   font-size: medium;
   align-items: center;
@@ -171,7 +213,7 @@
   color: #1890ff;
   font-size: medium;
   text-align: center;
-  line-height:40px;
+  line-height: 40px;
 }
 
 .mode {
@@ -310,9 +352,11 @@
   align-items: center !important;
   justify-content: center !important;
 }
-.ant-form-small .ant-form-item{
+
+.ant-form-small .ant-form-item {
   margin-bottom: 5px !important;
 }
+
 .ant-card-extra {
   padding: 0 !important;
 }
@@ -334,13 +378,14 @@
   padding-bottom: 6.5px !important;
 }
 
-.narrow ,
+.narrow,
 .narrow .ant-input-number,
 .narrow .ant-input-number-group-addon {
   font-size: 24px !important;
   padding-top: 0px !important;
   padding-bottom: 0px !important;
 }
+
 .ant-select-selection-item {
   font-size: 20px !important;
 }
@@ -352,7 +397,7 @@
   font-size: 24px !important;
 }
 
-.narrow .ant-input{
+.narrow .ant-input {
   font-size: 24px !important;
   padding-top: 0px !important;
   padding-bottom: 0px !important;

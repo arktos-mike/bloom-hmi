@@ -10,6 +10,9 @@ const locale = {
     "users": "USER ADMINISTRATION",
     "settingsDev": "DATA AQUISITION"
   },
+  "shift": {
+    "shift": "Shift"
+  },
   "tags": {
     "comTime": {
       "eng": "ms"

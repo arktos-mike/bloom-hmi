@@ -104,7 +104,7 @@ const UserEdit: React.FC<Props> = ({
             cancelText={t('menu.close')}
             okText={t('user.delete')}
             cancelButtonProps={{ size: 'large' }}
-            onOk={confirm}
+            onOk={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? () => { } : confirm : confirm}
             onCancel={handleCancel}
             okButtonProps={{ type: "primary", danger: true, size: 'large' }}
             visible={isModalVisible}

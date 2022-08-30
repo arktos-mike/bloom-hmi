@@ -10,6 +10,9 @@ const locale = {
 	"users": "KULLANICI YÖNETIMI",
 	"settingsDev": "VERI TOPLAMA"
   },
+  "shift": {
+    "shift": "Vardiya"
+  },
   "tags": {
     "comTime": {
       "eng": "ms"

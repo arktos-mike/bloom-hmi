@@ -10,6 +10,9 @@ const locale = {
     "users": "АДМИНИСТРИРОВАНИЕ ПОЛЬЗОВАТЕЛЕЙ",
     "settingsDev": "СБОР ДАННЫХ"
   },
+  "shift": {
+    "shift": "Смена"
+  },
   "tags": {
     "comTime": {
       "eng": "мс"
