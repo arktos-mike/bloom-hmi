@@ -17,6 +17,7 @@ const Component = (props: any) => {
     if (props.userRights && (props.token ? props.userRights.includes(JSON.parse(Buffer.from(props.token.split('.')[1], 'base64').toString()).role) ? false : true : true)) {
         return (<div style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => { openNotificationWithIcon('error', t('notifications.rightserror'), 2); }}>
             <Select size="large" className="narrow"
+                defaultValue={props.defaultValue}
                 value={props.tag?.val ? props.tag?.val : props.value}
                 options={props.options}
                 disabled
@@ -26,6 +27,7 @@ const Component = (props: any) => {
     return (
         <div style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Select size="large" className="narrow"
+                defaultValue={props.defaultValue}
                 value={props.tag?.val ? props.tag?.val : props.value}
                 onChange={props.onChange}
                 options={props.options}

@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS hwconfig (
 CREATE TABLE IF NOT EXISTS tags (
   tag JSONB PRIMARY KEY NOT NULL,
   val NUMERIC,
-  updated TIMESTAMPTZ
+  updated TIMESTAMPTZ not null default current_timestamp
 );
 CREATE INDEX IF NOT EXISTS idxgingroup ON tags USING gin ((tag -> 'group'));
 CREATE INDEX IF NOT EXISTS idxginname ON tags USING gin ((tag -> 'name'));
@@ -25,6 +25,24 @@ CREATE TABLE IF NOT EXISTS users (
     phonenumber text,
     password varchar not null, 
     role text
+  );
+  CREATE TABLE IF NOT EXISTS modelog (
+    timestamp TIMESTAMPTZ PRIMARY KEY not null default current_timestamp,
+    modecode NUMERIC,
+    picks NUMERIC,
+    shiftname text
+  );
+  CREATE TABLE IF NOT EXISTS shiftconfig (
+    shiftname text PRIMARY KEY not null,
+    starttime TIME(0) with time zone,
+    duration interval,
+    monday BOOLEAN,
+    tuesday BOOLEAN,
+    wednesday BOOLEAN,
+    thursday BOOLEAN,
+    friday BOOLEAN,
+    saturday BOOLEAN,
+    sunday BOOLEAN
   );
 `
 export default createTableText

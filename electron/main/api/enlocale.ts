@@ -8,10 +8,24 @@ const locale = {
     "settings": "SETTINGS",
     "settingsOp": "OPERATOR PANEL",
     "users": "USER ADMINISTRATION",
+    "shifts": "SHIFT MANAGMENT",
     "settingsDev": "DATA AQUISITION"
   },
   "shift": {
-    "shift": "Shift"
+    "shift": "Shift",
+    "days" : "d",
+    "hours" : "h",
+    "mins" : "m",
+    "secs" : "s",
+    "starttime" : "Beginning",
+    "duration" : "Duration",
+    "monday" : "Mon",
+    "tuesday" : "Tue",
+    "wednesday" : "Wed",
+    "thursday" : "Thu",
+    "friday" : "Fri",
+    "saturday" : "Sat",
+    "sunday" : "Sun"
   },
   "tags": {
     "comTime": {

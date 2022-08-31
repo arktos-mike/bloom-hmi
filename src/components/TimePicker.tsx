@@ -30,11 +30,11 @@ const Component = (props: any) => {
   }
   if (props.userRights && (props.token ? props.userRights.includes(JSON.parse(Buffer.from(props.token.split('.')[1], 'base64').toString()).role) ? false : true : true)) {
     return (<div style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => { openNotificationWithIcon('error', t('notifications.rightserror'), 2); }}>
-      <TimePicker disabled size="large" style={{ width: '100%' }} />
+      <TimePicker disabled defaultValue={props.defaultValue} onChange={props.onChange} format={props.format} size="large" style={{ width: '100%' }} />
     </div>);
   }
   return (
-    <TimePicker size="large" style={{ width: '100%' }} />
+    <TimePicker defaultValue={props.defaultValue} showNow={props.showNow} onChange={props.onChange} format={props.format} size="large" style={{ width: '100%' }} />
   );
 }
 export default Component;

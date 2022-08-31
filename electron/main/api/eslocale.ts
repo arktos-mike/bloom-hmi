@@ -6,12 +6,26 @@ const locale = {
     "close": "CERRAR",
     "overview": "DESCRIPCIÓN GENERAL",
     "settings": "CONFIGURACIÓN",
-	"settingsOp": "PANEL DEL OPERADOR",
-	"users": "ADMINISTRACIÓN DE USUARIOS",
-	"settingsDev": "ADQUISICIÓN DE DATOS"
+    "settingsOp": "PANEL DEL OPERADOR",
+    "users": "ADMINISTRACIÓN DE USUARIOS",
+    "shifts": "GESTIÓN DE TURNOS",
+    "settingsDev": "ADQUISICIÓN DE DATOS"
   },
   "shift": {
-    "shift": "Turno"
+    "shift": "Turno",
+    "days": "d",
+    "hours": "h",
+    "mins": "m",
+    "secs": "s",
+    "starttime": "Principio",
+    "duration": "Duración",
+    "monday": "Lun",
+    "tuesday": "Mar",
+    "wednesday": "Mié",
+    "thursday": "Jue",
+    "friday": "Vie",
+    "saturday": "Sáb",
+    "sunday": "Dom"
   },
   "tags": {
     "comTime": {
@@ -51,19 +65,19 @@ const locale = {
     "remember": "Recuérdame",
     "newpassword": "Nueva contraseña",
     "oldpassword": "Contraseña antigua",
-	"wrongemail": "Correo electrónico inválido",
-	"id": "ID",
-	"name": "Nombre de usuario",
-	"email": "Correo electrónico",
-	"phone": "Teléfono",
-	"role": "Rol",
-	"weaver": "Tejedor",
-	"manager": "Gerente",
-	"action": "Acción",
-	"register": "Registro de nuevo usuario",
-	"delete": "ELIMINAR USUARIO",
-	"editsubmit": "EDITAR",
-	"regsubmit": "REGISTRARSE"
+    "wrongemail": "Correo electrónico inválido",
+    "id": "ID",
+    "name": "Nombre de usuario",
+    "email": "Correo electrónico",
+    "phone": "Teléfono",
+    "role": "Rol",
+    "weaver": "Tejedor",
+    "manager": "Gerente",
+    "action": "Acción",
+    "register": "Registro de nuevo usuario",
+    "delete": "ELIMINAR USUARIO",
+    "editsubmit": "EDITAR",
+    "regsubmit": "REGISTRARSE"
   },
   "confirm": {
     "ok": "SÍ",
@@ -71,21 +85,21 @@ const locale = {
     "title": "Confirmar acción",
     "cancel": "NO"
   },
-   "notifications": {
+  "notifications": {
     "idle": "Cierre de sesión debido a inactividad",
     "dtupdate": "La fecha/hora cambió con éxito",
     "userok": "Inicio de sesión exitoso",
     "reboot": "Reinicio pendiente",
     "usererror": "Contraseña incorrecta",
     "rightserror": "Derechos de usuario insuficientes",
-	"confupdate": "Configuración cambiada",
-	"servererror": "Error del servidor",
-	"dberror": "Error de base de datos",
-	"userexist": "El usuario ya existe",
-	"userregistered": "Usuario registrado",
-	"notregistered": "No se pudo registrar el usuario",
-	"userdel": "Usuario eliminado",
-	"userupdate": "Usuario actualizado"
+    "confupdate": "Configuración cambiada",
+    "servererror": "Error del servidor",
+    "dberror": "Error de base de datos",
+    "userexist": "El usuario ya existe",
+    "userregistered": "Usuario registrado",
+    "notregistered": "No se pudo registrar el usuario",
+    "userdel": "Usuario eliminado",
+    "userupdate": "Usuario actualizado"
   },
   "com": {
     "path": "Port path",
@@ -94,14 +108,14 @@ const locale = {
     "baudRate": "Velocidad de transmisión",
     "dataBits": "Bits de datos",
     "stopBits": "Bit de parada",
-	"parity":  {
-		"parity": "Paridad",
-		"none": "ninguno",
-		"even": "incluso",
-		"mark": "siempre 1",
-		"odd": "raro",
-		"space": "siempre 0"
-	}
+    "parity": {
+      "parity": "Paridad",
+      "none": "ninguno",
+      "even": "incluso",
+      "mark": "siempre 1",
+      "odd": "raro",
+      "space": "siempre 0"
+    }
   },
   "rtu": {
     "com": "Puerto COM",
@@ -123,12 +137,12 @@ const locale = {
     "com": "Configuración del puerto COM",
     "rtu": "Configuración ModbusRTU",
     "tcp": "Configuración de ModbusTCP",
-	"language": "Selección de idioma",
+    "language": "Selección de idioma",
     "actions": "Acciones",
     "network": "Configuración de red"
   },
   "system": {
-	"reboot": "REINICIAR DISPOSITIVO"
+    "reboot": "REINICIAR DISPOSITIVO"
   }
 }
 export default locale

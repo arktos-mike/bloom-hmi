@@ -3,7 +3,7 @@ import logo from '/icon.svg'
 import 'styles/app.css'
 import { Route, Link, Routes, useLocation, Navigate } from 'react-router-dom';
 import { Layout, Menu, Select, Drawer, Button, Input, notification, ConfigProvider, Breadcrumb, Space, Progress } from 'antd';
-import { ToolOutlined, QuestionCircleOutlined, ReloadOutlined, LoadingOutlined, AimOutlined, DashboardOutlined, CloseCircleTwoTone, EyeTwoTone, EyeInvisibleOutlined, GlobalOutlined, CloseOutlined, ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
+import { ScheduleOutlined, ToolOutlined, QuestionCircleOutlined, ReloadOutlined, LoadingOutlined, AimOutlined, DashboardOutlined, CloseCircleTwoTone, EyeTwoTone, EyeInvisibleOutlined, GlobalOutlined, CloseOutlined, ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "./components/Icons"
 import { useIdleTimer } from 'react-idle-timer'
 import Overview from "./page/overview";
@@ -11,6 +11,8 @@ import SettingsOp from "./page/settings_op";
 import SettingsDev from "./page/settings_dev";
 import Users from "./page/users";
 import UserLogin from "./dialog/UserLogin";
+import Shifts from "./page/shifts";
+
 import './i18n/config';
 import { useTranslation } from 'react-i18next';
 import rulocale from 'antd/lib/locale/ru_RU';
@@ -269,6 +271,11 @@ const App: React.FC = () => {
   const smallItemsSA = [
     { label: <Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'overview' },
     { label: <Link to="/users"><TeamOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'users' },
+    { label: <Link to="/shifts"><ScheduleOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'shifts' },
+  ];
+  const smallItemsMan = [
+    { label: <Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'overview' },
+    { label: <Link to="/shifts"><ScheduleOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'shifts' },
   ];
   const bigItems = [
     { label: <Link onClick={showDrawer} to="/">{t('menu.overview')}</Link>, title: '', key: 'overview', icon: <EyeOutlined style={{ fontSize: '100%' }} /> },
@@ -285,7 +292,7 @@ const App: React.FC = () => {
             </div>
             <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={[location.pathname == '/' ? 'overview' : location.pathname.split("/").filter((item) => item)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : smallItems : smallItems} />
             <div className="speed">{modeCode == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}</div><div className="sub">{modeCode == 1 ? t('tags.speedMainDrive.eng') : '°'}</div>
-            <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode).color }}>{modeCodeObj(modeCode).text + ' '}{modeCodeObj(modeCode).icon}<div className='stopwatch'><span>{days}</span>:<span>{hours}</span>:<span>{minutes}</span>:<span>{seconds}</span></div></div>
+            <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode).color }}>{modeCodeObj(modeCode).text + ' '}{modeCodeObj(modeCode).icon}<div className='stopwatch'>{days > 0 && <span>{days}</span>}{days > 0 && t('shift.days') + " "}{hours > 0 && <span>{hours}</span>}{hours > 0 && t('shift.hours') + " "}{minutes > 0 && <span>{minutes}</span>}{minutes > 0 && t('shift.mins') + " "}{seconds > 0 && <span>{seconds}</span>}{seconds > 0 && t('shift.secs')}</div></div>
             <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' A'}<div className="percent">{'50.0%'}</div></Space></div><div className="progress"><Progress percent={50} showInfo={false} size="small" /></div></div>
             <div className="user">
               <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} style={{ background: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "", borderColor: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "" }} /><table><tbody><tr><td><div className='username'>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</div></td></tr><tr><td><div className='userrole'>{t(token ? 'user.' + JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : '')}</div></td></tr></tbody></table>
@@ -307,6 +314,7 @@ const App: React.FC = () => {
                   <Route path={'/settings'} element={<SettingsOp token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
                   <Route path={'/settings/settingsDev'} element={<SettingsDev token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
                   <Route path={'/users'} element={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? <Users activeInput={activeInput} setActiveInput={setActiveInput} token={token} /> : <Navigate to="/" /> : <Navigate to="/" />} />
+                  <Route path={'/shifts'} element={token ? ['manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Shifts activeInput={activeInput} setActiveInput={setActiveInput} token={token} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
                 <Drawer
@@ -382,6 +390,7 @@ const App: React.FC = () => {
                     inputName={activeInput.pattern}
                     inputPattern={{
                       'default': /.*/,
+                      'shift': /^.{1,2}$/,
                       'username': /^[\p{L}\s]*$/gu,
                       'phonenumber': /^[0-9]{1,15}$/,
                       'email': /^[a-zA-Z0-9.!@#$%&’*+/=?^_`{|}~-]*$/,

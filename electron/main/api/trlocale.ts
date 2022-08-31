@@ -6,12 +6,26 @@ const locale = {
     "close": "KAPAT",
     "overview": "GENEL BAKIŞ",
     "settings": "AYARLAR",
-	"settingsOp": "OPERATÖR PANELI",
-	"users": "KULLANICI YÖNETIMI",
-	"settingsDev": "VERI TOPLAMA"
+    "settingsOp": "OPERATÖR PANELI",
+    "users": "KULLANICI YÖNETIMI",
+    "shifts": "VARDİYALARI YÖNETME",
+    "settingsDev": "VERI TOPLAMA"
   },
   "shift": {
-    "shift": "Vardiya"
+    "shift": "Vardiya",
+    "days": "g",
+    "hours": "s",
+    "mins": "d",
+    "secs": "s",
+    "starttime": "Başlangıç",
+    "duration": "Süre",
+    "monday": "Pzt",
+    "tuesday": "Sal",
+    "wednesday": "Çar",
+    "thursday": "Per",
+    "friday": "Cuma",
+    "saturday": "Cum",
+    "sunday": "Pazar"
   },
   "tags": {
     "comTime": {
@@ -51,19 +65,19 @@ const locale = {
     "remember": "Beni hatırla",
     "newpassword": "Yeni şifre",
     "oldpassword": "Eski şifre",
-	"wrongemail": "Geçersiz e-posta",
-	"id": "Kimlik",
-	"name": "Kullanıcı adı",
-	"email": "E-posta",
-	"phone": "Telefon",
-	"role": "Rol",
-	"weaver": "Dokumacı",
-	"manager": "Yönetici",
-	"action": "Eylem",
-	"register": "Yeni kullanıcı kaydı",
-	"delete": "KULLANICIYI SİL",
-	"editsubmit": "DÜZENLE",
-	"regsubmit": "KAYDOLUN"
+    "wrongemail": "Geçersiz e-posta",
+    "id": "Kimlik",
+    "name": "Kullanıcı adı",
+    "email": "E-posta",
+    "phone": "Telefon",
+    "role": "Rol",
+    "weaver": "Dokumacı",
+    "manager": "Yönetici",
+    "action": "Eylem",
+    "register": "Yeni kullanıcı kaydı",
+    "delete": "KULLANICIYI SİL",
+    "editsubmit": "DÜZENLE",
+    "regsubmit": "KAYDOLUN"
   },
   "confirm": {
     "ok": "EVET",
@@ -78,14 +92,14 @@ const locale = {
     "reboot": "Yeniden başlatma bekleniyor",
     "usererror": "Yanlış şifre",
     "rightserror": "Yetersiz kullanıcı hakları",
-	"confupdate": "Ayarlar değişti",
-	"servererror": "Sunucu hatası",
-	"dberror": "Veritabanı hatası",
-	"userexist": "Kullanıcı zaten var",
-	"userregistered": "Kullanıcı kayıtlı",
-	"notregistered": "Kullanıcı kaydedilemedi",
-	"userdel": "Kullanıcı silindi",
-	"userupdate": "Kullanıcı güncellendi"
+    "confupdate": "Ayarlar değişti",
+    "servererror": "Sunucu hatası",
+    "dberror": "Veritabanı hatası",
+    "userexist": "Kullanıcı zaten var",
+    "userregistered": "Kullanıcı kayıtlı",
+    "notregistered": "Kullanıcı kaydedilemedi",
+    "userdel": "Kullanıcı silindi",
+    "userupdate": "Kullanıcı güncellendi"
   },
   "com": {
     "path": "Bağlantı Noktası yolu",
@@ -94,14 +108,14 @@ const locale = {
     "baudRate": "Iletim hızı",
     "dataBits": "Veri bitleri",
     "stopBits": "Durdur bitleri",
-	"parity":  {
-		"parity": "Parite",
-		"none": "yok",
-		"even": "eşit",
-		"mark": "her zaman 1",
-		"odd": "garip",
-		"space": "her zaman 0"
-	}
+    "parity": {
+      "parity": "Parite",
+      "none": "yok",
+      "even": "eşit",
+      "mark": "her zaman 1",
+      "odd": "garip",
+      "space": "her zaman 0"
+    }
   },
   "rtu": {
     "com": "COM bağlantı noktası",
@@ -123,12 +137,12 @@ const locale = {
     "com": "COM Bağlantı Noktası ayarları",
     "rtu": "ModbusRTU ayarları",
     "tcp": "ModbusTCP ayarları",
-	"language": "Dil seçimi",
+    "language": "Dil seçimi",
     "actions": "Eylemler",
     "network": "Ağ ayarları"
   },
   "system": {
-	"reboot": "CİHAZI YENİDEN BAŞLAT"
+    "reboot": "CİHAZI YENİDEN BAŞLAT"
   }
 }
 export default locale

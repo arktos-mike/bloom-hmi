@@ -8,10 +8,24 @@ const locale = {
     "settings": "НАСТРОЙКИ",
     "settingsOp": "ПАНЕЛЬ ОПЕРАТОРА",
     "users": "АДМИНИСТРИРОВАНИЕ ПОЛЬЗОВАТЕЛЕЙ",
+    "shifts": "УПРАВЛЕНИЕ СМЕНАМИ",
     "settingsDev": "СБОР ДАННЫХ"
   },
   "shift": {
-    "shift": "Смена"
+    "shift": "Смена",
+    "days" : "д",
+    "hours" : "ч",
+    "mins" : "м",
+    "secs" : "c",
+    "starttime" : "Начало",
+    "duration" : "Продолжительность",
+    "monday" : "Пн",
+    "tuesday" : "Вт",
+    "wednesday" : "Ср",
+    "thursday" : "Чт",
+    "friday" : "Пт",
+    "saturday" : "Сб",
+    "sunday" : "Вс"
   },
   "tags": {
     "comTime": {
