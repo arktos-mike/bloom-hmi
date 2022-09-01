@@ -4,14 +4,13 @@ import { PlusOutlined, UploadOutlined, ExclamationCircleOutlined, DeleteOutlined
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import { Checkbox, Input, Select, TimePicker } from '@/components';
-import format from 'dayjs';
 import dayjs from 'dayjs';
 
 interface DataType {
   key: React.Key;
   shiftname: string;
   starttime: string;
-  duration: number;
+  duration: string;
   monday: boolean;
   tuesday: boolean;
   wednesday: boolean;
@@ -35,30 +34,27 @@ const Shifts: React.FC<Props> = ({
 ) => {
   const { t } = useTranslation();
   const [data, setData] = useState<DataType[]>([]);
-  const [count, setCount] = useState(1);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<TablePaginationConfig>({
     defaultPageSize: 5, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default'
   });
   const handleAdd = () => {
     const newData: DataType = {
-      key: count,
-      shiftname: `${count}`,
-      starttime: '08:00',
-      duration: 8,
-      monday: true,
-      tuesday: true,
-      wednesday: true,
-      thursday: true,
-      friday: true,
-      saturday: false,
-      sunday: false
+      key: data.length ? Number(data.slice(-1)[0].key)+1 : 1,
+      shiftname: `${data.length ? Number(data.slice(-1)[0].key)+1 : 1}`,
+      starttime: data.length ? dayjs(data.slice(-1)[0].starttime, 'HH:mm').add(parseInt(data.length ? data.slice(-1)[0].duration : '8H'), 'h').format('HH:mm') :'08:00',
+      duration: data.length ? data.slice(-1)[0].duration : '8H',
+      monday: data.length ? data.slice(-1)[0].monday : true,
+      tuesday: data.length ? data.slice(-1)[0].tuesday : true,
+      wednesday: data.length ? data.slice(-1)[0].wednesday : true,
+      thursday: data.length ? data.slice(-1)[0].thursday : true,
+      friday: data.length ? data.slice(-1)[0].friday : true,
+      saturday: data.length ? data.slice(-1)[0].saturday : false,
+      sunday: data.length ? data.slice(-1)[0].sunday : false
     };
     setData([...data, newData]);
-    setCount(count + 1);
   };
   const handleSave = (row: DataType) => {
-    console.log(row)
     const newData = [...data];
     const index = newData.findIndex(item => row.key === item.key);
     const item = newData[index];
@@ -73,8 +69,22 @@ const Shifts: React.FC<Props> = ({
     const newData = data.filter(item => item.key !== key);
     setData(newData);
   };
-  const handleSubmit = () => {
-    console.log(data)
+  const handleSubmit = async () => {
+    const table = data.map(({ key, ...rest }) => {
+      return rest;
+    });
+    try {
+      const response = await fetch('http://localhost:3000/shifts/', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json;charset=UTF-8', },
+        body: JSON.stringify(table),
+      });
+      const json = await response.json();
+      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
+      if (!response.ok) { throw Error(response.statusText); }
+    }
+    catch (error) { console.log(error) }
+    fetchData();
   };
   const handleChange: TableProps<DataType>['onChange'] = (pagination, currentDataSource) => {
     pagination.total = data.length
@@ -91,6 +101,19 @@ const Shifts: React.FC<Props> = ({
         style: style,
       });
   };
+  const confirmSave = () => {
+    Modal.confirm({
+      title: t('confirm.title'),
+      icon: <ExclamationCircleOutlined style={{ fontSize: "300%" }} />,
+      content: t('confirm.descr'),
+      okText: t('confirm.ok'),
+      cancelText: t('confirm.cancel'),
+      centered: true,
+      okButtonProps: { size: 'large', danger: true },
+      cancelButtonProps: { size: 'large' },
+      onOk: () => { handleSubmit() },
+    });
+  };
   const confirm = (id: React.Key) => {
     Modal.confirm({
       title: t('confirm.title'),
@@ -104,6 +127,9 @@ const Shifts: React.FC<Props> = ({
       onOk: () => { handleDelete(id) },
     });
   };
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const columns: ColumnsType<DataType> = [
     {
@@ -122,7 +148,7 @@ const Shifts: React.FC<Props> = ({
       title: t('shift.duration'),
       dataIndex: 'duration',
       width: '10%',
-      render: (_, record) => (<Select defaultValue={record.duration} onChange={(value: any) => { record.duration = value; handleSave(record); }} options={[{ label: 6 + ' ' + t('shift.hours'), value: 6 }, { label: 7 + ' ' + t('shift.hours'), value: 7 }, { label: 8 + ' ' + t('shift.hours'), value: 8 }, { label: 9 + ' ' + t('shift.hours'), value: 9 }, { label: 10 + ' ' + t('shift.hours'), value: 10 }, { label: 11 + ' ' + t('shift.hours'), value: 11 }, { label: 12 + ' ' + t('shift.hours'), value: 12 }]}>
+      render: (_, record) => (<Select defaultValue={record.duration} onChange={(value: any) => { record.duration = value; handleSave(record); }} options={[{ label: 6 + ' ' + t('shift.hours'), value: '6H' }, { label: 7 + ' ' + t('shift.hours'), value: '7H' }, { label: 8 + ' ' + t('shift.hours'), value: '8H' }, { label: 9 + ' ' + t('shift.hours'), value: '9H' }, { label: 10 + ' ' + t('shift.hours'), value: '10H' }, { label: 11 + ' ' + t('shift.hours'), value: '11H' }, { label: 12 + ' ' + t('shift.hours'), value: '12H' }]}>
       </Select>),
     },
     {
@@ -180,14 +206,21 @@ const Shifts: React.FC<Props> = ({
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/users');
+      const response = await fetch('http://localhost:3000/shifts');
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
       setPagination({
         total: json.length,
-        defaultPageSize: 6, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default'
+        defaultPageSize: 5, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default'
       });
-      //setData(json);
+      let count = 1;
+      json.map((row: any) => {
+        row.key=count
+        row.duration=row.duration.hours+'H'
+        count++
+      });
+      setData(json);
+      console.log(json)
       setLoading(false);
 
     }
@@ -197,7 +230,7 @@ const Shifts: React.FC<Props> = ({
   return (
     <div>
       <Button shape="circle" icon={< PlusOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={handleAdd}></Button>
-      <Button shape="circle" icon={< UploadOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={handleSubmit}></Button>
+      <Button shape="circle" icon={< UploadOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={confirmSave}></Button>
       <Table
         columns={columns}
         rowKey={record => record.key}

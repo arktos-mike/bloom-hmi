@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS users (
   );
   CREATE TABLE IF NOT EXISTS shiftconfig (
     shiftname text PRIMARY KEY not null,
-    starttime TIME(0) with time zone,
+    starttime TIME(0),
     duration interval,
     monday BOOLEAN,
     tuesday BOOLEAN,
