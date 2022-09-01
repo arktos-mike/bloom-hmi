@@ -183,6 +183,7 @@ const Users: React.FC<Props> = ({
           size='small'
           style={{ width: '100%' }}
           onChange={handleChange}
+          showSorterTooltip={false}
         />
         <UserEditSA isModalVisible={editVisible} setIsModalVisible={setEditVisible} user={user} activeInput={activeInput} setActiveInput={setActiveInput} />
         <UserRegister isModalVisible={regVisible} setIsModalVisible={setRegVisible} activeInput={activeInput} setActiveInput={setActiveInput} token={token} />

@@ -23,13 +23,13 @@ interface DataType {
 type Props = {
   activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string };
   setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string }) => void;
-  token: any;
+  setUpdated: (val: boolean) => void;
 };
 
 const Shifts: React.FC<Props> = ({
   activeInput,
   setActiveInput,
-  token
+  setUpdated
 }
 ) => {
   const { t } = useTranslation();
@@ -40,9 +40,9 @@ const Shifts: React.FC<Props> = ({
   });
   const handleAdd = () => {
     const newData: DataType = {
-      key: data.length ? Number(data.slice(-1)[0].key)+1 : 1,
-      shiftname: `${data.length ? Number(data.slice(-1)[0].key)+1 : 1}`,
-      starttime: data.length ? dayjs(data.slice(-1)[0].starttime, 'HH:mm').add(parseInt(data.length ? data.slice(-1)[0].duration : '8H'), 'h').format('HH:mm') :'08:00',
+      key: data.length ? Number(data.slice(-1)[0].key) + 1 : 1,
+      shiftname: `${data.length ? Number(data.slice(-1)[0].key) + 1 : 1}`,
+      starttime: data.length ? dayjs(data.slice(-1)[0].starttime, 'HH:mm').add(parseInt(data.length ? data.slice(-1)[0].duration : '8H'), 'h').format('HH:mm') : '08:00',
       duration: data.length ? data.slice(-1)[0].duration : '8H',
       monday: data.length ? data.slice(-1)[0].monday : true,
       tuesday: data.length ? data.slice(-1)[0].tuesday : true,
@@ -53,6 +53,10 @@ const Shifts: React.FC<Props> = ({
       sunday: data.length ? data.slice(-1)[0].sunday : false
     };
     setData([...data, newData]);
+    setPagination({
+      total: data.length + 1,
+      defaultPageSize: 5, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default'
+    });
   };
   const handleSave = (row: DataType) => {
     const newData = [...data];
@@ -68,6 +72,10 @@ const Shifts: React.FC<Props> = ({
   const handleDelete = (key: React.Key) => {
     const newData = data.filter(item => item.key !== key);
     setData(newData);
+    setPagination({
+      total: data.length - 1,
+      defaultPageSize: 5, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default'
+    });
   };
   const handleSubmit = async () => {
     const table = data.map(({ key, ...rest }) => {
@@ -81,6 +89,7 @@ const Shifts: React.FC<Props> = ({
       });
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
+      setUpdated(json.error ? false : true);
       if (!response.ok) { throw Error(response.statusText); }
     }
     catch (error) { console.log(error) }
@@ -89,6 +98,7 @@ const Shifts: React.FC<Props> = ({
   const handleChange: TableProps<DataType>['onChange'] = (pagination, currentDataSource) => {
     pagination.total = data.length
     setPagination(pagination);
+    console.log(pagination.total)
   };
 
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
@@ -215,14 +225,12 @@ const Shifts: React.FC<Props> = ({
       });
       let count = 1;
       json.map((row: any) => {
-        row.key=count
-        row.duration=row.duration.hours+'H'
+        row.key = count
+        row.duration = row.duration.hours + 'H'
         count++
       });
       setData(json);
-      console.log(json)
       setLoading(false);
-
     }
     catch (error) { console.log(error); }
   };
@@ -240,6 +248,7 @@ const Shifts: React.FC<Props> = ({
         size='small'
         style={{ width: '100%' }}
         onChange={handleChange}
+        showSorterTooltip={false}
       />
     </div>
   )

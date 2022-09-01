@@ -6,14 +6,13 @@ import db from '../../db'
 const router = PromiseRouter();
 // export our router to be mounted by the parent application
 router.get('/', async (req, res) => {
-    const { rows } = await db.query('SELECT * FROM shiftconfig');
+    const { rows } = await db.query('SELECT * FROM shiftconfig ORDER BY shiftname');
     res.status(200).send(rows)
 })
 
 router.post('/', async (req, res) => {
     const table = req.body;
     try {
-        console.log(JSON.stringify(table))
         await db.query('TRUNCATE shiftconfig')
         const data = await db.query(`INSERT INTO shiftconfig select * from json_to_recordset($1) as x(shiftname text, starttime TIME, duration interval, monday BOOLEAN, tuesday BOOLEAN, wednesday BOOLEAN, thursday BOOLEAN, friday BOOLEAN, saturday BOOLEAN, sunday BOOLEAN)`, [JSON.stringify(table)]);
         res.status(200).json({

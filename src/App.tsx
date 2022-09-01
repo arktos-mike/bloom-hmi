@@ -29,6 +29,10 @@ import eslayout from "simple-keyboard-layouts/build/layouts/spanish";
 import numeric from "./components/numeric";
 
 import { useStopwatch } from 'react-timer-hook';
+import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
+import weekday from 'dayjs/plugin/weekday';
+dayjs.extend(isBetween, weekday);
 
 const { Header, Content, Footer } = Layout;
 const { Option } = Select;
@@ -125,6 +129,9 @@ const App: React.FC = () => {
   const [userDialogVisible, setUserDialogVisible] = useState(false)
   const [layout, setLayout] = useState('default')
   const [tags, setTags] = useState({ data: [] })
+  const [shifts, setShifts] = useState([])
+  const [updated, setUpdated] = useState(false)
+
   const handleShift = () => {
     setLayout(layout === "default" ? "shift" : "default")
   };
@@ -233,6 +240,55 @@ const App: React.FC = () => {
     if (obj) { return obj['val']; }
     else { return 999 };
   }
+  const determineShift = () => {
+    let dow: string;
+    switch (dayjs().weekday()) {
+      case 1:
+        dow = 'monday'
+        break;
+      case 2:
+        dow = 'tuesday'
+        break;
+      case 3:
+        dow = 'wednesday'
+        break;
+      case 4:
+        dow = 'thursday'
+        break;
+      case 5:
+        dow = 'friday'
+        break;
+      case 6:
+        dow = 'saturday'
+        break;
+      case 7:
+        dow = 'sunday'
+        break;
+      default:
+        dow = 'monday'
+        break;
+    }
+    const result = shifts.filter(shift => shift[dow]).sort((a, b) => a['starttime'] - b['starttime']);
+    let shift: any
+    result.map((row: any) => {
+      if (dayjs().isBetween(dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.starttime == "00:00:00" ? 1 : 0, 'day'), dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.duration.hours, 'hour').add(row.starttime == "00:00:00" ? 1 : 0, 'day'), 'minute', '[)')) {
+        shift = row
+        shift.startshift = dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.starttime == "00:00:00" ? 1 : 0, 'day')
+        shift.endshift = dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.duration.hours, 'hour').add(row.starttime == "00:00:00" ? 1 : 0, 'day')
+      }
+    });
+    return (shift)
+  }
+  const fetchShifts = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/shifts');
+      if (!response.ok) { throw Error(response.statusText); }
+      const json = await response.json();
+      setShifts(json);
+      determineShift();
+    }
+    catch (error) { console.log(error); }
+  };
 
   useEffect(() => {
     clock();
@@ -242,6 +298,11 @@ const App: React.FC = () => {
   useEffect(() => {
     fetchTags(['modeCode', 'stopAngle', 'speedMainDrive']);
   }, [tags])
+
+  useEffect(() => {
+    fetchShifts();
+    setUpdated(false);
+  }, [updated])
 
   useEffect(() => {
     setToken(token)
@@ -293,7 +354,7 @@ const App: React.FC = () => {
             <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={[location.pathname == '/' ? 'overview' : location.pathname.split("/").filter((item) => item)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : smallItems : smallItems} />
             <div className="speed">{modeCode == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}</div><div className="sub">{modeCode == 1 ? t('tags.speedMainDrive.eng') : '°'}</div>
             <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode).color }}>{modeCodeObj(modeCode).text + ' '}{modeCodeObj(modeCode).icon}<div className='stopwatch'>{days > 0 && <span>{days}</span>}{days > 0 && t('shift.days') + " "}{hours > 0 && <span>{hours}</span>}{hours > 0 && t('shift.hours') + " "}{minutes > 0 && <span>{minutes}</span>}{minutes > 0 && t('shift.mins') + " "}{seconds > 0 && <span>{seconds}</span>}{seconds > 0 && t('shift.secs')}</div></div>
-            <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' A'}<div className="percent">{'50.0%'}</div></Space></div><div className="progress"><Progress percent={50} showInfo={false} size="small" /></div></div>
+            {determineShift() && <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' ' + determineShift().shiftname}<div className="percent">{'50.0%'}</div></Space></div><div className="progress"><Progress percent={50} showInfo={false} size="small" /></div></div>}
             <div className="user">
               <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} style={{ background: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "", borderColor: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "" }} /><table><tbody><tr><td><div className='username'>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</div></td></tr><tr><td><div className='userrole'>{t(token ? 'user.' + JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : '')}</div></td></tr></tbody></table>
               <UserLogin token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} activeInput={activeInput} setActiveInput={setActiveInput} />
@@ -314,7 +375,7 @@ const App: React.FC = () => {
                   <Route path={'/settings'} element={<SettingsOp token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
                   <Route path={'/settings/settingsDev'} element={<SettingsDev token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
                   <Route path={'/users'} element={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? <Users activeInput={activeInput} setActiveInput={setActiveInput} token={token} /> : <Navigate to="/" /> : <Navigate to="/" />} />
-                  <Route path={'/shifts'} element={token ? ['manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Shifts activeInput={activeInput} setActiveInput={setActiveInput} token={token} /> : <Navigate to="/" /> : <Navigate to="/" />} />
+                  <Route path={'/shifts'} element={token ? ['manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Shifts activeInput={activeInput} setActiveInput={setActiveInput} setUpdated={setUpdated} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
                 <Drawer
