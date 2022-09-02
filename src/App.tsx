@@ -129,6 +129,7 @@ const App: React.FC = () => {
   const [userDialogVisible, setUserDialogVisible] = useState(false)
   const [layout, setLayout] = useState('default')
   const [tags, setTags] = useState({ data: [] })
+  const [shift, setShift] = useState({ name: '', start:{} , end:{} , duration: '', runtime: '', picks: 0, efficiency: 0 })
   const [shifts, setShifts] = useState([])
   const [updated, setUpdated] = useState(false)
 
@@ -269,15 +270,11 @@ const App: React.FC = () => {
         break;
     }
     const result = shifts.filter(shift => shift[dow]).sort((a, b) => a['starttime'] - b['starttime']);
-    let shift: any
     result.map((row: any) => {
       if (dayjs().isBetween(dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.starttime == "00:00:00" ? 1 : 0, 'day'), dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.duration.hours, 'hour').add(row.starttime == "00:00:00" ? 1 : 0, 'day'), 'minute', '[)')) {
-        shift = row
-        shift.startshift = dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.starttime == "00:00:00" ? 1 : 0, 'day')
-        shift.endshift = dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.duration.hours, 'hour').add(row.starttime == "00:00:00" ? 1 : 0, 'day')
+        setShift({...shift, name:row.shiftname, start: dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.starttime == "00:00:00" ? 1 : 0, 'day'), end: dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.duration.hours, 'hour').add(row.starttime == "00:00:00" ? 1 : 0, 'day')})
       }
     });
-    return (shift)
   }
   const fetchShifts = async () => {
     try {
@@ -286,6 +283,7 @@ const App: React.FC = () => {
       const json = await response.json();
       setShifts(json);
       determineShift();
+      setUpdated(false);
     }
     catch (error) { console.log(error); }
   };
@@ -293,6 +291,8 @@ const App: React.FC = () => {
   useEffect(() => {
     clock();
     fetchLngs();
+    fetchShifts();
+    setUpdated(true);
   }, [])
 
   useEffect(() => {
@@ -301,7 +301,6 @@ const App: React.FC = () => {
 
   useEffect(() => {
     fetchShifts();
-    setUpdated(false);
   }, [updated])
 
   useEffect(() => {
@@ -354,7 +353,7 @@ const App: React.FC = () => {
             <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={[location.pathname == '/' ? 'overview' : location.pathname.split("/").filter((item) => item)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : smallItems : smallItems} />
             <div className="speed">{modeCode == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}</div><div className="sub">{modeCode == 1 ? t('tags.speedMainDrive.eng') : '°'}</div>
             <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode).color }}>{modeCodeObj(modeCode).text + ' '}{modeCodeObj(modeCode).icon}<div className='stopwatch'>{days > 0 && <span>{days}</span>}{days > 0 && t('shift.days') + " "}{hours > 0 && <span>{hours}</span>}{hours > 0 && t('shift.hours') + " "}{minutes > 0 && <span>{minutes}</span>}{minutes > 0 && t('shift.mins') + " "}{seconds > 0 && <span>{seconds}</span>}{seconds > 0 && t('shift.secs')}</div></div>
-            {determineShift() && <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' ' + determineShift().shiftname}<div className="percent">{'50.0%'}</div></Space></div><div className="progress"><Progress percent={50} showInfo={false} size="small" /></div></div>}
+            {shift.name && <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' ' + shift.name}<div className="percent">{'50.0%'}</div></Space></div><div className="progress"><Progress percent={50} showInfo={false} size="small" /></div></div>}
             <div className="user">
               <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} style={{ background: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "", borderColor: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "" }} /><table><tbody><tr><td><div className='username'>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</div></td></tr><tr><td><div className='userrole'>{t(token ? 'user.' + JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : '')}</div></td></tr></tbody></table>
               <UserLogin token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} activeInput={activeInput} setActiveInput={setActiveInput} />

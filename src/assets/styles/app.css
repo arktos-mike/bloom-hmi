@@ -214,6 +214,7 @@ body {
   font-size: medium;
   text-align: center;
   line-height: 40px;
+  white-space: nowrap;
 }
 
 .mode {

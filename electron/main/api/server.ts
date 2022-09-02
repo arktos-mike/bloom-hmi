@@ -82,14 +82,14 @@ const dbInit = async () => {
       { name: "modeControl", group: "setting", dev: "rtu1", addr: "12", type: "word", reg: "rw", min: 0, max: 2, dec: 0 },
       { name: "stopAngle", group: "visual", dev: "rtu1", addr: "13", type: "word", reg: "r", min: 0, max: 359, dec: 0 },
     ]
-    
+
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['rtuConf', rtuConf])
     await db.query('INSERT INTO tags SELECT * FROM UNNEST($1::jsonb[]) ON CONFLICT (tag) DO NOTHING;', [tags])
     bcrypt.hash('123456', 10, async (err, hash) => {
       await db.query(`INSERT INTO users (id, name, password, role) VALUES(1,'Admin',$1,'admin') ON CONFLICT (id) DO NOTHING;`, [hash])
     });
-    await db.query('INSERT INTO locales SELECT UNNEST($1::text[]), UNNEST($2::jsonb[]), UNNEST($3::boolean[]) ON CONFLICT (locale) DO NOTHING;', [['en', 'es', 'ru', 'tr'], [enlocale,eslocale,rulocale,trlocale], [false, false, true, false]])
+    await db.query('INSERT INTO locales SELECT UNNEST($1::text[]), UNNEST($2::jsonb[]), UNNEST($3::boolean[]) ON CONFLICT (locale) DO NOTHING;', [['en', 'es', 'ru', 'tr'], [enlocale, eslocale, rulocale, trlocale], [false, false, true, false]])
 
     const comRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['comConf']);
     com1 = Object.assign(com1, comRows.rows[0].data.opCOM1, { act: 0 });
@@ -130,8 +130,7 @@ dbInit();
 //==============================================================
 const connectClient = async function (client, port) {
   // set requests parameters
-  if (port.timeout == 0) { port.timeout = 1000 }
-  await client.setTimeout(port.timeout);
+  await client.setTimeout(port.timeout ? port.timeout : 1000);
   // try to connect
   try {
     await client.connectRTUBuffered(port.path, port.conf)
@@ -243,7 +242,7 @@ const readModbusData = async function (client, port, slave) {
               port.mbsState = MBS_STATE_GOOD_READ;
               mbsStatus = "success";
               let val = data.buffer[0];
-              db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 and tag->>$4=$5', [val, 'dev', slave.name, 'name', tag.name]);
+              db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 and tag->>$4=$5 AND val IS DISTINCT FROM $1;', [val, 'dev', slave.name, 'name', tag.name]);
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             } catch (e) {
@@ -273,7 +272,7 @@ const readModbusData = async function (client, port, slave) {
                 default:
                   break;
               }
-              db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 and tag->>$4=$5', [val, 'dev', slave.name, 'name', tag.name]);
+              db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 and tag->>$4=$5 AND val IS DISTINCT FROM $1;', [val, 'dev', slave.name, 'name', tag.name]);
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             } catch (e) {
@@ -293,7 +292,7 @@ const readModbusData = async function (client, port, slave) {
               port.mbsState = MBS_STATE_GOOD_READ;
               mbsStatus = "success";
               let val = data.buffer[0];
-              db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 and tag->>$4=$5', [val, 'dev', slave.name, 'name', tag.name]);
+              db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 and tag->>$4=$5 AND val IS DISTINCT FROM $1;', [val, 'dev', slave.name, 'name', tag.name]);
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             } catch (e) {
@@ -323,7 +322,7 @@ const readModbusData = async function (client, port, slave) {
                 default:
                   break;
               }
-              db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 and tag->>$4=$5', [val, 'dev', slave.name, 'name', tag.name]);
+              db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 and tag->>$4=$5 AND val IS DISTINCT FROM $1;', [val, 'dev', slave.name, 'name', tag.name]);
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             } catch (e) {
@@ -345,14 +344,9 @@ function delay(ms) {
 }
 //==============================================================
 const runModbus = async function (client, port) {
-  if (port.path == com1.path && updFlagCOM1) {
-    await dbInit(); if (port.timeout == 0) { port.timeout = 1000 }
-    await client.setTimeout(port.timeout); await resetFlagCOM1();
-  }
-  if (port.path == com2.path && updFlagCOM2) {
-    await dbInit(); if (port.timeout == 0) { port.timeout = 1000 }
-    await client.setTimeout(port.timeout); await resetFlagCOM2();
-  }
+  if (updFlagCOM1 || updFlagCOM2) { let com = port.path; await dbInit(); if (port.path != com) { await client.close(); await connectClient(client, port); } else { await client.setTimeout(port.timeout ? port.timeout : 1000); } }
+  updFlagCOM1 && resetFlagCOM1();
+  updFlagCOM2 && resetFlagCOM2();
   let nextAction;
   let slave = port.slaves[port.act];
   if (port.slaves.length > 0 && slave?.tags?.length > 0) {
