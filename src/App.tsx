@@ -3,7 +3,7 @@ import logo from '/icon.svg'
 import 'styles/app.css'
 import { Route, Link, Routes, useLocation, Navigate } from 'react-router-dom';
 import { Layout, Menu, Select, Drawer, Button, Input, notification, ConfigProvider, Breadcrumb, Space, Progress } from 'antd';
-import { ScheduleOutlined, ToolOutlined, QuestionCircleOutlined, ReloadOutlined, LoadingOutlined, AimOutlined, DashboardOutlined, CloseCircleTwoTone, EyeTwoTone, EyeInvisibleOutlined, GlobalOutlined, CloseOutlined, ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
+import { ScheduleOutlined, ToolOutlined, QuestionCircleOutlined, SyncOutlined, LoadingOutlined, AimOutlined, DashboardOutlined, CloseCircleTwoTone, EyeTwoTone, EyeInvisibleOutlined, GlobalOutlined, CloseOutlined, ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "./components/Icons"
 import { useIdleTimer } from 'react-idle-timer'
 import Overview from "./page/overview";
@@ -170,7 +170,7 @@ const App: React.FC = () => {
   const modeCodeObj = (code: Number) => {
     let obj;
     if (code == 0) { obj = { color: '#000000FF', text: t('tags.mode.init'), icon: <LoadingOutlined style={{ fontSize: '150%', paddingInline: 5 }} /> } }
-    else if (code == 1) { obj = { color: '#43A047FF', text: t('tags.mode.run'), icon: <ReloadOutlined spin style={{ fontSize: '150%', paddingInline: 5 }} /> } }
+    else if (code == 1) { obj = { color: '#43A047FF', text: t('tags.mode.run'), icon:  <SyncOutlined spin style={{ fontSize: '150%', paddingInline: 5 }} /> } }
     else if (code == 2) { obj = { color: '#7339ABFF', text: t('tags.mode.stop'), icon: <ButtonIcon style={{ fontSize: '150%', paddingInline: 5 }} /> } }
     else if (code == 3) { obj = { color: '#FF7F27FF', text: t('tags.mode.stop'), icon: <WarpBeamIcon style={{ fontSize: '150%', paddingInline: 5 }} /> } }
     else if (code == 4) { obj = { color: '#FFB300FF', text: t('tags.mode.stop'), icon: <WeftIcon style={{ fontSize: '150%', paddingInline: 5 }} /> } }
