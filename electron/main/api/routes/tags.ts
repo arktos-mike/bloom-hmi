@@ -13,7 +13,7 @@ router.get('/', async (req, res) => {
 router.post('/filter', async (req, res) => {
     const filter = req.body;
     try {
-        const data = await db.query(`SELECT tag, val FROM tags WHERE tag->>$1 = ANY ('{${filter[Object.keys(filter)[0]]}}') ORDER BY tag->>$1`, [Object.keys(filter)[0]]);
+        const data = await db.query(`SELECT tag, val, updated FROM tags WHERE tag->>$1 = ANY ('{${filter[Object.keys(filter)[0]]}}') ORDER BY tag->>$1`, [Object.keys(filter)[0]]);
         const arr = data.rows;
         if (arr.length == 0) {
             return res.status(400).json({

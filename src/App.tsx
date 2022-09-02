@@ -28,26 +28,16 @@ import rulayout from "simple-keyboard-layouts/build/layouts/russian";
 import eslayout from "simple-keyboard-layouts/build/layouts/spanish";
 import numeric from "./components/numeric";
 
-import { useStopwatch } from 'react-timer-hook';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
+import duration from 'dayjs/plugin/duration';
 import weekday from 'dayjs/plugin/weekday';
 dayjs.extend(isBetween, weekday);
-
+dayjs.extend(duration);
 const { Header, Content, Footer } = Layout;
 const { Option } = Select;
 
 const App: React.FC = () => {
-  const {
-    seconds,
-    minutes,
-    hours,
-    days,
-    isRunning,
-    start,
-    pause,
-    reset,
-  } = useStopwatch({ autoStart: true });
   const keyboardRef = useRef<KeyboardReactInterface | null>(null)
   const span = useRef<HTMLSpanElement | null>(null);
   const descr = useRef<HTMLSpanElement | null>(null);
@@ -114,7 +104,7 @@ const App: React.FC = () => {
   }
 
   const [inputWidth, setInputWidth] = useState<number | undefined>(0)
-  const [modeCode, setModeCode] = useState<number>(999)
+  const [modeCode, setModeCode] = useState({ val: 0, updated: {} });
   const [activeInput, setActiveInput] = useState({ form: '', id: '', num: false, showInput: true, input: '', showKeyboard: false, descr: '', pattern: 'default' })
   const [keyboardLayout, setKeyboardLayout] = useState(enlayout.layout)
   const [keyboardLng, setKeyboardLng] = useState('en')
@@ -129,7 +119,7 @@ const App: React.FC = () => {
   const [userDialogVisible, setUserDialogVisible] = useState(false)
   const [layout, setLayout] = useState('default')
   const [tags, setTags] = useState({ data: [] })
-  const [shift, setShift] = useState({ name: '', start:{} , end:{} , duration: '', runtime: '', picks: 0, efficiency: 0 })
+  const [shift, setShift] = useState({ name: '', start: {}, end: {}, duration: '', runtime: '', picks: 0, efficiency: 0 })
   const [shifts, setShifts] = useState([])
   const [updated, setUpdated] = useState(false)
 
@@ -179,14 +169,14 @@ const App: React.FC = () => {
 
   const modeCodeObj = (code: Number) => {
     let obj;
-    if (code == 0) { obj = { color: '#000000FF', text: t('tags.mode.init'), icon: <LoadingOutlined style={{ fontSize: '100%', paddingInline: 5 }} /> } }
-    else if (code == 1) { obj = { color: '#43A047FF', text: t('tags.mode.run'), icon: <ReloadOutlined spin style={{ fontSize: '100%', paddingInline: 5 }} /> } }
-    else if (code == 2) { obj = { color: '#7339ABFF', text: t('tags.mode.stop'), icon: <ButtonIcon style={{ fontSize: '100%', paddingInline: 5 }} /> } }
-    else if (code == 3) { obj = { color: '#FF7F27FF', text: t('tags.mode.stop'), icon: <WarpBeamIcon style={{ fontSize: '100%', paddingInline: 5 }} /> } }
-    else if (code == 4) { obj = { color: '#FFB300FF', text: t('tags.mode.stop'), icon: <WeftIcon style={{ fontSize: '100%', paddingInline: 5 }} /> } }
-    else if (code == 5) { obj = { color: '#E53935FF', text: t('tags.mode.stop'), icon: <ToolOutlined style={{ fontSize: '100%', paddingInline: 5 }} /> } }
-    else if (code == 6) { obj = { color: '#005498FF', text: t('tags.mode.stop'), icon: <FabricFullIcon style={{ fontSize: '100%', paddingInline: 5 }} /> } }
-    else { obj = { color: '#00000000', text: t('tags.mode.unknown'), icon: <QuestionCircleOutlined style={{ fontSize: '100%', paddingInline: 5 }} /> } }
+    if (code == 0) { obj = { color: '#000000FF', text: t('tags.mode.init'), icon: <LoadingOutlined style={{ fontSize: '150%', paddingInline: 5 }} /> } }
+    else if (code == 1) { obj = { color: '#43A047FF', text: t('tags.mode.run'), icon: <ReloadOutlined spin style={{ fontSize: '150%', paddingInline: 5 }} /> } }
+    else if (code == 2) { obj = { color: '#7339ABFF', text: t('tags.mode.stop'), icon: <ButtonIcon style={{ fontSize: '150%', paddingInline: 5 }} /> } }
+    else if (code == 3) { obj = { color: '#FF7F27FF', text: t('tags.mode.stop'), icon: <WarpBeamIcon style={{ fontSize: '150%', paddingInline: 5 }} /> } }
+    else if (code == 4) { obj = { color: '#FFB300FF', text: t('tags.mode.stop'), icon: <WeftIcon style={{ fontSize: '150%', paddingInline: 5 }} /> } }
+    else if (code == 5) { obj = { color: '#E53935FF', text: t('tags.mode.stop'), icon: <ToolOutlined style={{ fontSize: '150%', paddingInline: 5 }} /> } }
+    else if (code == 6) { obj = { color: '#005498FF', text: t('tags.mode.stop'), icon: <FabricFullIcon style={{ fontSize: '150%', paddingInline: 5 }} /> } }
+    else { obj = { color: '#00000000', text: t('tags.mode.unknown'), icon: <QuestionCircleOutlined style={{ fontSize: '150%', paddingInline: 5 }} /> } }
     return obj;
   }
 
@@ -206,6 +196,11 @@ const App: React.FC = () => {
         clearInterval(timer); // Return a funtion to clear the timer so that it will stop being called on unmount
       }
     }, sec);
+  }
+
+  const stopwatch = (start: any) => {
+    let diff = dayjs.duration(dayjs().diff(start))
+    return (diff.days() > 0 ? diff.days() + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + t('shift.secs') : "")
   }
 
   const fetchLngs = async () => {
@@ -231,7 +226,7 @@ const App: React.FC = () => {
         tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec'])));
       setTags({ data: json });
       let obj = tags.data.find(o => o['tag']['name'] == 'modeCode')
-      if (obj && (modeCode != obj['val'])) { setModeCode(obj['val']); reset(); }
+      obj && setModeCode({ val: obj['val'], updated: dayjs(obj['updated']) })
     }
     catch (error) { console.log(error); }
   }
@@ -272,7 +267,7 @@ const App: React.FC = () => {
     const result = shifts.filter(shift => shift[dow]).sort((a, b) => a['starttime'] - b['starttime']);
     result.map((row: any) => {
       if (dayjs().isBetween(dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.starttime == "00:00:00" ? 1 : 0, 'day'), dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.duration.hours, 'hour').add(row.starttime == "00:00:00" ? 1 : 0, 'day'), 'minute', '[)')) {
-        setShift({...shift, name:row.shiftname, start: dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.starttime == "00:00:00" ? 1 : 0, 'day'), end: dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.duration.hours, 'hour').add(row.starttime == "00:00:00" ? 1 : 0, 'day')})
+        setShift({ ...shift, name: row.shiftname, start: dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.starttime == "00:00:00" ? 1 : 0, 'day'), end: dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.duration.hours, 'hour').add(row.starttime == "00:00:00" ? 1 : 0, 'day') })
       }
     });
   }
@@ -351,8 +346,8 @@ const App: React.FC = () => {
               <img src={logo} className="applogo" alt=""></img>
             </div>
             <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={[location.pathname == '/' ? 'overview' : location.pathname.split("/").filter((item) => item)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : smallItems : smallItems} />
-            <div className="speed">{modeCode == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}</div><div className="sub">{modeCode == 1 ? t('tags.speedMainDrive.eng') : '°'}</div>
-            <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode).color }}>{modeCodeObj(modeCode).text + ' '}{modeCodeObj(modeCode).icon}<div className='stopwatch'>{days > 0 && <span>{days}</span>}{days > 0 && t('shift.days') + " "}{hours > 0 && <span>{hours}</span>}{hours > 0 && t('shift.hours') + " "}{minutes > 0 && <span>{minutes}</span>}{minutes > 0 && t('shift.mins') + " "}{seconds > 0 && <span>{seconds}</span>}{seconds > 0 && t('shift.secs')}</div></div>
+            <div className="speed">{modeCode.val == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode.val == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}</div><div className="sub">{modeCode.val == 1 ? t('tags.speedMainDrive.eng') : '°'}</div>
+            <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode.val).color }}>{modeCodeObj(modeCode.val).text + ' '}{modeCodeObj(modeCode.val).icon}<div className='stopwatch'>{stopwatch(modeCode.updated)}</div></div>
             {shift.name && <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' ' + shift.name}<div className="percent">{'50.0%'}</div></Space></div><div className="progress"><Progress percent={50} showInfo={false} size="small" /></div></div>}
             <div className="user">
               <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} style={{ background: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "", borderColor: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "" }} /><table><tbody><tr><td><div className='username'>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</div></td></tr><tr><td><div className='userrole'>{t(token ? 'user.' + JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : '')}</div></td></tr></tbody></table>
