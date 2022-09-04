@@ -67,7 +67,7 @@ function useLoading() {
   oStyle.id = 'app-loading-style'
   oStyle.innerHTML = styleContent
   oDiv.className = 'app-loading-wrap'
-  oDiv.innerHTML = `<div class="${className}"><div><img style="width: 50px;  height: 50px;" src='/icon.svg' alt=""></img></div></div>`
+  oDiv.innerHTML = `<div class="${className}"><div><img style="width: 50px;  height: 50px;" src="icon.svg" alt=""></img></div></div>`
 
   return {
     appendLoading() {

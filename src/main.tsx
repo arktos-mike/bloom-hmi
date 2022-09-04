@@ -6,7 +6,7 @@ import 'styles/index.css'
 import 'dayjs/locale/ru'
 import 'dayjs/locale/es'
 import 'dayjs/locale/tr'
-import * as localizedFormat from 'dayjs/plugin/localizedFormat';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
 import dayjs from 'dayjs';
 import { HashRouter } from 'react-router-dom'
 dayjs.extend(localizedFormat);

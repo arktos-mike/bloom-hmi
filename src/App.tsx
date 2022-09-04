@@ -29,11 +29,11 @@ import eslayout from "simple-keyboard-layouts/build/layouts/spanish";
 import numeric from "./components/numeric";
 
 import dayjs from 'dayjs';
-import isBetween from 'dayjs/plugin/isBetween';
 import duration from 'dayjs/plugin/duration';
-import weekday from 'dayjs/plugin/weekday';
-dayjs.extend(isBetween, weekday);
 dayjs.extend(duration);
+import isBetween from 'dayjs/plugin/isBetween';
+dayjs.extend(isBetween);
+
 const { Header, Content, Footer } = Layout;
 const { Option } = Select;
 
@@ -170,7 +170,7 @@ const App: React.FC = () => {
   const modeCodeObj = (code: Number) => {
     let obj;
     if (code == 0) { obj = { color: '#000000FF', text: t('tags.mode.init'), icon: <LoadingOutlined style={{ fontSize: '150%', paddingInline: 5 }} /> } }
-    else if (code == 1) { obj = { color: '#43A047FF', text: t('tags.mode.run'), icon:  <SyncOutlined spin style={{ fontSize: '150%', paddingInline: 5 }} /> } }
+    else if (code == 1) { obj = { color: '#43A047FF', text: t('tags.mode.run'), icon: <SyncOutlined spin style={{ fontSize: '150%', paddingInline: 5 }} /> } }
     else if (code == 2) { obj = { color: '#7339ABFF', text: t('tags.mode.stop'), icon: <ButtonIcon style={{ fontSize: '150%', paddingInline: 5 }} /> } }
     else if (code == 3) { obj = { color: '#FF7F27FF', text: t('tags.mode.stop'), icon: <WarpBeamIcon style={{ fontSize: '150%', paddingInline: 5 }} /> } }
     else if (code == 4) { obj = { color: '#FFB300FF', text: t('tags.mode.stop'), icon: <WeftIcon style={{ fontSize: '150%', paddingInline: 5 }} /> } }
@@ -236,34 +236,12 @@ const App: React.FC = () => {
     if (obj) { return obj['val']; }
     else { return 999 };
   }
+
   const determineShift = () => {
-    let dow: string;
-    switch (dayjs().weekday()) {
-      case 1:
-        dow = 'monday'
-        break;
-      case 2:
-        dow = 'tuesday'
-        break;
-      case 3:
-        dow = 'wednesday'
-        break;
-      case 4:
-        dow = 'thursday'
-        break;
-      case 5:
-        dow = 'friday'
-        break;
-      case 6:
-        dow = 'saturday'
-        break;
-      case 7:
-        dow = 'sunday'
-        break;
-      default:
-        dow = 'monday'
-        break;
-    }
+    let dateObj = new Date()
+    let weekdayNumber = dateObj.getDay()
+    let arrayOfWeekdays = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+    let dow = arrayOfWeekdays[weekdayNumber];
     const result = shifts.filter(shift => shift[dow]).sort((a, b) => a['starttime'] - b['starttime']);
     result.map((row: any) => {
       if (dayjs().isBetween(dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.starttime == "00:00:00" ? 1 : 0, 'day'), dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.duration.hours, 'hour').add(row.starttime == "00:00:00" ? 1 : 0, 'day'), 'minute', '[)')) {
@@ -271,13 +249,14 @@ const App: React.FC = () => {
       }
     });
   }
+
   const fetchShifts = async () => {
     try {
       const response = await fetch('http://localhost:3000/shifts');
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
       setShifts(json);
-      determineShift();
+      //determineShift();
       setUpdated(false);
     }
     catch (error) { console.log(error); }
