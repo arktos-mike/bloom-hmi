@@ -235,8 +235,6 @@ const SettingsDev: React.FC<Props> = ({
         <Col span={12} style={{ display: 'flex', flex: '1 1 100%', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('panel.rtu')} bordered={false} size='small' style={cardStyle2} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
             <Form
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 16 }}
               size='small'
               form={formRTU}
               style={{ width: '100%' }}
@@ -270,7 +268,7 @@ const SettingsDev: React.FC<Props> = ({
                   <Checkbox userRights={['admin', 'manager']} token={token} text='rtu.swapWords'></Checkbox>
                 </Form.Item>
               </Form.Item>
-              <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+              <Form.Item>
                 <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
               </Form.Item>
             </Form>

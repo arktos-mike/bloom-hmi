@@ -67,10 +67,10 @@ const dbInit = async () => {
   })
 
   await SerialPort.list().then(async function (ports) {
-    if (ports[0] !== undefined) { com1.path = ports[0].path; } //else { com1.path = "COM3"; }
-    if (ports[1] !== undefined) { com2.path = ports[1].path; } //else { com2.path = "COM3"; }
-    const comConf = { opCOM1: { path: com1.path, conf: { baudRate: 115200, parity: "none", dataBits: 8, stopBits: 1 }, scan: 1000, timeout: 0 }, opCOM2: { path: "COM3", conf: { baudRate: 115200, parity: "none", dataBits: 8, stopBits: 1 }, scan: 1000, timeout: 0 } }
-    const rtuConf = { rtu1: { com: 'opCOM2', sId: 1, swapBytes: true, swapWords: true } }
+    if (ports[0] !== undefined) { com1.path = ports[0].path; } else { com1.path = "COM1"; }
+    if (ports[1] !== undefined) { com2.path = ports[1].path; } else { com2.path = "COM2"; }
+    const comConf = { opCOM1: { path: com1.path, conf: { baudRate: 230400, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 500 }, opCOM2: { path: com2.path, conf: { baudRate: 115200, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 0 } }
+    const rtuConf = { rtu1: { com: 'opCOM1', sId: 1, swapBytes: true, swapWords: true } }
     const tags = [
       { name: "picksLastRun", group: "monitoring", dev: "rtu1", addr: "0", type: "dword", reg: "r", min: 0, max: 4294967295, dec: 0 },
       { name: "speedMainDrive", group: "monitoring", dev: "rtu1", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 },

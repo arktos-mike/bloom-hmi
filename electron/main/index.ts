@@ -9,7 +9,7 @@ import './api/server'
 //==============================================================
 
 // Disable GPU Acceleration for Windows 7
-//if (release().startsWith('6.1')) 
+//if (release().startsWith('6.1'))
 app.disableHardwareAcceleration()
 
 // Set application name for Windows 10+ notifications
@@ -46,9 +46,10 @@ async function createWindow() {
       preload,
       nodeIntegration: true,
       contextIsolation: false,
-      webSecurity: false
+      webSecurity: false,
     },
   })
+  win.setBackgroundColor('#282c34');
   win.once('ready-to-show', () => {
     let devInnerHeight = 1080.0 // InnerHeight at development time
     let devDevicePixelRatio = 1.0// devicepixelratio during development

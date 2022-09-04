@@ -99,6 +99,10 @@ body {
   pointer-events: none;
 }
 
+.ant-drawer-extra {
+  flex: none;
+}
+
 .table-col-title {
   background-color: #E1F5FE;
 }
