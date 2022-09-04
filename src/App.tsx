@@ -256,7 +256,7 @@ const App: React.FC = () => {
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
       setShifts(json);
-      //determineShift();
+      determineShift();
       setUpdated(false);
     }
     catch (error) { console.log(error); }
