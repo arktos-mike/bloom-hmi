@@ -1,7 +1,7 @@
 import { Card, Col, Form, notification, Row, Select, } from 'antd';
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next';
-import { DesktopOutlined, WifiOutlined, GlobalOutlined, CalendarOutlined, ClockCircleOutlined, SyncOutlined } from '@ant-design/icons';
+import { DesktopOutlined, WifiOutlined, GlobalOutlined, CalendarOutlined, ClockCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 import { DatePicker, TimePicker, Button, InputNumber, } from '../components';
 import format from 'dayjs';
 import dayjs from 'dayjs';
@@ -177,7 +177,7 @@ const SettingsOp: React.FC<Props> = ({
         </Col>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('panel.actions')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
-            <Button confirm userRights={['fixer', 'admin', 'manager']} token={token} onClick={onReboot} icon={<SyncOutlined style={{ fontSize: '200%' }} />} text="system.reboot" />
+            <Button confirm userRights={['fixer', 'admin', 'manager']} token={token} onClick={onReboot} icon={<ReloadOutlined style={{ fontSize: '200%' }} />} text="system.reboot" />
           </Card>
         </Col>
       </Row>
