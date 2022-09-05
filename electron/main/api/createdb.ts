@@ -46,46 +46,59 @@ CREATE TABLE IF NOT EXISTS users (
   );
 
   create or replace
-function shiftdetect()
- returns text
- language plpgsql
-as $function$
-   declare
-   picks numeric;
+  function public.shiftdetect(stamp timestamp)
+   returns text
+   language plpgsql
+  as $function$
+     declare
+     picks numeric;
 
-dow numeric;
+  dow numeric;
 
-shift text;
+  shift text;
 
-weekday text;
+  weekday text;
 
-begin
+  prevweekday text;
 
-dow := (
-select
-	extract(ISODOW
-from
-	localtimestamp));
+  begin
 
-weekday := (case
-	when dow = 1 then 'monday'
-	when dow = 2 then 'tuesday'
-	when dow = 3 then 'wednesday'
-	when dow = 4 then 'thursday'
-	when dow = 5 then 'friday'
-	when dow = 6 then 'saturday'
-	when dow = 7 then 'sunday'
-end);
+  dow := (
+  select
+    extract(ISODOW
+  from
+    stamp));
 
-execute 'select shiftname from shiftconfig where (' || weekday || ' and localtimestamp >= make_timestamp(extract(year from localtimestamp)::int,extract(month from localtimestamp)::int,extract(day from localtimestamp)::int,extract(hour from starttime)::int,extract(minute from starttime)::int,0.0) and localtimestamp < make_timestamp(extract(year from localtimestamp)::int,extract(month from localtimestamp)::int,extract(day from localtimestamp)::int,extract(hour from starttime)::int,extract(minute from starttime)::int,0.0)+duration)'
-into
-	shift;
+  weekday := (case
+    when dow = 1 then 'monday'
+    when dow = 2 then 'tuesday'
+    when dow = 3 then 'wednesday'
+    when dow = 4 then 'thursday'
+    when dow = 5 then 'friday'
+    when dow = 6 then 'saturday'
+    when dow = 7 then 'sunday'
+  end);
 
-return shift;
-end;
+  prevweekday := (case
+    when dow = 1 then 'sunday'
+    when dow = 2 then 'monday'
+    when dow = 3 then 'tuesday'
+    when dow = 4 then 'wednesday'
+    when dow = 5 then 'thursday'
+    when dow = 6 then 'friday'
+    when dow = 7 then 'saturday'
+  end);
 
-$function$
-;
+  execute 'select shiftname from shiftconfig where ((' || weekday || ' or ' || prevweekday || ') and $1 >= make_timestamp(extract(year from $1)::int,extract(month from $1)::int,extract(day from $1)::int,extract(hour from starttime)::int,extract(minute from starttime)::int,0.0) and $1 < make_timestamp(extract(year from $1)::int,extract(month from $1)::int,extract(day from $1)::int,extract(hour from starttime)::int,extract(minute from starttime)::int,0.0)+duration) order by '
+  into
+    shift
+      using stamp;
+
+  return shift;
+  end;
+
+  $function$
+  ;
 
 create or replace
 function modelog()
