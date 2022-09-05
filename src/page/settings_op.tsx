@@ -195,7 +195,7 @@ const SettingsOp: React.FC<Props> = ({
               colon={false}
             >
               <Form.Item label={opIP.type == "Wireless" ? <WifiOutlined style={{ fontSize: '130%' }} /> : <DesktopOutlined style={{ fontSize: '130%' }} />} >
-                <span style={{ fontSize: '20px' }}>{opIP.mac_address + " " + opIP.name + " " + opIP.ip_address + " " + opIP.netmask + " " + opIP.gateway_ip}</span>
+                <span style={{ fontSize: '16px' }}>{opIP.mac_address + " " + opIP.name + " " + opIP.ip_address + " " + opIP.netmask + " " + opIP.gateway_ip}</span>
               </Form.Item>
               <Form.Item
                 name="ip"
@@ -237,10 +237,10 @@ const SettingsOp: React.FC<Props> = ({
               colon={false}
             >
               <Form.Item label={<CalendarOutlined style={{ fontSize: '130%' }} />} >
-                <span style={{ fontSize: '20px' }}>{curDate}</span>
+                <span style={{ fontSize: '16px' }}>{curDate}</span>
               </Form.Item>
               <Form.Item label={<ClockCircleOutlined style={{ fontSize: '130%' }} />} >
-                <span style={{ fontSize: '20px' }}>{curTime}</span>
+                <span style={{ fontSize: '16px' }}>{curTime}</span>
               </Form.Item>
               <Form.Item
                 name="date"

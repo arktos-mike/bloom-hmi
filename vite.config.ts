@@ -15,6 +15,26 @@ export default defineConfig({
       'styles': join(__dirname, 'src/assets/styles'),
     },
   },
+  css: {
+    // CSS Pre -processor
+    preprocessorOptions: {
+      less: {
+        javascriptEnabled: true,
+        modifyVars: {
+          '@border-radius-base': '10px',
+          '@border-width-base': '2px',
+          '@border-radius-sm': '3px',
+          '@disabled-bg': '@white',
+          '@disabled-active-bg': '@white',
+          '@segmented-bg': 'fade(@black, 15%)',
+          '@segmented-hover-bg': 'fade(@black, 30%)',
+          '@segmented-selected-bg': '@primary-color',
+          '@segmented-label-color': '@white',
+          '@segmented-label-hover-color': '@white',
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     electron({

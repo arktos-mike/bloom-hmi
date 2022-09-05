@@ -275,8 +275,8 @@ const SettingsDev: React.FC<Props> = ({
           </Card>
           <Card title={t('panel.tcp')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
             <Form
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 16 }}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 18 }}
               size='small'
               form={formTCP}
               disabled
