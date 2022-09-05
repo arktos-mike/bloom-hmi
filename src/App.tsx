@@ -244,8 +244,8 @@ const App: React.FC = () => {
     let dow = arrayOfWeekdays[weekdayNumber];
     const result = shifts.filter(shift => shift[dow]).sort((a, b) => a['starttime'] - b['starttime']);
     result.map((row: any) => {
-      if (dayjs().isBetween(dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.starttime == "00:00:00" ? 1 : 0, 'day'), dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.duration.hours, 'hour').add(row.starttime == "00:00:00" ? 1 : 0, 'day'), 'minute', '[)')) {
-        setShift({ ...shift, name: row.shiftname, start: dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.starttime == "00:00:00" ? 1 : 0, 'day'), end: dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.duration.hours, 'hour').add(row.starttime == "00:00:00" ? 1 : 0, 'day') })
+      if (dayjs().isBetween(dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()), dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.duration.hours, 'hour'), 'minute', '[)')) {
+        setShift({ ...shift, name: row.shiftname, start: dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()), end: dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.duration.hours, 'hour') })
       }
     });
   }

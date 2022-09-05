@@ -15,7 +15,7 @@ CREATE INDEX IF NOT EXISTS idxgintype ON tags USING gin ((tag -> 'type'));
 CREATE INDEX IF NOT EXISTS idxginreg ON tags USING gin ((tag -> 'reg'));
 CREATE TABLE IF NOT EXISTS locales (
   locale text PRIMARY KEY NOT NULL,
-  translation JSONB,    
+  translation JSONB,
   selected BOOLEAN NOT NULL
 );
 CREATE TABLE IF NOT EXISTS users (
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS users (
     name text not null,
     email text,
     phonenumber text,
-    password varchar not null, 
+    password varchar not null,
     role text
   );
   CREATE TABLE IF NOT EXISTS modelog (
@@ -46,66 +46,89 @@ CREATE TABLE IF NOT EXISTS users (
   );
 
   create or replace
-  function public.modelog()
-   returns trigger
-   language plpgsql
-  as $function$
+function shiftdetect()
+ returns text
+ language plpgsql
+as $function$
    declare
    picks numeric;
-  
-  dow numeric;
-  
-  shift text;
-  
-  weekday text;
-  
-  begin
+
+dow numeric;
+
+shift text;
+
+weekday text;
+
+begin
+
+dow := (
+select
+	extract(ISODOW
+from
+	localtimestamp));
+
+weekday := (case
+	when dow = 1 then 'monday'
+	when dow = 2 then 'tuesday'
+	when dow = 3 then 'wednesday'
+	when dow = 4 then 'thursday'
+	when dow = 5 then 'friday'
+	when dow = 6 then 'saturday'
+	when dow = 7 then 'sunday'
+end);
+
+execute 'select shiftname from shiftconfig where (' || weekday || ' and localtimestamp >= make_timestamp(extract(year from localtimestamp)::int,extract(month from localtimestamp)::int,extract(day from localtimestamp)::int,extract(hour from starttime)::int,extract(minute from starttime)::int,0.0) and localtimestamp < make_timestamp(extract(year from localtimestamp)::int,extract(month from localtimestamp)::int,extract(day from localtimestamp)::int,extract(hour from starttime)::int,extract(minute from starttime)::int,0.0)+duration)'
+into
+	shift;
+
+return shift;
+end;
+
+$function$
+;
+
+create or replace
+function modelog()
+ returns trigger
+ language plpgsql
+as $function$
+   declare
+   picks numeric;
+
+shift text;
+
+begin
      if (new.val >= 2) then
        picks := (
-  select
-    val
-  from
-    tags
-  where
-    (tag->>'name' = 'picksLastRun'));
-  else
+select
+	val
+from
+	tags
+where
+	(tag->>'name' = 'picksLastRun'));
+else
        picks := null;
-  end if;
-  
-  dow := (
-  select
-    extract(ISODOW
-  from
-    current_timestamp));
-  
-  weekday := (case
-    when dow = 1 then 'monday'
-    when dow = 2 then 'tuesday'
-    when dow = 3 then 'wednesday'
-    when dow = 4 then 'thursday'
-    when dow = 5 then 'friday'
-    when dow = 6 then 'saturday'
-    when dow = 7 then 'sunday'
-  end);
-  
-  execute 'select shiftname from shiftconfig where (' || weekday || ' and localtime >= starttime and localtime <= starttime+duration-interval''1s'')'
-  into
-    shift;
-  
-  insert
-    into
-    modelog
-  values(current_timestamp,
-  new.val,
-  picks,
-  shift);
-  
-  return null;
-  end;
-  
-  $function$
-  ;
-  
+end if;
+
+shift :=(
+select
+	shiftdetect());
+
+insert
+	into
+	modelog
+values(current_timestamp,
+new.val,
+picks,
+shift);
+
+return null;
+end;
+
+$function$
+;
+
+
  DROP TRIGGER IF EXISTS modeChanged
   ON tags;
  create trigger modeChanged after insert or update on tags for row when (new.tag->>'name'='modeCode') execute function modelog();
