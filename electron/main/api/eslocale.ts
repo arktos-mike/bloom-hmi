@@ -95,6 +95,7 @@ const locale = {
     "confupdate": "Configuración cambiada",
     "servererror": "Error del servidor",
     "dberror": "Error de base de datos",
+    "dataerror": "Datos incorrectos",
     "userexist": "El usuario ya existe",
     "userregistered": "Usuario registrado",
     "notregistered": "No se pudo registrar el usuario",

@@ -95,6 +95,7 @@ const locale = {
     "confupdate": "Ayarlar değişti",
     "servererror": "Sunucu hatası",
     "dberror": "Veritabanı hatası",
+    "dataerror": "Yanlış veri",
     "userexist": "Kullanıcı zaten var",
     "userregistered": "Kullanıcı kayıtlı",
     "notregistered": "Kullanıcı kaydedilemedi",

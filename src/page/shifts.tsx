@@ -5,7 +5,8 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Checkbox, Input, Select, TimePicker } from '@/components';
 import dayjs from 'dayjs';
-
+import advancedFormat from 'dayjs/plugin/advancedFormat';
+dayjs.extend(advancedFormat);
 interface DataType {
   key: React.Key;
   shiftname: string;
@@ -18,6 +19,9 @@ interface DataType {
   friday: boolean;
   saturday: boolean;
   sunday: boolean;
+  problemName: boolean;
+  problemTime: boolean;
+  problemDur: boolean;
 }
 
 type Props = {
@@ -50,14 +54,19 @@ const Shifts: React.FC<Props> = ({
       thursday: data.length ? data.slice(-1)[0].thursday : true,
       friday: data.length ? data.slice(-1)[0].friday : true,
       saturday: data.length ? data.slice(-1)[0].saturday : false,
-      sunday: data.length ? data.slice(-1)[0].sunday : false
+      sunday: data.length ? data.slice(-1)[0].sunday : false,
+      problemName: false,
+      problemTime: false,
+      problemDur: false,
     };
+    rulesCheck([...data, newData]);
     setData([...data, newData]);
     setPagination({
       total: data.length + 1,
       defaultPageSize: 5, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default'
     });
   };
+
   const handleSave = (row: DataType) => {
     const newData = [...data];
     const index = newData.findIndex(item => row.key === item.key);
@@ -68,6 +77,7 @@ const Shifts: React.FC<Props> = ({
       ...row,
     });
     setData(newData);
+    rulesCheck(newData);
   };
   const handleDelete = (key: React.Key) => {
     const newData = data.filter(item => item.key !== key);
@@ -76,21 +86,27 @@ const Shifts: React.FC<Props> = ({
       total: data.length - 1,
       defaultPageSize: 5, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default'
     });
+    rulesCheck(newData);
   };
   const handleSubmit = async () => {
-    const table = data.map(({ key, ...rest }) => {
+    const table = data.map(({ key, problemName, problemTime, problemDur, ...rest }) => {
       return rest;
     });
     try {
-      const response = await fetch('http://localhost:3000/shifts/', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json;charset=UTF-8', },
-        body: JSON.stringify(table),
-      });
-      const json = await response.json();
-      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
-      setUpdated(json.error ? false : true);
-      if (!response.ok) { throw Error(response.statusText); }
+      if (rulesCheck(data)) {
+        openNotificationWithIcon('warning', t('notifications.dataerror'), 3);
+      }
+      else {
+        const response = await fetch('http://localhost:3000/shifts/', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json;charset=UTF-8', },
+          body: JSON.stringify(table),
+        });
+        const json = await response.json();
+        openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
+        setUpdated(json.error ? false : true);
+        if (!response.ok) { throw Error(response.statusText); }
+      }
     }
     catch (error) { console.log(error) }
     fetchData();
@@ -98,7 +114,6 @@ const Shifts: React.FC<Props> = ({
   const handleChange: TableProps<DataType>['onChange'] = (pagination, currentDataSource) => {
     pagination.total = data.length
     setPagination(pagination);
-    console.log(pagination.total)
   };
 
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
@@ -110,6 +125,37 @@ const Shifts: React.FC<Props> = ({
         duration: dur,
         style: style,
       });
+  };
+  const isNextDay = (data: DataType) => {
+    return (dayjs(data.starttime, "HH:mm").add(parseInt(data.duration), 'hour').date() != dayjs(data.starttime, "HH:mm").date() ? true : false)
+  }
+  const hasSameDay = (prevData: DataType, nextData: DataType) => {
+    return ((prevData.monday || isNextDay(prevData) && prevData.sunday) && nextData.monday) || ((prevData.tuesday || isNextDay(prevData) && prevData.monday) && nextData.tuesday) || ((prevData.wednesday || isNextDay(prevData) && prevData.tuesday) && nextData.wednesday) || ((prevData.thursday || isNextDay(prevData) && prevData.wednesday) && nextData.thursday) || ((prevData.friday || isNextDay(prevData) && prevData.thursday) && nextData.friday) || ((prevData.saturday || isNextDay(prevData) && prevData.friday) && nextData.saturday) || ((prevData.sunday || isNextDay(prevData) && prevData.saturday) && nextData.sunday)
+  }
+  const rulesCheck = (data: DataType[]) => {
+    let result = false;
+    data.filter((obj, index, array) => {
+      obj.problemName = false;
+      obj.problemTime = false;
+      obj.problemDur = false;
+      for (let i = 0; i < array.length; i++) {
+        if (i != index && array[i].shiftname == obj.shiftname) {
+          obj.problemName = true;
+          result = true;
+        }
+        if (i < index && hasSameDay(array[i], obj) && dayjs(obj.starttime, "HH:mm").add(isNextDay(array[i]) ? 1 : 0, 'day').isBefore(dayjs(array[i].starttime, "HH:mm"))) {
+          obj.problemTime = true;
+          result = true;
+        }
+        if (i < index && hasSameDay(array[i], obj) && dayjs(obj.starttime, "HH:mm").add(isNextDay(array[i]) ? 1 : 0, 'day').isBefore(dayjs(array[i].starttime, "HH:mm").add(parseInt(array[i].duration), 'hour'))) {
+          obj.problemTime = true;
+          array[i].problemDur = true;
+          result = true;
+        }
+      }
+    });
+    setData(data);
+    return result;
   };
   const confirmSave = () => {
     Modal.confirm({
@@ -137,6 +183,7 @@ const Shifts: React.FC<Props> = ({
       onOk: () => { handleDelete(id) },
     });
   };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -146,20 +193,19 @@ const Shifts: React.FC<Props> = ({
       title: t('shift.shift'),
       dataIndex: 'shiftname',
       width: '10%',
-      render: (_, record) => (<Input size="large" placeholder={t('shift.shift')} value={activeInput.id == ('shiftname' + record.key) ? activeInput.input : record.shiftname} onUpdate={(value: any) => { record.shiftname = value; handleSave(record); }} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'shift', id: 'shiftname' + record.key, num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'shift' }); }} />),
+      render: (_, record) => (<Input size="large" placeholder={t('shift.shift')} value={activeInput.id == ('shiftname' + record.key) ? activeInput.input : record.shiftname} onUpdate={(value: any) => { record.shiftname = value; handleSave(record); }} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'shift', id: 'shiftname' + record.key, num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'shift' }); }} status={record.problemName ? 'error' : null} />),
     },
     {
       title: t('shift.starttime'),
       dataIndex: 'starttime',
       width: '15%',
-      render: (_, record) => (<TimePicker showNow={false} defaultValue={dayjs(record.starttime, 'HH:mm')} format={'HH:mm'} onChange={(value: any) => { record.starttime = dayjs(value).format('HH:mm'); handleSave(record); }} />),
+      render: (_, record) => (<TimePicker showNow={false} minuteStep={15} defaultValue={dayjs(record.starttime, 'HH:mm')} format={'HH:mm'} onChange={(value: any) => { record.starttime = dayjs(value).format('HH:mm'); handleSave(record); }} status={record.problemTime ? 'error' : null} />),
     },
     {
       title: t('shift.duration'),
       dataIndex: 'duration',
       width: '10%',
-      render: (_, record) => (<Select defaultValue={record.duration} onChange={(value: any) => { record.duration = value; handleSave(record); }} options={[{ label: 6 + ' ' + t('shift.hours'), value: '6H' }, { label: 7 + ' ' + t('shift.hours'), value: '7H' }, { label: 8 + ' ' + t('shift.hours'), value: '8H' }, { label: 9 + ' ' + t('shift.hours'), value: '9H' }, { label: 10 + ' ' + t('shift.hours'), value: '10H' }, { label: 11 + ' ' + t('shift.hours'), value: '11H' }, { label: 12 + ' ' + t('shift.hours'), value: '12H' }]}>
-      </Select>),
+      render: (_, record) => (<Select defaultValue={record.duration} onChange={(value: any) => { record.duration = value; handleSave(record); }} options={[{ label: 6 + ' ' + t('shift.hours'), value: '6H' }, { label: 7 + ' ' + t('shift.hours'), value: '7H' }, { label: 8 + ' ' + t('shift.hours'), value: '8H' }, { label: 9 + ' ' + t('shift.hours'), value: '9H' }, { label: 10 + ' ' + t('shift.hours'), value: '10H' }, { label: 11 + ' ' + t('shift.hours'), value: '11H' }, { label: 12 + ' ' + t('shift.hours'), value: '12H' }]} status={record.problemDur ? 'error' : null} />),
     },
     {
       title: t('shift.monday'),
@@ -227,10 +273,14 @@ const Shifts: React.FC<Props> = ({
       json.map((row: any) => {
         row.key = count
         row.duration = row.duration.hours + 'H'
+        row.problemName = false
+        row.problemTime = false
+        row.problemDur = false
         count++
       });
       setData(json);
       setLoading(false);
+      rulesCheck(json);
     }
     catch (error) { console.log(error); }
   };

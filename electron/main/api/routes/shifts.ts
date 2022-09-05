@@ -6,7 +6,7 @@ import db from '../../db'
 const router = PromiseRouter();
 // export our router to be mounted by the parent application
 router.get('/', async (req, res) => {
-    const { rows } = await db.query('SELECT * FROM shiftconfig ORDER BY shiftname');
+    const { rows } = await db.query('SELECT * FROM shiftconfig');
     res.status(200).send(rows)
 })
 
@@ -28,4 +28,4 @@ router.post('/', async (req, res) => {
     };
 });
 
-export default router 
+export default router

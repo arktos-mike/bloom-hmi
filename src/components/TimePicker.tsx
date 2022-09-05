@@ -34,7 +34,7 @@ const Component = (props: any) => {
     </div>);
   }
   return (
-    <TimePicker defaultValue={props.defaultValue} showNow={props.showNow} onChange={props.onChange} format={props.format} size="large" style={{ width: '100%' }} status={props.status} />
+    <TimePicker minuteStep={props.minuteStep} defaultValue={props.defaultValue} showNow={props.showNow} onChange={props.onChange} format={props.format} size="large" style={{ width: '100%' }} status={props.status} />
   );
 }
 export default Component;
