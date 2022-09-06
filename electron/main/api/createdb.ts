@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS users (
   );
   CREATE TABLE IF NOT EXISTS shiftconfig (
     shiftname text PRIMARY KEY not null,
-    starttime TIME(0),
+    starttime TIMETZ(0),
     duration interval,
     monday BOOLEAN,
     tuesday BOOLEAN,
@@ -46,22 +46,27 @@ CREATE TABLE IF NOT EXISTS users (
   );
 
   create or replace
-  function public.shiftdetect(stamp timestamp)
-   returns text
+  function shiftdetect(stamp timestamp with time zone,
+  out weekday text,
+  out shiftname text,
+  out shiftstart timestamp with time zone,
+  out shiftend timestamp with time zone)
+   returns record
    language plpgsql
   as $function$
-     declare
-     picks numeric;
+                  declare
+                  picks numeric;
 
   dow numeric;
 
-  shift text;
-
-  weekday text;
-
-  prevweekday text;
+  tz int;
 
   begin
+     tz :=(extract(timezone_hour
+  from
+  stamp)::int);
+
+  stamp :=(stamp at time zone 'utc' at time zone 'utc');
 
   dow := (
   select
@@ -79,7 +84,30 @@ CREATE TABLE IF NOT EXISTS users (
     when dow = 7 then 'sunday'
   end);
 
-  prevweekday := (case
+  execute 'select shiftname, make_timestamptz(extract(year from $1)::int,extract(month from $1)::int,extract(day from $1)::int,extract(hour from starttime at time zone $2)::int,extract(minute from starttime at time zone $2)::int,0.0,$2) as shiftstart, make_timestamptz(extract(year from $1)::int,extract(month from $1)::int,extract(day from $1)::int,extract(hour from starttime at time zone $2)::int,extract(minute from starttime at time zone $2)::int,0.0,$2)+duration as shiftend from shiftconfig where ((' || weekday || ') and $1 >= make_timestamptz(extract(year from $1)::int,extract(month from $1)::int,extract(day from $1)::int,extract(hour from starttime at time zone $2)::int,extract(minute from starttime at time zone $2)::int,0.0,$2) and $1 < make_timestamptz(extract(year from $1)::int,extract(month from $1)::int,extract(day from $1)::int,extract(hour from starttime at time zone $2)::int,extract(minute from starttime at time zone $2)::int,0.0,$2)+duration)'
+  into
+    shiftname,
+    shiftstart,
+    shiftend
+      using stamp,
+    'UTC';
+
+  if (shiftname = '') is not false then
+
+     execute 'select shiftname, make_timestamptz(extract(year from $3)::int,extract(month from $3)::int,extract(day from $3)::int,extract(hour from starttime at time zone $2)::int,extract(minute from starttime at time zone $2)::int,0.0,$2) as shiftstart, make_timestamptz(extract(year from $3)::int,extract(month from $3)::int,extract(day from $3)::int,extract(hour from starttime at time zone $2)::int,extract(minute from starttime at time zone $2)::int,0.0,$2)+duration as shiftend from shiftconfig where ((' || weekday || ') and ((extract(hour from starttime at time zone $2)::int + $4)/ 24 ) > 0 and $1 >= make_timestamptz(extract(year from $3)::int,extract(month from $3)::int,extract(day from $3)::int,extract(hour from starttime at time zone $2)::int,extract(minute from starttime at time zone $2)::int,0.0,$2) and $1 < make_timestamptz(extract(year from $3)::int,extract(month from $3)::int,extract(day from $3)::int,extract(hour from starttime at time zone $2)::int,extract(minute from starttime at time zone $2)::int,0.0,$2)+duration)'
+  into
+    shiftname,
+    shiftstart,
+    shiftend
+      using stamp,
+    'UTC',
+    stamp - interval '1D',
+    tz
+             ;
+
+  if (shiftname = '') is not false then
+
+     weekday := (case
     when dow = 1 then 'sunday'
     when dow = 2 then 'monday'
     when dow = 3 then 'tuesday'
@@ -89,12 +117,19 @@ CREATE TABLE IF NOT EXISTS users (
     when dow = 7 then 'saturday'
   end);
 
-  execute 'select shiftname from shiftconfig where ((' || weekday || ' or ' || prevweekday || ') and $1 >= make_timestamp(extract(year from $1)::int,extract(month from $1)::int,extract(day from $1)::int,extract(hour from starttime)::int,extract(minute from starttime)::int,0.0) and $1 < make_timestamp(extract(year from $1)::int,extract(month from $1)::int,extract(day from $1)::int,extract(hour from starttime)::int,extract(minute from starttime)::int,0.0)+duration) order by '
+  execute 'select shiftname, make_timestamptz(extract(year from $3)::int,extract(month from $3)::int,extract(day from $3)::int,extract(hour from starttime at time zone $2)::int,extract(minute from starttime at time zone $2)::int,0.0,$2) as shiftstart, make_timestamptz(extract(year from $3)::int,extract(month from $3)::int,extract(day from $3)::int,extract(hour from starttime at time zone $2)::int,extract(minute from starttime at time zone $2)::int,0.0,$2)+duration as shiftend from shiftconfig where ((' || weekday || ') and ((extract(hour from starttime at time zone $2)::int + $4)/ 24 ) = 0 and $1 >= make_timestamptz(extract(year from $3)::int,extract(month from $3)::int,extract(day from $3)::int,extract(hour from starttime at time zone $2)::int,extract(minute from starttime at time zone $2)::int,0.0,$2) and $1 < make_timestamptz(extract(year from $3)::int,extract(month from $3)::int,extract(day from $3)::int,extract(hour from starttime at time zone $2)::int,extract(minute from starttime at time zone $2)::int,0.0,$2)+duration)'
   into
-    shift
-      using stamp;
+    shiftname,
+    shiftstart,
+    shiftend
+      using stamp,
+    'UTC',
+    stamp - interval '1D',
+    tz
+             ;
+  end if;
+  end if;
 
-  return shift;
   end;
 
   $function$
@@ -124,13 +159,13 @@ else
 end if;
 
 shift :=(
-select
-	shiftdetect());
+select shiftname from
+	shiftdetect(current_timestamp(6)));
 
 insert
 	into
 	modelog
-values(current_timestamp,
+values(current_timestamp(6),
 new.val,
 picks,
 shift);
@@ -140,7 +175,6 @@ end;
 
 $function$
 ;
-
 
  DROP TRIGGER IF EXISTS modeChanged
   ON tags;

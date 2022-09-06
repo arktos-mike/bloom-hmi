@@ -46,7 +46,7 @@ const Shifts: React.FC<Props> = ({
     const newData: DataType = {
       key: data.length ? Number(data.slice(-1)[0].key) + 1 : 1,
       shiftname: `${data.length ? Number(data.slice(-1)[0].key) + 1 : 1}`,
-      starttime: data.length ? dayjs(data.slice(-1)[0].starttime, 'HH:mm').add(parseInt(data.length ? data.slice(-1)[0].duration : '8H'), 'h').format('HH:mm') : '08:00',
+      starttime: data.length ? dayjs(data.slice(-1)[0].starttime, 'HH:mm').add(parseInt(data.length ? data.slice(-1)[0].duration : '8H'), 'h').format('HH:mm') : '00:00',
       duration: data.length ? data.slice(-1)[0].duration : '8H',
       monday: data.length ? data.slice(-1)[0].monday : true,
       tuesday: data.length ? data.slice(-1)[0].tuesday : true,
@@ -90,6 +90,7 @@ const Shifts: React.FC<Props> = ({
   };
   const handleSubmit = async () => {
     const table = data.map(({ key, problemName, problemTime, problemDur, ...rest }) => {
+      rest.starttime=dayjs(rest.starttime, 'HH:mm').format('HH:mmZ');
       return rest;
     });
     try {
@@ -272,6 +273,7 @@ const Shifts: React.FC<Props> = ({
       let count = 1;
       json.map((row: any) => {
         row.key = count
+        row.starttime = dayjs(row.starttime, 'HH:mmZ').format('HH:mm')
         row.duration = row.duration.hours + 'H'
         row.problemName = false
         row.problemTime = false
