@@ -148,9 +148,14 @@ const Shifts: React.FC<Props> = ({
           obj.problemTime = true;
           result = true;
         }
-        if (i < index && hasSameDay(array[i], obj) && dayjs(obj.starttime, "HH:mm").add(isNextDay(array[i]) ? 1 : 0, 'day').isBefore(dayjs(array[i].starttime, "HH:mm").add(parseInt(array[i].duration), 'hour'))) {
+        if (i < index && hasSameDay(array[i], obj) && dayjs(obj.starttime, "HH:mm").add(isNextDay(array[i]) ? 1 : 0, 'day').isBefore(dayjs(array[i].starttime, "HH:mm").add(parseInt(array[i].duration), 'hour')))  {
           obj.problemTime = true;
           array[i].problemDur = true;
+          result = true;
+        }
+        if (i < index && hasSameDay(obj, array[i]) && isNextDay(obj) && dayjs(obj.starttime, "HH:mm").add(parseInt(obj.duration), 'hour').isAfter(dayjs(array[i].starttime, "HH:mm").add( 1 , 'day')))  {
+          obj.problemDur = true;
+          array[i].problemTime = true;
           result = true;
         }
       }
