@@ -294,7 +294,7 @@ const Shifts: React.FC<Props> = ({
 
   return (
     <div>
-      <Button shape="circle" icon={< PlusOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={handleAdd}></Button>
+      <Button shape="circle" icon={< PlusOutlined />} size="large" type="primary" style={{ margin: 10, background: "#87d068", borderColor: "#87d068" }} onClick={handleAdd}></Button>
       <Button shape="circle" icon={< UploadOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={confirmSave}></Button>
       <Table
         columns={columns}

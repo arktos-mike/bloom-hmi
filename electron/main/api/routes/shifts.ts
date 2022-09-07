@@ -10,6 +10,11 @@ router.get('/', async (req, res) => {
     res.status(200).send(rows)
 })
 
+router.get('/currentshift', async (req, res) => {
+  const { rows } = await db.query('SELECT * FROM shiftdetect(current_timestamp)');
+  res.status(200).send(rows)
+})
+
 router.post('/', async (req, res) => {
     const table = req.body;
     try {

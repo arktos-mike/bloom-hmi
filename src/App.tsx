@@ -119,8 +119,7 @@ const App: React.FC = () => {
   const [userDialogVisible, setUserDialogVisible] = useState(false)
   const [layout, setLayout] = useState('default')
   const [tags, setTags] = useState({ data: [] })
-  const [shift, setShift] = useState({ name: '', start: {}, end: {}, duration: '', runtime: '', picks: 0, efficiency: 0 })
-  const [shifts, setShifts] = useState([])
+  const [shift, setShift] = useState({ name: '', start: '', end: '', duration: '', runtime: '', picks: 0, efficiency: 0 })
   const [updated, setUpdated] = useState(false)
 
   const handleShift = () => {
@@ -237,26 +236,12 @@ const App: React.FC = () => {
     else { return 999 };
   }
 
-  const determineShift = () => {
-    let dateObj = new Date()
-    let weekdayNumber = dateObj.getDay()
-    let arrayOfWeekdays = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-    let dow = arrayOfWeekdays[weekdayNumber];
-    const result = shifts.filter(shift => shift[dow]).sort((a, b) => a['starttime'] - b['starttime']);
-    result.map((row: any) => {
-      if (dayjs().isBetween(dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()), dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.duration.hours, 'hour'), 'minute', '[)')) {
-        setShift({ ...shift, name: row.shiftname, start: dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()), end: dayjs(row.starttime, 'HH:mm').day(dayjs().day()).month(dayjs().month()).year(dayjs().year()).add(row.duration.hours, 'hour') })
-      }
-    });
-  }
-
-  const fetchShifts = async () => {
+  const fetchShift = async () => {
     try {
-      const response = await fetch('http://localhost:3000/shifts');
+      const response = await fetch('http://localhost:3000/shifts/currentshift');
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
-      setShifts(json);
-      determineShift();
+      setShift({...shift, name: json[0]['shiftname'], start: json[0]['shiftstart'], end: json[0]['shiftend'], duration: json[0]['shiftdur'] });
       setUpdated(false);
     }
     catch (error) { console.log(error); }
@@ -265,7 +250,7 @@ const App: React.FC = () => {
   useEffect(() => {
     clock();
     fetchLngs();
-    fetchShifts();
+    fetchShift();
     setUpdated(true);
   }, [])
 
@@ -274,8 +259,8 @@ const App: React.FC = () => {
   }, [tags])
 
   useEffect(() => {
-    fetchShifts();
-  }, [updated])
+    fetchShift();
+  }, [updated, shift.end && dayjs().isAfter(shift.end)])
 
   useEffect(() => {
     setToken(token)
@@ -375,7 +360,7 @@ const App: React.FC = () => {
                     </div>
                   }
                   placement="bottom"
-                  height={keyboardCollapse ? 41 : 376}
+                  height={keyboardCollapse ? 42 : 376}
                   mask={true}
                   maskStyle={{ backgroundColor: "inherit", opacity: 0 }}
                   maskClosable={true}
