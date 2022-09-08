@@ -90,4 +90,4 @@ window.onmessage = ev => {
   ev.data.payload === 'removeLoading' && removeLoading()
 }
 
-setTimeout(removeLoading, 59999)
+setTimeout(removeLoading, 120000)

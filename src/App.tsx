@@ -256,7 +256,7 @@ const App: React.FC = () => {
         });
         if (!response.ok) { throw Error(response.statusText); }
         const json = await response.json();
-        setShift({ ...shift, picks: json[0]['sumpicks'], efficiency: json[0]['efficiency'] });
+        setShift({ ...shift, picks: json[0]['sumpicks'] || 0, efficiency: json[0]['efficiency'] || 0});
         setUpdated(false);
       }
     }
