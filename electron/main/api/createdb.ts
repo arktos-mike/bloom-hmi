@@ -177,5 +177,49 @@ create function modeupdate()
   $function$
   ;
 create trigger modeupdate before insert on modelog for row execute function modeupdate();
+create or replace function getstatinfo(starttime timestamp with time zone,
+endtime timestamp with time zone,
+out sumpicks numeric,
+out efficiency numeric)
+ returns record
+ language plpgsql
+as $function$
+
+begin
+	sumpicks := (
+select
+	sum(
+case when not (timestamp &> tstzrange(starttime, endtime, '[)'))
+then ceil(((select extract(epoch from (upper(tstzrange(starttime, endtime, '[)')* timestamp)-lower(tstzrange(starttime, endtime, '[)')* timestamp))))/(select extract(epoch from (upper(timestamp)-lower(timestamp)))))* picks)
+when (timestamp @> tstzrange(starttime, endtime, '[)'))
+then round(((select extract(epoch from (upper(tstzrange(starttime, endtime, '[)')* timestamp)-lower(tstzrange(starttime, endtime, '[)')* timestamp))))/(select extract(epoch from (upper(timestamp)-lower(timestamp)))))* picks)
+when not (timestamp &< tstzrange(starttime, endtime, '[)'))
+then floor(((select extract(epoch from (upper(tstzrange(starttime, endtime, '[)')* timestamp)-lower(tstzrange(starttime, endtime, '[)')* timestamp))))/(select extract(epoch from (upper(timestamp)-lower(timestamp)))))* picks)
+else picks
+end
+)
+from
+	modelog
+where
+	tstzrange(starttime,
+	endtime,
+	'[)') && timestamp
+	and modecode = 1 );
+
+efficiency := ((sumpicks * 6000)/ ( (
+select
+	val
+from
+	tags
+where
+	(tag->>'name' = 'planSpeedMainDrive')) * (
+select
+	extract(epoch
+from
+	(upper(tstzrange(starttime, endtime, '[)'))-lower(tstzrange(starttime, endtime, '[)'))))) ) );
+end;
+
+$function$
+;
 `
 export default createTableText

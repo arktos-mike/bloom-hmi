@@ -241,8 +241,24 @@ const App: React.FC = () => {
       const response = await fetch('http://localhost:3000/shifts/currentshift');
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
-      setShift({...shift, name: json[0]['shiftname'], start: json[0]['shiftstart'], end: json[0]['shiftend'], duration: json[0]['shiftdur'] });
+      setShift({ ...shift, name: json[0]['shiftname'], start: json[0]['shiftstart'], end: json[0]['shiftend'], duration: json[0]['shiftdur'] });
       setUpdated(false);
+    }
+    catch (error) { console.log(error); }
+  };
+  const fetchStatInfo = async () => {
+    try {
+      if (shift.start && shift.end) {
+        const response = await fetch('http://localhost:3000/shifts/getstatinfo', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json;charset=UTF-8', },
+          body: JSON.stringify({ start: shift.start, end: new Date() }),
+        });
+        if (!response.ok) { throw Error(response.statusText); }
+        const json = await response.json();
+        setShift({ ...shift, picks: json[0]['sumpicks'], efficiency: json[0]['efficiency'] });
+        setUpdated(false);
+      }
     }
     catch (error) { console.log(error); }
   };
@@ -261,6 +277,10 @@ const App: React.FC = () => {
   useEffect(() => {
     fetchShift();
   }, [updated, shift.end && dayjs().isAfter(shift.end)])
+
+  useEffect(() => {
+    fetchStatInfo();
+  }, [updated, shift.start && shift.end, shift.efficiency])
 
   useEffect(() => {
     setToken(token)
@@ -312,7 +332,7 @@ const App: React.FC = () => {
             <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={location.pathname == '/' ? ['overview'] : [location.pathname.split("/").filter((item) => item).slice(-1)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : smallItems : smallItems} />
             <div className="speed">{modeCode.val == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode.val == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}</div><div className="sub">{modeCode.val == 1 ? t('tags.speedMainDrive.eng') : '°'}</div>
             <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode.val).color }}>{modeCodeObj(modeCode.val).text + ' '}{modeCodeObj(modeCode.val).icon}<div className='stopwatch'>{stopwatch(modeCode.updated)}</div></div>
-            {shift.name && <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' ' + shift.name}<div className="percent">{'50.0%'}</div></Space></div><div className="progress"><Progress percent={50} showInfo={false} size="small" /></div></div>}
+            {shift.name && <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' ' + shift.name}<div className="percent">{Number(shift.efficiency).toFixed(1) + '%'}</div></Space></div><div className="progress"><Progress percent={shift.efficiency} showInfo={false} size="small" /></div></div>}
             <div className="user">
               <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} style={{ background: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "", borderColor: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "" }} /><table><tbody><tr><td><div className='username'>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</div></td></tr><tr><td><div className='userrole'>{t(token ? 'user.' + JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : '')}</div></td></tr></tbody></table>
               <UserLogin token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} activeInput={activeInput} setActiveInput={setActiveInput} />

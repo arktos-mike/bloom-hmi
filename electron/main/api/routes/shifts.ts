@@ -6,8 +6,8 @@ import db from '../../db'
 const router = PromiseRouter();
 // export our router to be mounted by the parent application
 router.get('/', async (req, res) => {
-    const { rows } = await db.query('SELECT * FROM shiftconfig');
-    res.status(200).send(rows)
+  const { rows } = await db.query('SELECT * FROM shiftconfig');
+  res.status(200).send(rows)
 })
 
 router.get('/currentshift', async (req, res) => {
@@ -15,22 +15,28 @@ router.get('/currentshift', async (req, res) => {
   res.status(200).send(rows)
 })
 
+router.post('/getstatinfo', async (req, res) => {
+  const { start, end } = req.body;
+  const { rows } = await db.query(`SELECT * FROM getstatinfo($1,$2)`, [start, end]);
+  res.status(200).send(rows)
+});
+
 router.post('/', async (req, res) => {
-    const table = req.body;
-    try {
-        await db.query('TRUNCATE shiftconfig')
-        const data = await db.query(`INSERT INTO shiftconfig select * from json_to_recordset($1) as x(shiftname text, starttime TIMETZ, duration interval, monday BOOLEAN, tuesday BOOLEAN, wednesday BOOLEAN, thursday BOOLEAN, friday BOOLEAN, saturday BOOLEAN, sunday BOOLEAN)`, [JSON.stringify(table)]);
-        res.status(200).json({
-            message: "notifications.confupdate",
-        });
-    }
-    catch (err) {
-        console.log(err);
-        res.status(500).json({
-            message: "notifications.dberror",
-            error: "Database error!", //Database connection error
-        });
-    };
+  const table = req.body;
+  try {
+    await db.query('TRUNCATE shiftconfig')
+    const data = await db.query(`INSERT INTO shiftconfig select * from json_to_recordset($1) as x(shiftname text, starttime TIMETZ, duration interval, monday BOOLEAN, tuesday BOOLEAN, wednesday BOOLEAN, thursday BOOLEAN, friday BOOLEAN, saturday BOOLEAN, sunday BOOLEAN)`, [JSON.stringify(table)]);
+    res.status(200).json({
+      data
+    });
+  }
+  catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: "notifications.dberror",
+      error: "Database error!", //Database connection error
+    });
+  };
 });
 
 export default router

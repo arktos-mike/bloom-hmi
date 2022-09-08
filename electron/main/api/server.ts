@@ -72,20 +72,21 @@ const dbInit = async () => {
     const comConf = { opCOM1: { path: com1.path, conf: { baudRate: 230400, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 500 }, opCOM2: { path: com2.path, conf: { baudRate: 115200, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 0 } }
     const rtuConf = { rtu1: { com: 'opCOM1', sId: 1, swapBytes: true, swapWords: true } }
     const tags = [
-      { name: "stopAngle", group: "visual", dev: "rtu1", addr: "13", type: "word", reg: "r", min: 0, max: 359, dec: 0 },
-      { name: "speedCloth", group: "monitoring", dev: "rtu1", addr: "6", type: "float", reg: "r", min: 1, max: 5, dec: 1 },
-      { name: "speedMainDrive", group: "monitoring", dev: "rtu1", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 },
-      { name: "modeCode", group: "monitoring", dev: "rtu1", addr: "8", type: "word", reg: "r", min: 0, max: 3, dec: 0 },
-      { name: "picksLastRun", group: "monitoring", dev: "rtu1", addr: "0", type: "dword", reg: "r", min: 0, max: 4294967295, dec: 0 },
-      { name: "clothDensity", group: "monitoring", dev: "rtu1", addr: "4", type: "float", reg: "r", min: 0.5, max: 25, dec: 2 },
-      { name: "takeupRatio", group: "setting", dev: "rtu1", addr: "9", type: "word", reg: "rw", min: 1, max: 65535, dec: 0 },
-      { name: "takeupDiam", group: "setting", dev: "rtu1", addr: "10", type: "float", reg: "rw", min: 1, max: 20, dec: 1 },
-      { name: "modeControl", group: "setting", dev: "rtu1", addr: "12", type: "word", reg: "rw", min: 0, max: 2, dec: 0 },
+      { tag: {name: "stopAngle", group: "visual", dev: "rtu1", addr: "13", type: "word", reg: "r", min: 0, max: 359, dec: 0 }},
+      { tag: {name: "speedCloth", group: "monitoring", dev: "rtu1", addr: "6", type: "float", reg: "r", min: 1, max: 5, dec: 1 }},
+      { tag: {name: "speedMainDrive", group: "monitoring", dev: "rtu1", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 }},
+      { tag: {name: "modeCode", group: "monitoring", dev: "rtu1", addr: "8", type: "word", reg: "r", min: 0, max: 3, dec: 0 }},
+      { tag: {name: "picksLastRun", group: "monitoring", dev: "rtu1", addr: "0", type: "dword", reg: "r", min: 0, max: 4294967295, dec: 0 }},
+      { tag: {name: "clothDensity", group: "monitoring", dev: "rtu1", addr: "4", type: "float", reg: "r", min: 0.5, max: 25, dec: 2 }},
+      { tag: {name: "takeupRatio", group: "setting", dev: "rtu1", addr: "9", type: "word", reg: "rw", min: 1, max: 65535, dec: 0 }},
+      { tag: {name: "takeupDiam", group: "setting", dev: "rtu1", addr: "10", type: "float", reg: "rw", min: 1, max: 20, dec: 1 }},
+      { tag: {name: "modeControl", group: "setting", dev: "rtu1", addr: "12", type: "word", reg: "rw", min: 0, max: 2, dec: 0 }},
+      { tag: {name: "planSpeedMainDrive", group: "setting", dev: "op", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, val: 200.0},
     ]
 
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['rtuConf', rtuConf])
-    await db.query('INSERT INTO tags SELECT * FROM UNNEST($1::jsonb[]) ON CONFLICT (tag) DO NOTHING;', [tags])
+    await db.query('INSERT INTO tags(tag,val) SELECT * FROM jsonb_to_recordset($1) as x(tag jsonb, val numeric) ON CONFLICT (tag) DO NOTHING;', [JSON.stringify(tags)])
     bcrypt.hash('123456', 10, async (err, hash) => {
       await db.query(`INSERT INTO users (id, name, password, role) VALUES(1,'Admin',$1,'admin') ON CONFLICT (id) DO NOTHING;`, [hash])
     });
