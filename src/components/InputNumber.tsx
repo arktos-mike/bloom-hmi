@@ -42,7 +42,7 @@ const Component = (props: any) => {
         addonAfter={props.eng ? props.tag === null ? props.eng : t('tags.' + props.tag?.name.replace(/[0-9]/g, '') + '.eng') : null}
         prefix={props.prefix}
         defaultValue={props.defaultValue}
-        value={props.tag?.val ? props.tag?.val : props.value}
+        value={props.value}
         placeholder={t(props.placeholder)}
         onChange={props.onChange}
         onFocus={props.onFocus}

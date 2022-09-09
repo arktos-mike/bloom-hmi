@@ -234,7 +234,7 @@ const App: React.FC = () => {
   const getTagVal = (tagName: string) => {
     let obj = tags.data.find(o => o['tag']['name'] == tagName)
     if (obj) { return obj['val']; }
-    else { return 999 };
+    else { return null };
   }
 
   const fetchShift = async () => {

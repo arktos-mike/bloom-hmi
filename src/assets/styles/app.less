@@ -379,16 +379,21 @@ body {
   height: 100% !important;
 }
 
-.ant-input-number:not(.narrow),
-.ant-input-number-group-addon:not(.narrow) {
+.ant-input-number-wrapper .ant-input-number-group .ant-input-number-group-addon{
+  font-size: 16px !important;
+}
+
+.ant-input-number-group-addon:not(.narrow),
+.narrow .ant-input-number-group-addon {
+  font-size: 14px !important;
+}
+.ant-input-number:not(.narrow){
   font-size: 24px !important;
   padding-top: 6.5px !important;
   padding-bottom: 6.5px !important;
 }
 
-.narrow,
-.narrow .ant-input-number,
-.narrow .ant-input-number-group-addon {
+.narrow .ant-input-number {
   font-size: 24px !important;
   padding-top: 0px !important;
   padding-bottom: 0px !important;
