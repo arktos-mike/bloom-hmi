@@ -9,7 +9,8 @@ const locale = {
     "settingsOp": "OPERATÖR PANELI",
     "users": "KULLANICI YÖNETIMI",
     "shifts": "VARDİYALARI YÖNETME",
-    "settingsDev": "VERI TOPLAMA"
+    "settingsDev": "VERI TOPLAMA",
+    "settingsTech": "TEKNOLOJİ"
   },
   "shift": {
     "shift": "Vardiya",
@@ -33,6 +34,21 @@ const locale = {
     },
     "speedMainDrive": {
       "eng": "rpm"
+    },
+    "planSpeedMainDrive": {
+      "descr": "Planlanan hız",
+      "eng": "rpm"
+    },
+    "planClothDensity": {
+      "descr": "Planlanan yoğunluk",
+      "eng": "geçit/cm"
+    },
+    "takeupDiam": {
+      "descr": "Silindir çapını al",
+      "eng": "cm"
+    },
+    "takeupRatio": {
+      "descr": "Dişli oranını al",
     },
     "mode": {
       "init": "Giriş",
@@ -140,7 +156,9 @@ const locale = {
     "tcp": "ModbusTCP ayarları",
     "language": "Dil seçimi",
     "actions": "Eylemler",
-    "network": "Ağ ayarları"
+    "network": "Ağ ayarları",
+    "setpoints": "Planlanan ayar noktaları",
+    "equipment": "Ekipman parametreleri"
   },
   "system": {
     "reboot": "CİHAZI YENİDEN BAŞLAT"

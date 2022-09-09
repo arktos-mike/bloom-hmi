@@ -32,6 +32,7 @@ import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 dayjs.extend(duration);
 import isBetween from 'dayjs/plugin/isBetween';
+import SettingsTech from './page/settings_tech';
 dayjs.extend(isBetween);
 
 const { Header, Content, Footer } = Layout;
@@ -256,7 +257,7 @@ const App: React.FC = () => {
         });
         if (!response.ok) { throw Error(response.statusText); }
         const json = await response.json();
-        setShift({ ...shift, picks: json[0]['sumpicks'] || 0, efficiency: json[0]['efficiency'] || 0});
+        setShift({ ...shift, picks: json[0]['sumpicks'] || 0, efficiency: json[0]['efficiency'] || 0 });
         setUpdated(false);
       }
     }
@@ -272,15 +273,12 @@ const App: React.FC = () => {
 
   useEffect(() => {
     fetchTags(['modeCode', 'stopAngle', 'speedMainDrive']);
+    fetchStatInfo();
   }, [tags])
 
   useEffect(() => {
     fetchShift();
   }, [updated, shift.end && dayjs().isAfter(shift.end)])
-
-  useEffect(() => {
-    fetchStatInfo();
-  }, [updated, shift.start && shift.end, shift.efficiency])
 
   useEffect(() => {
     setToken(token)
@@ -318,7 +316,7 @@ const App: React.FC = () => {
   ];
   const bigItems = [
     { label: <Link onClick={showDrawer} to="/">{t('menu.overview')}</Link>, title: '', key: 'overview', icon: <EyeOutlined style={{ fontSize: '100%' }} /> },
-    { label: t('menu.settings'), title: '', key: 'settings', icon: <SettingOutlined style={{ fontSize: '100%' }} />, children: [{ label: <Link onClick={showDrawer} to="/settings/settingsOp">{t('menu.settingsOp')}</Link>, title: '', key: 'settingsOp', }, { label: <Link onClick={showDrawer} to="/settings/settingsDev">{t('menu.settingsDev')}</Link>, title: '', key: 'settingsDev', }] },
+    { label: t('menu.settings'), title: '', key: 'settings', icon: <SettingOutlined style={{ fontSize: '100%' }} />, children: [{ label: <Link onClick={showDrawer} to="/settings/settingsTech">{t('menu.settingsTech')}</Link>, title: '', key: 'settingsTech', }, { label: <Link onClick={showDrawer} to="/settings/settingsOp">{t('menu.settingsOp')}</Link>, title: '', key: 'settingsOp', }, { label: <Link onClick={showDrawer} to="/settings/settingsDev">{t('menu.settingsDev')}</Link>, title: '', key: 'settingsDev', }] },
   ];
 
   return (
@@ -332,7 +330,7 @@ const App: React.FC = () => {
             <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={location.pathname == '/' ? ['overview'] : [location.pathname.split("/").filter((item) => item).slice(-1)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : smallItems : smallItems} />
             <div className="speed">{modeCode.val == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode.val == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}</div><div className="sub">{modeCode.val == 1 ? t('tags.speedMainDrive.eng') : '°'}</div>
             <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode.val).color }}>{modeCodeObj(modeCode.val).text + ' '}{modeCodeObj(modeCode.val).icon}<div className='stopwatch'>{stopwatch(modeCode.updated)}</div></div>
-            {shift.name && <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' ' + shift.name}<div className="percent">{Number(shift.efficiency).toFixed(1) + '%'}</div></Space></div><div className="progress"><Progress percent={shift.efficiency} showInfo={false} size="small" /></div></div>}
+            {shift.name && <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' ' + shift.name}<div className="percent">{Number(shift.efficiency).toFixed(shift.efficiency < 10 ? 2 : 1) + '%'}</div></Space></div><div className="progress"><Progress percent={shift.efficiency} showInfo={false} size="small" /></div></div>}
             <div className="user">
               <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} style={{ background: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "", borderColor: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "" }} /><table><tbody><tr><td><div className='username'>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</div></td></tr><tr><td><div className='userrole'>{t(token ? 'user.' + JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : '')}</div></td></tr></tbody></table>
               <UserLogin token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} activeInput={activeInput} setActiveInput={setActiveInput} />
@@ -349,8 +347,9 @@ const App: React.FC = () => {
               <div className="site-layout-content">
                 <Routes>
                   <Route index element={<Overview />} />
+                  <Route path={'/settings'} element={<SettingsTech token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
+                  <Route path={'/settings/settingsTech'} element={<SettingsTech token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
                   <Route path={'/settings/settingsOp'} element={<SettingsOp token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
-                  <Route path={'/settings'} element={<SettingsOp token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
                   <Route path={'/settings/settingsDev'} element={<SettingsDev token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
                   <Route path={'/users'} element={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? <Users activeInput={activeInput} setActiveInput={setActiveInput} token={token} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                   <Route path={'/shifts'} element={token ? ['manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Shifts activeInput={activeInput} setActiveInput={setActiveInput} setUpdated={setUpdated} /> : <Navigate to="/" /> : <Navigate to="/" />} />

@@ -9,7 +9,8 @@ const locale = {
     "settingsOp": "OPERATOR PANEL",
     "users": "USER ADMINISTRATION",
     "shifts": "SHIFT MANAGMENT",
-    "settingsDev": "DATA AQUISITION"
+    "settingsDev": "DATA AQUISITION",
+    "settingsTech": "TECHNOLOGY"
   },
   "shift": {
     "shift": "Shift",
@@ -33,6 +34,21 @@ const locale = {
     },
     "speedMainDrive": {
       "eng": "rpm"
+    },
+    "planSpeedMainDrive": {
+      "descr": "Planned speed",
+      "eng": "rpm"
+    },
+    "planClothDensity": {
+      "descr": "Planned density",
+      "eng": "picks/cm"
+    },
+    "takeupDiam": {
+      "descr": "Take up diameter",
+      "eng": "cm"
+    },
+    "takeupRatio": {
+      "descr": "Take up gear ratio",
     },
     "mode": {
       "init": "Init",
@@ -140,7 +156,9 @@ const locale = {
     "tcp": "ModbusTCP settings",
     "language": "Language selection",
     "actions": "Actions",
-    "network": "Network settings"
+    "network": "Network settings",
+    "setpoints": "Planned setpoints",
+    "equipment": "Equipment parameters"
   },
   "system": {
     "reboot": "REBOOT DEVICE"

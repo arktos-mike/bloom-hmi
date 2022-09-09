@@ -27,7 +27,7 @@ router.post('/', async (req, res) => {
     await db.query('TRUNCATE shiftconfig')
     const data = await db.query(`INSERT INTO shiftconfig select * from json_to_recordset($1) as x(shiftname text, starttime TIMETZ, duration interval, monday BOOLEAN, tuesday BOOLEAN, wednesday BOOLEAN, thursday BOOLEAN, friday BOOLEAN, saturday BOOLEAN, sunday BOOLEAN)`, [JSON.stringify(table)]);
     res.status(200).json({
-      data
+      message: "notifications.confupdate",
     });
   }
   catch (err) {

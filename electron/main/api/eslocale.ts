@@ -9,7 +9,8 @@ const locale = {
     "settingsOp": "PANEL DEL OPERADOR",
     "users": "ADMINISTRACIÓN DE USUARIOS",
     "shifts": "GESTIÓN DE TURNOS",
-    "settingsDev": "ADQUISICIÓN DE DATOS"
+    "settingsDev": "ADQUISICIÓN DE DATOS",
+    "settingsTech": "TECNOLOGÍA"
   },
   "shift": {
     "shift": "Turno",
@@ -33,6 +34,21 @@ const locale = {
     },
     "speedMainDrive": {
       "eng": "rpm"
+    },
+    "planSpeedMainDrive": {
+      "descr": "Velocidad planificada",
+      "eng": "rpm"
+    },
+    "planClothDensity": {
+      "descr": "Densidad planificada",
+      "eng": "paso/cm"
+    },
+    "takeupDiam": {
+      "descr": "Diámetro de rodillo de recogida",
+      "eng": "cm"
+    },
+    "takeupRatio": {
+      "descr": "Transmisión de rodillo de recogida",
     },
     "mode": {
       "init": "Init",
@@ -140,7 +156,9 @@ const locale = {
     "tcp": "Configuración de ModbusTCP",
     "language": "Selección de idioma",
     "actions": "Acciones",
-    "network": "Configuración de red"
+    "network": "Configuración de red",
+    "setpoints": "Puntos de ajuste planificados",
+    "equipment": "Parámetros del equipo"
   },
   "system": {
     "reboot": "REINICIAR DISPOSITIVO"

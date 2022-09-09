@@ -9,7 +9,8 @@ const locale = {
     "settingsOp": "ПАНЕЛЬ ОПЕРАТОРА",
     "users": "АДМИНИСТРИРОВАНИЕ ПОЛЬЗОВАТЕЛЕЙ",
     "shifts": "УПРАВЛЕНИЕ СМЕНАМИ",
-    "settingsDev": "СБОР ДАННЫХ"
+    "settingsDev": "СБОР ДАННЫХ",
+    "settingsTech": "ТЕХНОЛОГИЯ"
   },
   "shift": {
     "shift": "Смена",
@@ -33,6 +34,21 @@ const locale = {
     },
     "speedMainDrive": {
       "eng": "об/мин"
+    },
+    "planSpeedMainDrive": {
+      "descr": "Плановая скорость",
+      "eng": "об/мин"
+    },
+    "planClothDensity": {
+      "descr": "Плановая плотность",
+      "eng": "ут/см"
+    },
+    "takeupDiam": {
+      "descr": "Диаметр вальяна",
+      "eng": "см"
+    },
+    "takeupRatio": {
+      "descr": "Передаточное число вальяна",
     },
     "mode": {
       "init": "Инициализация",
@@ -140,7 +156,9 @@ const locale = {
     "tcp": "Настройки ModbusTCP",
     "language": "Выбор языка",
     "actions": "Действия",
-    "network": "Сетевые настройки"
+    "network": "Сетевые настройки",
+    "setpoints": "Плановые уставки",
+    "equipment": "Параметры оборудования"
   },
   "system": {
     "reboot": "ПЕРЕЗАГРУЗКА ПАНЕЛИ"
