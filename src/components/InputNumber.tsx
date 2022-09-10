@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next';
 
 const Component = (props: any) => {
   useEffect(() => {
-    props.onUpdate && props.onUpdate(props.value);
+    props.onUpdate && props.onUpdate(parseFloat(props.value?.replace(',','.').replace(' ','')).toLocaleString('en'));
   }, [props.value]);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
     if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
       notification[type]({
@@ -26,7 +26,8 @@ const Component = (props: any) => {
         addonAfter={props.eng ? props.tag === null ? props.eng : t('tags.' + props.tag?.name.replace(/[0-9]/g, '') + '.eng') : null}
         prefix={props.prefix}
         defaultValue={props.defaultValue}
-        value={props.tag?.val ? props.tag?.val : props.value}
+        decimalSeparator={t('decimalSeparator')}
+        value={parseFloat(props.value?.replace(',','.').replace(' ','')).toLocaleString(i18n.language)}
         placeholder={t(props.placeholder)}
         style={{ width: "100%", textAlign: "right" }}
         controls={props.controls}
@@ -42,7 +43,8 @@ const Component = (props: any) => {
         addonAfter={props.eng ? props.tag === null ? props.eng : t('tags.' + props.tag?.name.replace(/[0-9]/g, '') + '.eng') : null}
         prefix={props.prefix}
         defaultValue={props.defaultValue}
-        value={props.value}
+        decimalSeparator={t('decimalSeparator')}
+        value={parseFloat(props.value?.replace(',','.').replace(' ','')).toLocaleString(i18n.language)}
         placeholder={t(props.placeholder)}
         onChange={props.onChange}
         onFocus={props.onFocus}
