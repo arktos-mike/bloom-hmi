@@ -48,27 +48,29 @@ const SettingsTech: React.FC<Props> = ({
   }, [activeInput])
 
   const getTag = (tagName: string) => {
-    let obj = tags.data.find((o:any) => o['tag']['name'] == tagName)
+    let obj = tags.data.find((o: any) => o['tag']['name'] == tagName)
     if (obj) { return obj['tag']; }
     else { return null };
   }
   const getTagVal = (tagName: string) => {
-    let obj = tags.data.find((o:any) => o['tag']['name'] == tagName)
+    let obj = tags.data.find((o: any) => o['tag']['name'] == tagName)
     if (obj) { return obj['val']; }
     else { return null };
   }
   const setTagVal = async (tagName: string, tagValue: number) => {
     try {
       const newData = tags.data;
-      const index = newData.findIndex((o:any) => o['tag']['name'] == tagName);
-      newData[index]['val']=tagValue;
-      setTags({data: newData});
-      const response = await fetch('http://localhost:3000/tags/writeTag', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json;charset=UTF-8', },
-        body: JSON.stringify({ name: tagName, value: tagValue }),
-      });
-      if (!response.ok) { throw Error(response.statusText); }
+      const index = newData.findIndex((o: any) => o['tag']['name'] == tagName);
+      if (newData[index]['val'] != tagValue) {
+        newData[index]['val'] = tagValue;
+        setTags({ data: newData });
+        const response = await fetch('http://localhost:3000/tags/writeTag', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json;charset=UTF-8', },
+          body: JSON.stringify({ name: tagName, value: tagValue }),
+        });
+        if (!response.ok) { throw Error(response.statusText); }
+      }
     }
     catch (error) { console.log(error); }
   }
