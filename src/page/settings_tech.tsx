@@ -58,7 +58,7 @@ const SettingsTech: React.FC<Props> = ({
     try {
       const newData = tags.data;
       const index = newData.findIndex((o: any) => o['tag']['name'] == tagName);
-      if (newData[index] && (newData[index]['val'] != tagValue)) {
+      if (newData[index] && (newData[index]['val'] != tagValue) && (newData[index]['tag']['min'] <= tagValue) && (newData[index]['tag']['max'] >= tagValue)) {
         const response = await fetch((newData[index]['tag']['dev'].includes('rtu')) ? 'http://localhost:3000/tags/writeTagRTU' : 'http://localhost:3000/tags/writeTag', {
           method: 'POST',
           headers: { 'content-type': 'application/json;charset=UTF-8', },
@@ -67,6 +67,9 @@ const SettingsTech: React.FC<Props> = ({
         if (!response.ok) { throw Error(response.statusText); }
         newData[index]['val'] = tagValue;
         setTags({ data: newData });
+      }
+      else if ((newData[index]['tag']['min'] > tagValue) || (newData[index]['tag']['max'] < tagValue)) {
+        openNotificationWithIcon('warning', t('notifications.dataerror'), 3);
       }
     }
     catch (error) { console.log(error); }
@@ -95,14 +98,14 @@ const SettingsTech: React.FC<Props> = ({
       <Row gutter={[8, 8]} style={{ flex: '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('panel.setpoints')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
-            <InputNumber className="narrow" eng descr value={activeInput.id == ('speed') ? activeInput.input : getTagVal('planSpeedMainDrive')} tag={getTag('planSpeedMainDrive')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.planSpeedMainDrive.descr' style={{ marginTop:'15px',width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('planSpeedMainDrive', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'speed', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
-            <InputNumber className="narrow" eng descr value={activeInput.id == ('density') ? activeInput.input : getTagVal('planClothDensity')} tag={getTag('planClothDensity')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.planClothDensity.descr' style={{ marginTop:'15px',width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('planClothDensity', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'density', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
+            <InputNumber className="narrow" eng descr value={activeInput.id == ('speed') ? activeInput.input : getTagVal('planSpeedMainDrive')} tag={getTag('planSpeedMainDrive')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.planSpeedMainDrive.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('planSpeedMainDrive', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'speed', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
+            <InputNumber className="narrow" eng descr value={activeInput.id == ('density') ? activeInput.input : getTagVal('planClothDensity')} tag={getTag('planClothDensity')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.planClothDensity.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('planClothDensity', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'density', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
           </Card>
         </Col>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('panel.equipment')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} >
-            <InputNumber className="narrow" descr value={activeInput.id == ('ratio') ? activeInput.input : getTagVal('takeupRatio')} tag={getTag('takeupRatio')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.takeupRatio.descr' style={{ marginTop:'15px',width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('takeupRatio', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'eqip', id: 'ratio', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
-            <InputNumber className="narrow" eng descr value={activeInput.id == ('diam') ? activeInput.input : getTagVal('takeupDiam')} tag={getTag('takeupDiam')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.takeupDiam.descr' style={{ marginTop:'15px',width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('takeupDiam', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'eqip', id: 'diam', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
+            <InputNumber className="narrow" descr value={activeInput.id == ('ratio') ? activeInput.input : getTagVal('takeupRatio')} tag={getTag('takeupRatio')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.takeupRatio.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('takeupRatio', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'eqip', id: 'ratio', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
+            <InputNumber className="narrow" eng descr value={activeInput.id == ('diam') ? activeInput.input : getTagVal('takeupDiam')} tag={getTag('takeupDiam')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.takeupDiam.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('takeupDiam', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'eqip', id: 'diam', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
           </Card>
         </Col>
       </Row>
