@@ -43,6 +43,7 @@ const Component = (props: any) => {
         placeholder={t(props.placeholder)}
         style={props.style ? props.style : { width: '100%' }}
         controls={props.controls}
+        status={props.status ? props.status : props.value != null && props.tag && (localeParseFloat(props.value) < props.tag?.min || localeParseFloat(props.value) > props.tag?.max) ? 'error' : null}
         disabled
       />
     </div>);
