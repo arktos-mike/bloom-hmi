@@ -62,7 +62,7 @@ const Component = (props: any) => {
         onFocus={props.onFocus}
         controls={props.controls}
         style={props.style ? props.style : { width: '100%' }}
-        status={props.status ? props.status : props.value != null && (localeParseFloat(props.value) < props.tag?.min || localeParseFloat(props.value) > props.tag?.max) ? 'error' : null}
+        status={props.status ? props.status : props.value != null && props.tag && (localeParseFloat(props.value) < props.tag?.min || localeParseFloat(props.value) > props.tag?.max) ? 'error' : null}
       />
     </div>
   );
