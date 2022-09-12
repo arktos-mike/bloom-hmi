@@ -41,7 +41,7 @@ const Component = (props: any) => {
         decimalSeparator={t('decimalSeparator')}
         value={props.value}
         placeholder={t(props.placeholder)}
-        style={{ width: "100%", textAlign: "right" }}
+        style={{ width: "100%" }}
         controls={props.controls}
         disabled
       />

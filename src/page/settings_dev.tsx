@@ -181,21 +181,21 @@ const SettingsDev: React.FC<Props> = ({
                 label={t('com.path')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <Input className="narrow" userRights={['admin', 'manager']} token={token} placeholder='com.path' style={{ width: '100%' }} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'com', id: 'path', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'default' }) }} />
+                <Input className="narrow" userRights={['admin', 'manager']} token={token} placeholder='com.path' onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'com', id: 'path', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'default' }) }} />
               </Form.Item>
               <Form.Item
                 name="scan"
                 label={t('com.scan')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <InputNumber className="narrow" eng tag={{ name: 'comTime' }} userRights={['admin', 'manager']} token={token} placeholder='com.scan' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'com', id: 'scan', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
+                <InputNumber className="narrow" eng tag={{ name: 'comTime' }} userRights={['admin', 'manager']} token={token} placeholder='com.scan' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'com', id: 'scan', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
               </Form.Item>
               <Form.Item
                 name="timeout"
                 label={t('com.timeout')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <InputNumber className="narrow" eng tag={{ name: 'comTime' }} userRights={['admin', 'manager']} token={token} placeholder='com.timeout' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'com', id: 'timeout', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
+                <InputNumber className="narrow" eng tag={{ name: 'comTime' }} userRights={['admin', 'manager']} token={token} placeholder='com.timeout' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'com', id: 'timeout', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
               </Form.Item>
               <Form.Item
                 name="baudRate"
