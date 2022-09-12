@@ -132,6 +132,7 @@ const SettingsOp: React.FC<Props> = ({
   }
 
   useEffect(() => {
+    setActiveInput({ ...activeInput, form: '', id: '' });
     fetchLngs();
     fetchIP();
     clock();

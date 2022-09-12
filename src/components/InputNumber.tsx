@@ -3,9 +3,21 @@ import { useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 
 const Component = (props: any) => {
+
+  function localeParseFloat(str: String) {
+    let out: String[] = [];
+    let thousandsSeparator = Number(10000).toLocaleString().charAt(2)
+    str.split(t('decimalSeparator')).map(function (x) {
+      x = x.replace(thousandsSeparator, "");
+      out.push(x);
+    })
+    return parseFloat(out.join("."));
+  }
+
   useEffect(() => {
-    props.onUpdate && props.onUpdate(parseFloat(props.value?.replace(',','.').replace(' ','')).toLocaleString('en'));
+    props.value != null && props.onUpdate && props.onUpdate(localeParseFloat(props.value));
   }, [props.value]);
+
   const { t, i18n } = useTranslation();
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
     if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
@@ -27,7 +39,7 @@ const Component = (props: any) => {
         prefix={props.prefix}
         defaultValue={props.defaultValue}
         decimalSeparator={t('decimalSeparator')}
-        value={parseFloat(props.value?.replace(',','.').replace(' ','')).toLocaleString(i18n.language)}
+        value={props.value}
         placeholder={t(props.placeholder)}
         style={{ width: "100%", textAlign: "right" }}
         controls={props.controls}
@@ -44,7 +56,7 @@ const Component = (props: any) => {
         prefix={props.prefix}
         defaultValue={props.defaultValue}
         decimalSeparator={t('decimalSeparator')}
-        value={parseFloat(props.value?.replace(',','.').replace(' ','')).toLocaleString(i18n.language)}
+        value={props.value}
         placeholder={t(props.placeholder)}
         onChange={props.onChange}
         onFocus={props.onFocus}

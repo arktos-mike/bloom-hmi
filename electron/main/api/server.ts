@@ -21,15 +21,22 @@ api.use(express.json())
 api.use(express.urlencoded({ extended: true }))
 api.use(cors())
 mountRoutes(api)
-api.post('/writeTagRTU', async (req, res) => {
+api.post('/tags/writeTagRTU', async (req, res) => {
   const { name, value } = req.body;
-  writeTag.name = name;
-  writeTag.val = value;
-  writeTrig = true;
-  res.status(201).send({
-    message: "Writing data to RTU",
-    body: { writeTag },
-  })
+  if (value != null) {
+    writeTag.name = name;
+    writeTag.val = value;
+    writeTrig = true;
+    res.status(200).send({
+      message: "Writing data to RTU",
+      body: { writeTag },
+    })
+  } else {
+    res.status(500).send({
+      error: "Null value",
+      body: { name, value },
+    })
+  }
 })
 
 api.listen(process.env['EXPRESS_SERVER_PORT'] || 3000, () => {
@@ -72,17 +79,17 @@ const dbInit = async () => {
     const comConf = { opCOM1: { path: com1.path, conf: { baudRate: 230400, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 500 }, opCOM2: { path: com2.path, conf: { baudRate: 115200, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 0 } }
     const rtuConf = { rtu1: { com: 'opCOM1', sId: 1, swapBytes: true, swapWords: true } }
     const tags = [
-      { tag: {name: "stopAngle", group: "visual", dev: "rtu1", addr: "13", type: "word", reg: "r", min: 0, max: 359, dec: 0 }},
-      { tag: {name: "speedCloth", group: "monitoring", dev: "rtu1", addr: "6", type: "float", reg: "r", min: 1, max: 5, dec: 1 }},
-      { tag: {name: "speedMainDrive", group: "monitoring", dev: "rtu1", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 }},
-      { tag: {name: "modeCode", group: "monitoring", dev: "rtu1", addr: "8", type: "word", reg: "r", min: 0, max: 3, dec: 0 }},
-      { tag: {name: "picksLastRun", group: "monitoring", dev: "rtu1", addr: "0", type: "dword", reg: "r", min: 0, max: 4294967295, dec: 0 }},
-      { tag: {name: "clothDensity", group: "monitoring", dev: "rtu1", addr: "4", type: "float", reg: "r", min: 0.5, max: 25, dec: 2 }},
-      { tag: {name: "takeupRatio", group: "setting", dev: "rtu1", addr: "9", type: "word", reg: "rw", min: 1, max: 65535, dec: 0 }},
-      { tag: {name: "takeupDiam", group: "setting", dev: "rtu1", addr: "10", type: "float", reg: "rw", min: 1, max: 20, dec: 1 }},
-      { tag: {name: "modeControl", group: "setting", dev: "rtu1", addr: "12", type: "word", reg: "rw", min: 0, max: 2, dec: 0 }},
-      { tag: {name: "planSpeedMainDrive", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 600, dec: 1 }, val: 200.0},
-      { tag: {name: "planClothDensity", group: "setting", dev: "op", type: "float", reg: "rw", min: 0.5, max: 25, dec: 2 }, val: 10.0},
+      { tag: { name: "stopAngle", group: "visual", dev: "rtu1", addr: "13", type: "word", reg: "r", min: 0, max: 359, dec: 0 } },
+      { tag: { name: "speedCloth", group: "monitoring", dev: "rtu1", addr: "6", type: "float", reg: "r", min: 1, max: 5, dec: 1 } },
+      { tag: { name: "speedMainDrive", group: "monitoring", dev: "rtu1", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 } },
+      { tag: { name: "modeCode", group: "monitoring", dev: "rtu1", addr: "8", type: "word", reg: "r", min: 0, max: 3, dec: 0 } },
+      { tag: { name: "picksLastRun", group: "monitoring", dev: "rtu1", addr: "0", type: "dword", reg: "r", min: 0, max: 4294967295, dec: 0 } },
+      { tag: { name: "clothDensity", group: "monitoring", dev: "rtu1", addr: "4", type: "float", reg: "r", min: 0.5, max: 25, dec: 2 } },
+      { tag: { name: "takeupRatio", group: "setting", dev: "rtu1", addr: "9", type: "word", reg: "rw", min: 1, max: 65535, dec: 0 } },
+      { tag: { name: "takeupDiam", group: "setting", dev: "rtu1", addr: "10", type: "float", reg: "rw", min: 1, max: 20, dec: 1 } },
+      { tag: { name: "modeControl", group: "setting", dev: "rtu1", addr: "12", type: "word", reg: "rw", min: 0, max: 2, dec: 0 } },
+      { tag: { name: "planSpeedMainDrive", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 600, dec: 1 }, val: 200.0 },
+      { tag: { name: "planClothDensity", group: "setting", dev: "op", type: "float", reg: "rw", min: 0.5, max: 25, dec: 2 }, val: 10.0 },
     ]
 
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])
@@ -204,7 +211,6 @@ const writeModbusData = async function (tagName, val) {
         try {
           const size = getByteLength(tag.type);
           const buffer = Buffer.allocUnsafe(size);
-          val = Number(val.replace(',', '.'))
           if (tag.type === "int16") {
             slave.swapWords ? buffer.writeInt16LE(val) : buffer.writeInt16BE(val);
           } else if (tag.type === "word") {

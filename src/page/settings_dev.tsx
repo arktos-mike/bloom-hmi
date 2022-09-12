@@ -153,6 +153,7 @@ const SettingsDev: React.FC<Props> = ({
   }, [tcp])
 
   useEffect(() => {
+    setActiveInput({ ...activeInput, form: '', id: '' });
     fetchRTU();
     //fetchTCP();
     return () => { isSubscribed = false }

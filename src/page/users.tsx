@@ -168,6 +168,7 @@ const Users: React.FC<Props> = ({
   };
 
   useEffect(() => {
+    setActiveInput({ ...activeInput, form: '', id: '' });
     fetchData();
   }, [editVisible]);
 
