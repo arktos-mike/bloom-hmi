@@ -31,7 +31,7 @@ const Component = (props: any) => {
   }
 
   if (props.userRights && (props.token ? props.userRights.includes(JSON.parse(Buffer.from(props.token.split('.')[1], 'base64').toString()).role) ? false : true : true)) {
-    return (<div style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => { openNotificationWithIcon('error', t('notifications.rightserror'), 2); }}>
+    return (<div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => { openNotificationWithIcon('error', t('notifications.rightserror'), 2); }}>
       <InputNumber size="large"
         className={props.className ? props.className : null}
         addonBefore={props.descr ? props.tag === null ? props.descr : t('tags.' + props.tag?.name.replace(/[0-9]/g, '') + '.descr') : null}
@@ -41,14 +41,14 @@ const Component = (props: any) => {
         decimalSeparator={t('decimalSeparator')}
         value={props.value}
         placeholder={t(props.placeholder)}
-        style={{ width: "100%" }}
+        style={props.style}
         controls={props.controls}
         disabled
       />
     </div>);
   }
   return (
-    <div style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <InputNumber size="large"
         className={props.className ? props.className : null}
         addonBefore={props.descr ? props.tag === null ? props.descr : t('tags.' + props.tag?.name.replace(/[0-9]/g, '') + '.descr') : null}
@@ -61,7 +61,7 @@ const Component = (props: any) => {
         onChange={props.onChange}
         onFocus={props.onFocus}
         controls={props.controls}
-        style={{ width: "100%", textAlign: "right" }}
+        style={props.style}
         status={props.status}
       />
     </div>
