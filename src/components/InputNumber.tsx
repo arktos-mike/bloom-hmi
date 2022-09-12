@@ -7,7 +7,7 @@ const Component = (props: any) => {
   function localeParseFloat(str: String) {
     let out: String[] = [];
     let thousandsSeparator = Number(10000).toLocaleString().charAt(2)
-    str.split(t('decimalSeparator')).map(function (x) {
+    str.split(Number(1.1).toLocaleString().charAt(1)).map(function (x) {
       x = x.replace(thousandsSeparator, "");
       out.push(x);
     })
@@ -41,7 +41,7 @@ const Component = (props: any) => {
         decimalSeparator={t('decimalSeparator')}
         value={props.value}
         placeholder={t(props.placeholder)}
-        style={props.style}
+        style={props.style ? props.style : { width: '100%' }}
         controls={props.controls}
         disabled
       />
@@ -61,7 +61,7 @@ const Component = (props: any) => {
         onChange={props.onChange}
         onFocus={props.onFocus}
         controls={props.controls}
-        style={props.style}
+        style={props.style ? props.style : { width: '100%' }}
         status={props.status}
       />
     </div>
