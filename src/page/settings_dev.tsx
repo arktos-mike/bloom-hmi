@@ -291,10 +291,10 @@ const SettingsDev: React.FC<Props> = ({
                 required={true}
               >
                 <Form.Item name="ip" rules={[{ required: true, message: t('user.fill') }]} style={{ display: 'inline-block', width: 'calc(70% - 8px)' }} >
-                  <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} placeholder='tcp.ip' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'ip', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                  <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} placeholder='tcp.ip' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'ip', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
                 </Form.Item>
                 <Form.Item name="port" rules={[{ required: true, message: t('user.fill') }]} style={{ display: 'inline-block', width: 'calc(30% )', marginLeft: '8px' }} >
-                  <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} placeholder='tcp.port' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'port', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
+                  <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} placeholder='tcp.port' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'port', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
                 </Form.Item>
               </Form.Item>
               <Form.Item
@@ -302,7 +302,7 @@ const SettingsDev: React.FC<Props> = ({
                 label={t('rtu.sId')}
                 rules={[{ required: true, message: t('user.fill') }]}
               >
-                <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} placeholder='rtu.sId' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'sId', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
+                <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} placeholder='rtu.sId' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'sId', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
               </Form.Item>
               <Form.Item label=" ">
                 <Form.Item name="swapBytes" style={{ display: 'inline-block', width: 'calc(50% - 8px)' }} valuePropName="checked" >
