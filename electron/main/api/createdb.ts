@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS users (
   );
 CREATE TABLE IF NOT EXISTS modelog (
     timestamp tstzrange PRIMARY KEY not null default tstzrange(current_timestamp,NULL,'[)'),
-    modecode NUMERIC,
+    modecode NUMERIC not null,
     picks NUMERIC,
     planspeed NUMERIC default NULL,
     plandensity NUMERIC default NULL
@@ -147,6 +147,7 @@ CREATE OR REPLACE FUNCTION modelog()
  LANGUAGE plpgsql
 AS $function$
   begin
+  IF new.val is not null then
   insert
     into
     modelog
@@ -165,6 +166,7 @@ from
 where
 	(tag->>'name' = 'planClothDensity'))
  );
+ end if;
   return null;
   end;
 
@@ -193,8 +195,7 @@ create function modeupdate()
   $function$
   ;
 create trigger modeupdate before insert on modelog for row execute function modeupdate();
-create or replace
-function public.getstatinfo(starttime timestamp with time zone,
+create or replace function getstatinfo(starttime timestamp with time zone,
 endtime timestamp with time zone,
 out sumpicks numeric,
 out efficiency numeric,
@@ -261,13 +262,13 @@ select
 	extract(epoch
 from
 	runtime) )));
-end;
 
 mps := (round(meters /(
 select
 	extract(epoch
 from
 	runtime) )));
+
 end;
 
 $function$
