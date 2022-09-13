@@ -31,7 +31,9 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS modelog (
     timestamp tstzrange PRIMARY KEY not null default tstzrange(current_timestamp,NULL,'[)'),
     modecode NUMERIC,
-    picks NUMERIC
+    picks NUMERIC,
+    planspeed NUMERIC default NULL,
+    plandensity NUMERIC default NULL
   );
 CREATE INDEX IF NOT EXISTS modelog_tstzrange_idx ON modelog USING GIST (timestamp);
 CREATE INDEX IF NOT EXISTS modelog_modecode ON modelog (modecode);
@@ -140,22 +142,34 @@ create or replace
 DROP TRIGGER IF EXISTS modeChanged
   ON tags;
 DROP FUNCTION IF EXISTS modelog;
-create function modelog()
-   returns trigger
-   language plpgsql
-  as $function$
+CREATE OR REPLACE FUNCTION modelog()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
   begin
   insert
     into
     modelog
   values(tstzrange(current_timestamp(6),NULL,'[)'),
   new.val,
-  NULL);
+  null,(select
+	val
+from
+	tags
+where
+	(tag->>'name' = 'planSpeedMainDrive')),
+	(select
+	val
+from
+	tags
+where
+	(tag->>'name' = 'planClothDensity'))
+ );
   return null;
   end;
 
   $function$
-  ;
+;
 create trigger modeChanged after insert or update on tags for row when (new.tag->>'name'='modeCode') execute function modelog();
 DROP TRIGGER IF EXISTS modeupdate
   ON modelog;
@@ -179,49 +193,85 @@ create function modeupdate()
   $function$
   ;
 create trigger modeupdate before insert on modelog for row execute function modeupdate();
-create or replace function getstatinfo(starttime timestamp with time zone,
+create or replace
+function public.getstatinfo(starttime timestamp with time zone,
 endtime timestamp with time zone,
 out sumpicks numeric,
-out efficiency numeric)
+out efficiency numeric,
+out runtime interval,
+out rpm numeric,
+out meters numeric,
+out mps numeric)
  returns record
  language plpgsql
 as $function$
 
 begin
-	sumpicks := (
+
 select
 	sum(
 case when not (timestamp &> tstzrange(starttime, endtime, '[)'))
-then ceil(((select extract(epoch from (upper(tstzrange(starttime, endtime, '[)')* timestamp)-lower(tstzrange(starttime, endtime, '[)')* timestamp))))/(select extract(epoch from (upper(timestamp)-lower(timestamp)))))* picks)
+then ceil(ppicks)
 when (timestamp @> tstzrange(starttime, endtime, '[)'))
-then round(((select extract(epoch from (upper(tstzrange(starttime, endtime, '[)')* timestamp)-lower(tstzrange(starttime, endtime, '[)')* timestamp))))/(select extract(epoch from (upper(timestamp)-lower(timestamp)))))* picks)
+then round(ppicks)
 when not (timestamp &< tstzrange(starttime, endtime, '[)'))
-then floor(((select extract(epoch from (upper(tstzrange(starttime, endtime, '[)')* timestamp)-lower(tstzrange(starttime, endtime, '[)')* timestamp))))/(select extract(epoch from (upper(timestamp)-lower(timestamp)))))* picks)
+then floor(ppicks)
 else picks
 end
-)
+),
+	sum(dur),
+	sum(ppicks * 6000 /(planspeed * durqs)),
+	sum(ppicks /(100 * plandensity))
+into
+	sumpicks,
+	runtime,
+	efficiency,
+	meters
 from
-	modelog
+	modelog,
+	lateral (
+	select
+		extract(epoch
+	from
+		(upper(timestamp)-lower(timestamp))) as durrs) rowsecduration,
+	lateral (
+	select
+		upper(timestamp * tstzrange(starttime, endtime, '[)'))-lower(timestamp * tstzrange(starttime, endtime, '[)')) as dur) intduration,
+	lateral (
+	select
+		extract(epoch
+	from
+		dur) as durs) intsecduration,
+	lateral (
+	select
+		(durs / durrs) * picks as ppicks) partialpicks,
+	lateral (
+	select
+		extract(epoch
+	from
+		(upper(tstzrange(starttime, endtime, '[)'))-lower(tstzrange(starttime, endtime, '[)')))) as durqs) querysecduration
 where
 	tstzrange(starttime,
 	endtime,
 	'[)') && timestamp
-	and modecode = 1 );
+	and modecode = 1 ;
 
-efficiency := ((sumpicks * 6000)/ ( (
-select
-	val
-from
-	tags
-where
-	(tag->>'name' = 'planSpeedMainDrive')) * (
+rpm := (round((sumpicks * 60)/(
 select
 	extract(epoch
 from
-	(upper(tstzrange(starttime, endtime, '[)'))-lower(tstzrange(starttime, endtime, '[)'))))) ) );
+	runtime) )));
+end;
+
+mps := (round(meters /(
+select
+	extract(epoch
+from
+	runtime) )));
 end;
 
 $function$
 ;
+
 `
 export default createTableText
