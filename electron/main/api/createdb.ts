@@ -202,13 +202,13 @@ out efficiency numeric,
 out runtime interval,
 out rpm numeric,
 out meters numeric,
-out mps numeric)
+out mps numeric,
+out stops jsonb)
  returns record
  language plpgsql
 as $function$
 
 begin
-
 select
 	sum(
 case when not (timestamp &> tstzrange(starttime, endtime, '[)'))
@@ -216,13 +216,26 @@ then ceil(ppicks)
 when (timestamp @> tstzrange(starttime, endtime, '[)'))
 then round(ppicks)
 when not (timestamp &< tstzrange(starttime, endtime, '[)'))
-then floor(ppicks)
+then
+case when upper_inf(timestamp) then
+cpicks
+else
+floor(ppicks)
+end
 else picks
 end
 ),
 	sum(dur),
-	sum(ppicks * 6000 /(planspeed * durqs)),
-	sum(ppicks /(100 * plandensity))
+	sum(case when upper_inf(timestamp) then
+cpicks * 6000 /(planspeed * durqs)
+else
+ppicks * 6000 /(planspeed * durqs)
+end ),
+	sum(case when upper_inf(timestamp) then
+cpicks /(100 * plandensity)
+else
+ppicks /(100 * plandensity)
+end )
 into
 	sumpicks,
 	runtime,
@@ -250,7 +263,14 @@ from
 	select
 		extract(epoch
 	from
-		(upper(tstzrange(starttime, endtime, '[)'))-lower(tstzrange(starttime, endtime, '[)')))) as durqs) querysecduration
+		(upper(tstzrange(starttime, endtime, '[)'))-lower(tstzrange(starttime, endtime, '[)')))) as durqs) querysecduration,
+	lateral (
+	select
+		val as cpicks
+	from
+		tags
+	where
+		(tag->>'name' = 'picksLastRun') ) currentpicks
 where
 	tstzrange(starttime,
 	endtime,
@@ -269,10 +289,44 @@ select
 from
 	runtime) )));
 
+stops := (
+with t(num,
+stop) as (
+select
+	*
+from
+	(
+values (0,
+'other'),
+(2,
+'button'),
+(3,
+'warp'),
+(4,
+'weft'),
+(5,
+'tool'),
+(6,
+'fabric') ) as t(num,
+	stop) )
+select
+	jsonb_agg(json_build_object(t.stop, json_build_object('total', total , 'dur', dur)))
+from
+	t,
+	lateral(
+	select
+		count(*) as total,
+		sum((select upper(timestamp * tstzrange(starttime, endtime, '[)'))-lower(timestamp * tstzrange(starttime, endtime, '[)')))) as dur
+	from
+		modelog
+	where
+		tstzrange(starttime,
+		endtime,
+		'[)') && timestamp
+			and modecode = t.num) stat );
 end;
 
 $function$
 ;
-
 `
 export default createTableText

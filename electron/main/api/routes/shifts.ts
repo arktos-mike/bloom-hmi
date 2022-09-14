@@ -1,4 +1,5 @@
 import PromiseRouter from 'express-promise-router'
+import parseInterval from 'postgres-interval'
 import db from '../../db'
 // create a new express-promise-router
 // this has the same API as the normal express router except
@@ -18,6 +19,9 @@ router.get('/currentshift', async (req, res) => {
 router.post('/getstatinfo', async (req, res) => {
   const { start, end } = req.body;
   const { rows } = await db.query(`SELECT * FROM getstatinfo($1,$2)`, [start, end]);
+  rows[0]['stops'].map((row: any) => {
+    row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+  });
   res.status(200).send(rows)
 });
 
