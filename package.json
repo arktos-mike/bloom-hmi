@@ -68,6 +68,7 @@
     "modbus-serial": "github:yaacov/node-modbus-serial",
     "network": "^0.6.1",
     "pg": "^8.7.3",
+    "pg-types": "^4.0.0",
     "serialport": "^10.4.0",
     "sudo-prompt": "^9.2.1"
   },

@@ -3,7 +3,7 @@ import logo from '/icon.svg'
 import 'styles/app.less'
 import { Route, Link, Routes, useLocation, Navigate } from 'react-router-dom';
 import { Layout, Menu, Select, Drawer, Button, Input, notification, ConfigProvider, Breadcrumb, Space, Progress } from 'antd';
-import { ScheduleOutlined, ToolOutlined, QuestionCircleOutlined, SyncOutlined, LoadingOutlined, AimOutlined, DashboardOutlined, CloseCircleTwoTone, EyeTwoTone, EyeInvisibleOutlined, GlobalOutlined, CloseOutlined, ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
+import { ReadOutlined, ScheduleOutlined, ToolOutlined, QuestionCircleOutlined, SyncOutlined, LoadingOutlined, AimOutlined, DashboardOutlined, CloseCircleTwoTone, EyeTwoTone, EyeInvisibleOutlined, GlobalOutlined, CloseOutlined, ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "./components/Icons"
 import { useIdleTimer } from 'react-idle-timer'
 import Overview from "./page/overview";
@@ -12,6 +12,7 @@ import SettingsDev from "./page/settings_dev";
 import Users from "./page/users";
 import UserLogin from "./dialog/UserLogin";
 import Shifts from "./page/shifts";
+import ModeLog from "./page/modelog";
 
 import './i18n/config';
 import { useTranslation } from 'react-i18next';
@@ -317,6 +318,7 @@ const App: React.FC = () => {
   const bigItems = [
     { label: <Link onClick={showDrawer} to="/">{t('menu.overview')}</Link>, title: '', key: 'overview', icon: <EyeOutlined style={{ fontSize: '100%' }} /> },
     { label: t('menu.settings'), title: '', key: 'settings', icon: <SettingOutlined style={{ fontSize: '100%' }} />, children: [{ label: <Link onClick={showDrawer} to="/settings/settingsTech">{t('menu.settingsTech')}</Link>, title: '', key: 'settingsTech', }, { label: <Link onClick={showDrawer} to="/settings/settingsOp">{t('menu.settingsOp')}</Link>, title: '', key: 'settingsOp', }, { label: <Link onClick={showDrawer} to="/settings/settingsDev">{t('menu.settingsDev')}</Link>, title: '', key: 'settingsDev', }] },
+    { label: t('menu.logs'), title: '', key: 'logs', icon: <ReadOutlined style={{ fontSize: '100%' }} />, children: [{ label: <Link onClick={showDrawer} to="/logs/modelog">{t('menu.logsMode')}</Link>, title: '', key: 'logsMode', },] },
   ];
 
   return (
@@ -347,6 +349,8 @@ const App: React.FC = () => {
               <div className="site-layout-content">
                 <Routes>
                   <Route index element={<Overview />} />
+                  <Route path={'/logs'} element={<ModeLog />} />
+                  <Route path={'/logs/modelog'} element={<ModeLog />} />
                   <Route path={'/settings'} element={<SettingsTech token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
                   <Route path={'/settings/settingsTech'} element={<SettingsTech token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
                   <Route path={'/settings/settingsOp'} element={<SettingsOp token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />

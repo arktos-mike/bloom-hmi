@@ -7,6 +7,7 @@ import tags from './tags'
 import datetime from './datetime'
 import reboot from './reboot'
 import shifts from './shifts'
+import logs from './logs'
 //api.use('/config', config);
 
 export default (api) => {
@@ -17,4 +18,5 @@ export default (api) => {
     api.use('/datetime', datetime);
     api.use('/reboot', reboot);
     api.use('/shifts', shifts);
+    api.use('/logs', logs);
 }
