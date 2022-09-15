@@ -9,6 +9,8 @@ const locale = {
     "settingsOp": "PANEL DEL OPERADOR",
     "users": "ADMINISTRACIÓN DE USUARIOS",
     "shifts": "GESTIÓN DE TURNOS",
+    "logs": "REGISTROS",
+    "modelog": "REGISTRO DE INICIO Y PARADA",
     "settingsDev": "ADQUISICIÓN DE DATOS",
     "settingsTech": "TECNOLOGÍA"
   },
@@ -29,6 +31,9 @@ const locale = {
     "sunday": "Dom"
   },
   "tags": {
+    "picks": {
+      "descr": "Pasadas"
+    },
     "comTime": {
       "eng": "ms"
     },
@@ -41,7 +46,7 @@ const locale = {
     },
     "planClothDensity": {
       "descr": "Densidad planificada",
-      "eng": "paso/cm"
+      "eng": "pasadas/cm"
     },
     "takeupDiam": {
       "descr": "Diámetro de rodillo de recogida",
@@ -109,6 +114,7 @@ const locale = {
     "usererror": "Contraseña incorrecta",
     "rightserror": "Derechos de usuario insuficientes",
     "confupdate": "Configuración cambiada",
+    "logupdate": "Registro cambiado",
     "servererror": "Error del servidor",
     "dberror": "Error de base de datos",
     "dataerror": "Datos incorrectos",
@@ -159,6 +165,10 @@ const locale = {
     "network": "Configuración de red",
     "setpoints": "Puntos de ajuste planificados",
     "equipment": "Parámetros del equipo"
+  },
+  "log": {
+    "select": "Rango seleccionado:",
+    "event": "Evento"
   },
   "system": {
     "reboot": "REINICIAR DISPOSITIVO"

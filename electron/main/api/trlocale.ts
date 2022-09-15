@@ -9,6 +9,8 @@ const locale = {
     "settingsOp": "OPERATÖR PANELI",
     "users": "KULLANICI YÖNETIMI",
     "shifts": "VARDİYALARI YÖNETME",
+    "logs": "GÜNLÜKLER",
+    "modelog": "START-STOP GÜNLÜĞÜ",
     "settingsDev": "VERI TOPLAMA",
     "settingsTech": "TEKNOLOJİ"
   },
@@ -29,6 +31,9 @@ const locale = {
     "sunday": "Pazar"
   },
   "tags": {
+    "picks": {
+      "descr": "Atkılar"
+    },
     "comTime": {
       "eng": "ms"
     },
@@ -41,7 +46,7 @@ const locale = {
     },
     "planClothDensity": {
       "descr": "Planlanan yoğunluk",
-      "eng": "geçit/cm"
+      "eng": "atkı/cm"
     },
     "takeupDiam": {
       "descr": "Silindir çapını al",
@@ -109,6 +114,7 @@ const locale = {
     "usererror": "Yanlış şifre",
     "rightserror": "Yetersiz kullanıcı hakları",
     "confupdate": "Ayarlar değişti",
+    "logupdate": "Günlük değiştirildi",
     "servererror": "Sunucu hatası",
     "dberror": "Veritabanı hatası",
     "dataerror": "Yanlış veri",
@@ -159,6 +165,10 @@ const locale = {
     "network": "Ağ ayarları",
     "setpoints": "Planlanan ayar noktaları",
     "equipment": "Ekipman parametreleri"
+  },
+  "log": {
+    "select": "Seçili aralık:",
+    "event": "Etkinlik"
   },
   "system": {
     "reboot": "CİHAZI YENİDEN BAŞLAT"

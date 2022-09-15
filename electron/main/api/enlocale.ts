@@ -9,6 +9,8 @@ const locale = {
     "settingsOp": "OPERATOR PANEL",
     "users": "USER ADMINISTRATION",
     "shifts": "SHIFT MANAGMENT",
+    "logs": "LOGS",
+    "modelog": "START-STOP LOG",
     "settingsDev": "DATA AQUISITION",
     "settingsTech": "TECHNOLOGY"
   },
@@ -29,6 +31,9 @@ const locale = {
     "sunday" : "Sun"
   },
   "tags": {
+    "picks": {
+      "descr": "Picks"
+    },
     "comTime": {
       "eng": "ms"
     },
@@ -109,6 +114,7 @@ const locale = {
     "usererror": "Incorrect password",
     "rightserror": "Insufficient user rights",
     "confupdate": "Settings changed",
+    "logupdate": "Log changed",
     "servererror": "Server error",
     "dberror": "Database error",
     "dataerror": "Incorrect data",
@@ -159,6 +165,10 @@ const locale = {
     "network": "Network settings",
     "setpoints": "Planned setpoints",
     "equipment": "Equipment parameters"
+  },
+  "log": {
+    "select": "Selected range:",
+    "event": "Event"
   },
   "system": {
     "reboot": "REBOOT DEVICE"

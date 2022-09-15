@@ -318,7 +318,7 @@ const App: React.FC = () => {
   const bigItems = [
     { label: <Link onClick={showDrawer} to="/">{t('menu.overview')}</Link>, title: '', key: 'overview', icon: <EyeOutlined style={{ fontSize: '100%' }} /> },
     { label: t('menu.settings'), title: '', key: 'settings', icon: <SettingOutlined style={{ fontSize: '100%' }} />, children: [{ label: <Link onClick={showDrawer} to="/settings/settingsTech">{t('menu.settingsTech')}</Link>, title: '', key: 'settingsTech', }, { label: <Link onClick={showDrawer} to="/settings/settingsOp">{t('menu.settingsOp')}</Link>, title: '', key: 'settingsOp', }, { label: <Link onClick={showDrawer} to="/settings/settingsDev">{t('menu.settingsDev')}</Link>, title: '', key: 'settingsDev', }] },
-    { label: t('menu.logs'), title: '', key: 'logs', icon: <ReadOutlined style={{ fontSize: '100%' }} />, children: [{ label: <Link onClick={showDrawer} to="/logs/modelog">{t('menu.logsMode')}</Link>, title: '', key: 'logsMode', },] },
+    { label: t('menu.logs'), title: '', key: 'logs', icon: <ReadOutlined style={{ fontSize: '100%' }} />, children: [{ label: <Link onClick={showDrawer} to="/logs/modelog">{t('menu.modelog')}</Link>, title: '', key: 'modelog', },] },
   ];
 
   return (
@@ -349,8 +349,8 @@ const App: React.FC = () => {
               <div className="site-layout-content">
                 <Routes>
                   <Route index element={<Overview />} />
-                  <Route path={'/logs'} element={<ModeLog />} />
-                  <Route path={'/logs/modelog'} element={<ModeLog />} />
+                  <Route path={'/logs'} element={<ModeLog token={token} />} />
+                  <Route path={'/logs/modelog'} element={<ModeLog token={token} />} />
                   <Route path={'/settings'} element={<SettingsTech token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
                   <Route path={'/settings/settingsTech'} element={<SettingsTech token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
                   <Route path={'/settings/settingsOp'} element={<SettingsOp token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />

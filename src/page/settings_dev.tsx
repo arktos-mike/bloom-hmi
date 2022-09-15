@@ -269,7 +269,7 @@ const SettingsDev: React.FC<Props> = ({
                   <Checkbox userRights={['admin', 'manager']} token={token} text='rtu.swapWords'></Checkbox>
                 </Form.Item>
               </Form.Item>
-              <Form.Item>
+              <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
                 <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
               </Form.Item>
             </Form>
