@@ -55,17 +55,27 @@ const App: React.FC = () => {
       });
   };
 
-  const onIdle = () => {
-    if (!remember) {
+  const checkLogin = async () => {
       try {
-        token && fetch('http://localhost:3000/users/logout', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json;charset=UTF-8', },
-          body: JSON.stringify({ id: JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id, logoutby: 'idle' }),
-        });
+        const ans = await fetch('http://localhost:3000/logs/user');
+        const json = await ans.json();
+        if (!ans.ok) { throw Error(ans.statusText); }
+        if (json.length) {
+          const response = await fetch('http://localhost:3000/users/login/' + json[0].id, {
+            method: 'POST'
+          });
+          const jsonb = await response.json();
+          setToken(jsonb.token || null);
+          if (!response.ok) { throw Error(response.statusText); }
+        }
+        else { setToken(null); }
       }
       catch (error) { console.log(error); }
-      setToken(null);
+  }
+
+  const onIdle = async () => {
+    if (!remember && token) {
+      await checkLogin();
       openNotificationWithIcon('warning', t('notifications.idle'), 0);
     }
   }
@@ -277,6 +287,7 @@ const App: React.FC = () => {
     clock();
     fetchLngs();
     fetchShift();
+    checkLogin();
     setUpdated(true);
   }, [])
 

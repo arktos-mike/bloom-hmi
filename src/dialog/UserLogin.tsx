@@ -75,17 +75,29 @@ const UserLogin: React.FC<Props> = ({
     setIsModalVisible(false)
     form.resetFields()
   }
-  const handleOk = () => {
-    form.resetFields()
+  const handleOk = async () => {
+    form.resetFields();
     try {
-      fetch('http://localhost:3000/users/logout', {
+      const res = await fetch('http://localhost:3000/users/logout', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
         body: JSON.stringify({ id: JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id, logoutby: 'button' }),
       });
+      if (!res.ok) { throw Error(res.statusText); }
+      const ans = await fetch('http://localhost:3000/logs/user');
+      const json = await ans.json();
+      if (!ans.ok) { throw Error(ans.statusText); }
+      if (json.length) {
+        const response = await fetch('http://localhost:3000/users/login/' + json[0].id, {
+          method: 'POST'
+        });
+        const jsonb = await response.json();
+        setToken(jsonb.token || null);
+        if (!response.ok) { throw Error(response.statusText); }
+      }
+      else { setToken(null); }
     }
     catch (error) { console.log(error); }
-    setToken(null);
   }
 
   const onFinish = async (values: { user: any; password: any; remember: boolean; }) => {

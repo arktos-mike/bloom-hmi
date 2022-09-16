@@ -70,6 +70,9 @@ router.post('/logout', async (req, res) => {
   try {
     const { id, logoutby } = req.body;
     await db.query(`UPDATE userlog SET timestamp = tstzrange(lower(timestamp),current_timestamp(6),'[)'), logoutby=$2 WHERE upper_inf(timestamp) AND id=$1`, [id, logoutby]) //Verifying if the user exists in the database
+    res.status(200).json({
+      message: "notifications.logout",
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({
