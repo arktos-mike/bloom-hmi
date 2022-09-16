@@ -37,6 +37,15 @@ CREATE TABLE IF NOT EXISTS modelog (
   );
 CREATE INDEX IF NOT EXISTS modelog_tstzrange_idx ON modelog USING GIST (timestamp);
 CREATE INDEX IF NOT EXISTS modelog_modecode ON modelog (modecode);
+CREATE TABLE IF NOT EXISTS userlog (
+  timestamp tstzrange PRIMARY KEY not null default tstzrange(current_timestamp,NULL,'[)'),
+  id NUMERIC,
+  name text not null,
+  role text,
+  loginby text,
+  logoutby text
+);
+CREATE INDEX IF NOT EXISTS userlog_tstzrange_idx ON userlog USING GIST (timestamp);
 CREATE TABLE IF NOT EXISTS shiftconfig (
     shiftname text PRIMARY KEY not null,
     starttime TIMETZ(0),

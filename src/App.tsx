@@ -57,6 +57,14 @@ const App: React.FC = () => {
 
   const onIdle = () => {
     if (!remember) {
+      try {
+        token && fetch('http://localhost:3000/users/logout', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json;charset=UTF-8', },
+          body: JSON.stringify({ id: JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id, logoutby: 'idle' }),
+        });
+      }
+      catch (error) { console.log(error); }
       setToken(null);
       openNotificationWithIcon('warning', t('notifications.idle'), 0);
     }
