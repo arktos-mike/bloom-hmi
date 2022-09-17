@@ -11,6 +11,7 @@ const locale = {
     "shifts": "GESTIÓN DE TURNOS",
     "logs": "REGISTROS",
     "modelog": "REGISTRO DE INICIO Y PARADA",
+    "userlog": "REGISTRO DE ACCESO",
     "settingsDev": "ADQUISICIÓN DE DATOS",
     "settingsTech": "TECNOLOGÍA"
   },
@@ -167,6 +168,8 @@ const locale = {
     "equipment": "Parámetros del equipo"
   },
   "log": {
+    "login": "Iniciar sesión",
+    "logout": "Cerrar sesión",
     "select": "Rango seleccionado:",
     "event": "Evento"
   },

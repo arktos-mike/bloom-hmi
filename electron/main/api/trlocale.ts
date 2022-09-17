@@ -10,7 +10,8 @@ const locale = {
     "users": "KULLANICI YÖNETIMI",
     "shifts": "VARDİYALARI YÖNETME",
     "logs": "GÜNLÜKLER",
-    "modelog": "START-STOP GÜNLÜĞÜ",
+    "modelog": "BAŞLAT-DURDUR GÜNLÜĞÜ",
+    "userlog": "ERİŞİM GÜNLÜĞÜ",
     "settingsDev": "VERI TOPLAMA",
     "settingsTech": "TEKNOLOJİ"
   },
@@ -167,6 +168,8 @@ const locale = {
     "equipment": "Ekipman parametreleri"
   },
   "log": {
+    "login": "Giriş",
+    "logout": "Çıkış",
     "select": "Seçili aralık:",
     "event": "Etkinlik"
   },

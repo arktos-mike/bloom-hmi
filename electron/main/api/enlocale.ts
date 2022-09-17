@@ -11,6 +11,7 @@ const locale = {
     "shifts": "SHIFT MANAGMENT",
     "logs": "LOGS",
     "modelog": "START-STOP LOG",
+    "userlog": "ACCESS LOG",
     "settingsDev": "DATA AQUISITION",
     "settingsTech": "TECHNOLOGY"
   },
@@ -167,6 +168,8 @@ const locale = {
     "equipment": "Equipment parameters"
   },
   "log": {
+    "login": "Login",
+    "logout": "Logout",
     "select": "Selected range:",
     "event": "Event"
   },

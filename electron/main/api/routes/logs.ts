@@ -13,6 +13,24 @@ router.get('/user', async (req, res) => {
   res.status(200).send(rows)
 })
 
+router.post('/userlog', async (req, res) => {
+  const { start, end } = req.body;
+  const { rows } = await db.query(`SELECT * FROM userlog WHERE tstzrange($1,$2,'[)') && timestamp ORDER BY timestamp DESC`, [start, end]);
+  rows.map((row: any) => {
+    row['timestamp'] = range.parse(row['timestamp'], parseTimestampTz)
+  });
+  res.status(200).send(rows)
+})
+
+router.post('/userlog/delete', async (req, res) => {
+  const { start, end } = req.body;
+  const { rows } = await db.query(`DELETE FROM userlog WHERE tstzrange($1,$2,'[]') @> timestamp`, [start, end]);
+  rows.map((row: any) => {
+    row['timestamp'] = range.parse(row['timestamp'], parseTimestampTz)
+  });
+  res.status(200).send(rows)
+})
+
 router.post('/startstops', async (req, res) => {
   const { start, end } = req.body;
   const { rows } = await db.query(`SELECT timestamp,modecode,picks FROM modelog WHERE tstzrange($1,$2,'[)') && timestamp ORDER BY timestamp DESC`, [start, end]);
