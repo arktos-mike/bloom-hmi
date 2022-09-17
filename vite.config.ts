@@ -31,6 +31,9 @@ export default defineConfig({
           '@segmented-selected-bg': '@primary-color',
           '@segmented-label-color': '@white',
           '@segmented-label-hover-color': '@white',
+          '@avatar-group-overlapping': '-20px',
+          '@avatar-group-space': '5px',
+          '@avatar-group-border-color': '#ffffff3f'
         },
       },
     },

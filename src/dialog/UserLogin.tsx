@@ -10,6 +10,7 @@ const { Option } = Select;
 type Props = {
   isModalVisible: boolean;
   token: any;
+  shadowUser: any;
   setToken: (val: any) => void;
   setRemember: (val: boolean) => void;
   setIsModalVisible: (val: boolean) => void;
@@ -21,6 +22,7 @@ const UserLogin: React.FC<Props> = ({
   isModalVisible,
   setIsModalVisible,
   token,
+  shadowUser,
   setToken,
   setRemember,
   activeInput,
@@ -151,6 +153,11 @@ const UserLogin: React.FC<Props> = ({
           >
             <span className="text" style={{ color: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "" }}>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</span>
           </Form.Item>
+          {shadowUser && <Form.Item
+            label={t('user.weaver')}
+          >
+            <span className="text" style={{ color: "#87d068" }}>{shadowUser}</span>
+          </Form.Item>}
           <Form.Item
             label={t('user.user')}
             name="user"

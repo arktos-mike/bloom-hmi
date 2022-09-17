@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import logo from '/icon.svg'
 import 'styles/app.less'
 import { Route, Link, Routes, useLocation, Navigate } from 'react-router-dom';
-import { Layout, Menu, Select, Drawer, Button, Input, notification, ConfigProvider, Breadcrumb, Space, Progress } from 'antd';
+import { Layout, Menu, Select, Drawer, Button, Input, notification, ConfigProvider, Breadcrumb, Space, Progress, Avatar, Tooltip } from 'antd';
 import { ReadOutlined, ScheduleOutlined, ToolOutlined, QuestionCircleOutlined, SyncOutlined, LoadingOutlined, AimOutlined, DashboardOutlined, CloseCircleTwoTone, EyeTwoTone, EyeInvisibleOutlined, GlobalOutlined, CloseOutlined, ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "./components/Icons"
 import { useIdleTimer } from 'react-idle-timer'
@@ -56,22 +56,35 @@ const App: React.FC = () => {
       });
   };
 
-  const checkLogin = async () => {
-      try {
-        const ans = await fetch('http://localhost:3000/logs/user');
-        const json = await ans.json();
-        if (!ans.ok) { throw Error(ans.statusText); }
-        if (json.length) {
-          const response = await fetch('http://localhost:3000/users/login/' + json[0].id, {
-            method: 'POST'
-          });
-          const jsonb = await response.json();
-          setToken(jsonb.token || null);
-          if (!response.ok) { throw Error(response.statusText); }
-        }
-        else { setToken(null); }
+  const checkShadowUser = async () => {
+    try {
+      const ans = await fetch('http://localhost:3000/logs/user');
+      const json = await ans.json();
+      if (!ans.ok) { throw Error(ans.statusText); }
+      if (json.length && (token && (json[0].id != JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id))) {
+        setShadowUser(json[0].name);
       }
-      catch (error) { console.log(error); }
+      else { setShadowUser(null); }
+    }
+    catch (error) { console.log(error); }
+  }
+
+  const checkLogin = async () => {
+    try {
+      const ans = await fetch('http://localhost:3000/logs/user');
+      const json = await ans.json();
+      if (!ans.ok) { throw Error(ans.statusText); }
+      if (json.length) {
+        const response = await fetch('http://localhost:3000/users/login/' + json[0].id, {
+          method: 'POST'
+        });
+        const jsonb = await response.json();
+        setToken(jsonb.token || null);
+        if (!response.ok) { throw Error(response.statusText); }
+      }
+      else { setToken(null); }
+    }
+    catch (error) { console.log(error); }
   }
 
   const onIdle = async () => {
@@ -134,6 +147,7 @@ const App: React.FC = () => {
   const [bufferTemp, setBufferTemp] = useState('')
   const [lngs, setLngs] = useState({ data: [] })
   const [token, setToken] = useState<string | null>(null)
+  const [shadowUser, setShadowUser] = useState<string | null>(null)
   const [remember, setRemember] = useState(true)
   const [today, setDate] = useState(new Date())
   const [visible, setVisible] = useState(false)
@@ -185,6 +199,17 @@ const App: React.FC = () => {
       default:
         break;
     }
+  }
+
+  const avatarColor = () => {
+    let color;
+    let role = token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role
+    if (role == 'fixer') { color = "#108ee9" }
+    else if (role == 'weaver') { color = "#87d068" }
+    else if (role == 'manager') { color = "#2db7f5" }
+    else if (role == 'admin') { color = "#f50" }
+    else { color = "#0000006F" }
+    return color;
   }
 
   const modeCodeObj = (code: Number) => {
@@ -302,7 +327,8 @@ const App: React.FC = () => {
   }, [updated, shift.end && dayjs().isAfter(shift.end)])
 
   useEffect(() => {
-    setToken(token)
+    setToken(token);
+    checkShadowUser();
   }, [token])
 
   useEffect(() => {
@@ -338,7 +364,7 @@ const App: React.FC = () => {
   const bigItems = [
     { label: <Link onClick={showDrawer} to="/">{t('menu.overview')}</Link>, title: '', key: 'overview', icon: <EyeOutlined style={{ fontSize: '100%' }} /> },
     { label: t('menu.settings'), title: '', key: 'settings', icon: <SettingOutlined style={{ fontSize: '100%' }} />, children: [{ label: <Link onClick={showDrawer} to="/settings/settingsTech">{t('menu.settingsTech')}</Link>, title: '', key: 'settingsTech', }, { label: <Link onClick={showDrawer} to="/settings/settingsOp">{t('menu.settingsOp')}</Link>, title: '', key: 'settingsOp', }, { label: <Link onClick={showDrawer} to="/settings/settingsDev">{t('menu.settingsDev')}</Link>, title: '', key: 'settingsDev', }] },
-    { label: t('menu.logs'), title: '', key: 'logs', icon: <ReadOutlined style={{ fontSize: '100%' }} />, children: [{ label: <Link onClick={showDrawer} to="/logs/modelog">{t('menu.modelog')}</Link>, title: '', key: 'modelog', },{ label: <Link onClick={showDrawer} to="/logs/userlog">{t('menu.userlog')}</Link>, title: '', key: 'userlog', },] },
+    { label: t('menu.logs'), title: '', key: 'logs', icon: <ReadOutlined style={{ fontSize: '100%' }} />, children: [{ label: <Link onClick={showDrawer} to="/logs/modelog">{t('menu.modelog')}</Link>, title: '', key: 'modelog', }, { label: <Link onClick={showDrawer} to="/logs/userlog">{t('menu.userlog')}</Link>, title: '', key: 'userlog', },] },
   ];
 
   return (
@@ -354,8 +380,14 @@ const App: React.FC = () => {
             <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode.val).color }}>{modeCodeObj(modeCode.val).text + ' '}{modeCodeObj(modeCode.val).icon}<div className='stopwatch'>{stopwatch(modeCode.updated)}</div></div>
             {shift.name && <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' ' + shift.name}<div className="percent">{Number(shift.efficiency).toFixed(shift.efficiency < 10 ? 2 : 1) + '%'}</div></Space></div><div className="progress"><Progress percent={shift.efficiency} showInfo={false} size="small" /></div></div>}
             <div className="user">
-              <Button type="primary" size="large" shape="circle" onClick={showUserDialog} icon={<UserOutlined style={{ fontSize: '120%' }} />} style={{ background: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "", borderColor: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "" }} /><table><tbody><tr><td><div className='username'>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</div></td></tr><tr><td><div className='userrole'>{t(token ? 'user.' + JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : '')}</div></td></tr></tbody></table>
-              <UserLogin token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} activeInput={activeInput} setActiveInput={setActiveInput} />
+              <Avatar.Group size='large'>
+                {shadowUser && <Tooltip title={shadowUser} placement="bottom">
+                  <Avatar style={{ backgroundColor: "#87d068" }} icon={<UserOutlined />} />
+                </Tooltip>}
+                <Avatar onClick={showUserDialog} size={50} style={{ backgroundColor: avatarColor() }} icon={<UserOutlined />} />
+              </Avatar.Group>
+              <table><tbody><tr><td><div className='username'>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</div></td></tr><tr><td><div className='userrole'>{t(token ? 'user.' + JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : '')}</div></td></tr></tbody></table>
+              <UserLogin shadowUser={shadowUser} token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} activeInput={activeInput} setActiveInput={setActiveInput} />
             </div>
             <div className="clock">
               <div className="time">{curTime}</div><div className="date">{curDate}</div>
