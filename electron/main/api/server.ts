@@ -68,6 +68,7 @@ let com2 = { path: '', conf: {}, scan: 0, timeout: 0, mbsState: MBS_STATE_STEADY
 const dbInit = async () => {
   // create table
   await db.query(createTableText)
+  await db.query('INSERT INTO lifetime VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT (serialno) DO NOTHING;', ['СТБУТТ1-280Кр', '00000001', new Date('2022-12-31T12:00:00.000Z'), 0,0, '0H']);
   await network.get_active_interface(async function (err, obj) {
     const ipConf = { opIP: obj, plcIP1: "192.168.1.6", plcIP2: "192.168.1.7" }
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])

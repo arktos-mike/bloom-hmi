@@ -12,6 +12,7 @@ const locale = {
     "logs": "LOGS",
     "modelog": "START-STOP LOG",
     "userlog": "ACCESS LOG",
+    "machineInfo": "LOOM INFO",
     "settingsDev": "DATA AQUISITION",
     "settingsTech": "TECHNOLOGY"
   },
@@ -164,6 +165,7 @@ const locale = {
     "language": "Language selection",
     "actions": "Actions",
     "network": "Network settings",
+    "lifetime": "Lifetime loom statistics",
     "setpoints": "Planned setpoints",
     "equipment": "Equipment parameters"
   },

@@ -3,7 +3,7 @@ import logo from '/icon.svg'
 import 'styles/app.less'
 import { Route, Link, Routes, useLocation, Navigate } from 'react-router-dom';
 import { Layout, Menu, Select, Drawer, Button, Input, notification, ConfigProvider, Breadcrumb, Space, Progress, Avatar, Tooltip } from 'antd';
-import { ReadOutlined, ScheduleOutlined, ToolOutlined, QuestionCircleOutlined, SyncOutlined, LoadingOutlined, AimOutlined, DashboardOutlined, CloseCircleTwoTone, EyeTwoTone, EyeInvisibleOutlined, GlobalOutlined, CloseOutlined, ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
+import { TagsOutlined, ReadOutlined, ScheduleOutlined, ToolOutlined, QuestionCircleOutlined, SyncOutlined, LoadingOutlined, AimOutlined, DashboardOutlined, CloseCircleTwoTone, EyeTwoTone, EyeInvisibleOutlined, GlobalOutlined, CloseOutlined, ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "./components/Icons"
 import { useIdleTimer } from 'react-idle-timer'
 import Overview from "./page/overview";
@@ -14,6 +14,7 @@ import UserLogin from "./dialog/UserLogin";
 import Shifts from "./page/shifts";
 import ModeLog from "./page/modelog";
 import UserLog from "./page/userlog";
+import MachineInfo from "./page/machine_info";
 
 import './i18n/config';
 import { useTranslation } from 'react-i18next';
@@ -156,6 +157,7 @@ const App: React.FC = () => {
   const [tags, setTags] = useState({ data: [] })
   const [shift, setShift] = useState({ name: '', start: '', end: '', duration: '', runtime: '', picks: 0, efficiency: 0 })
   const [updated, setUpdated] = useState(false)
+  const [openKeys, setOpenKeys] = useState(['']);
 
   const handleShift = () => {
     setLayout(layout === "default" ? "shift" : "default")
@@ -171,6 +173,15 @@ const App: React.FC = () => {
   const onKeyReleased = (button: string) => {
     if (['default', 'float', 'dec-'].includes(activeInput.pattern) && activeInput.num && button === "-") {
       bufferKeyboard.charAt(0) == '-' ? setBufferKeyboard(bufferTemp) : setBufferKeyboard('-' + bufferTemp)
+    }
+  };
+
+  const onOpenChange = (keys: any) => {
+    const latestOpenKey = keys.find((key: any) => openKeys.indexOf(key) === -1);
+    if (['settings', 'logs'].indexOf(latestOpenKey!) === -1) {
+      setOpenKeys(keys);
+    } else {
+      setOpenKeys(latestOpenKey ? [latestOpenKey] : []);
     }
   };
 
@@ -365,6 +376,7 @@ const App: React.FC = () => {
     { label: <Link onClick={showDrawer} to="/">{t('menu.overview')}</Link>, title: '', key: 'overview', icon: <EyeOutlined style={{ fontSize: '100%' }} /> },
     { label: t('menu.settings'), title: '', key: 'settings', icon: <SettingOutlined style={{ fontSize: '100%' }} />, children: [{ label: <Link onClick={showDrawer} to="/settings/settingsTech">{t('menu.settingsTech')}</Link>, title: '', key: 'settingsTech', }, { label: <Link onClick={showDrawer} to="/settings/settingsOp">{t('menu.settingsOp')}</Link>, title: '', key: 'settingsOp', }, { label: <Link onClick={showDrawer} to="/settings/settingsDev">{t('menu.settingsDev')}</Link>, title: '', key: 'settingsDev', }] },
     { label: t('menu.logs'), title: '', key: 'logs', icon: <ReadOutlined style={{ fontSize: '100%' }} />, children: [{ label: <Link onClick={showDrawer} to="/logs/modelog">{t('menu.modelog')}</Link>, title: '', key: 'modelog', }, { label: <Link onClick={showDrawer} to="/logs/userlog">{t('menu.userlog')}</Link>, title: '', key: 'userlog', },] },
+    { label: <Link onClick={showDrawer} to="/machineInfo">{t('menu.machineInfo')}</Link>, title: '', key: 'machineInfo', icon: <TagsOutlined style={{ fontSize: '100%' }} /> },
   ];
 
   return (
@@ -375,19 +387,20 @@ const App: React.FC = () => {
             <div className="logo" onClick={showDrawer}>
               <img src={logo} className="applogo" alt=""></img>
             </div>
-            <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={location.pathname == '/' ? ['overview'] : [location.pathname.split("/").filter((item) => item).slice(-1)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : smallItems : smallItems} />
+            <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={location.pathname == '/' ? ['overview'] : [location.pathname.split("/").slice(-1)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? smallItemsMan : smallItems : smallItems} />
             <div className="speed">{modeCode.val == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode.val == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}</div><div className="sub">{modeCode.val == 1 ? t('tags.speedMainDrive.eng') : '°'}</div>
             <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode.val).color }}>{modeCodeObj(modeCode.val).text + ' '}{modeCodeObj(modeCode.val).icon}<div className='stopwatch'>{stopwatch(modeCode.updated)}</div></div>
             {shift.name && <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' ' + shift.name}<div className="percent">{Number(shift.efficiency).toFixed(shift.efficiency < 10 ? 2 : 1) + '%'}</div></Space></div><div className="progress"><Progress percent={shift.efficiency} showInfo={false} size="small" /></div></div>}
             <div className="user">
-              <Avatar.Group size='large'>
-                {shadowUser && <Tooltip title={shadowUser} placement="bottom">
-                  <Avatar style={{ backgroundColor: "#87d068" }} icon={<UserOutlined />} />
-                </Tooltip>}
-                <Avatar onClick={showUserDialog} size={50} style={{ backgroundColor: avatarColor() }} icon={<UserOutlined />} />
-              </Avatar.Group>
-              <table><tbody><tr><td><div className='username'>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</div></td></tr><tr><td><div className='userrole'>{t(token ? 'user.' + JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : '')}</div></td></tr></tbody></table>
-              <UserLogin shadowUser={shadowUser} token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} activeInput={activeInput} setActiveInput={setActiveInput} />
+              <div className="user" onClick={showUserDialog}>
+                <Avatar.Group size='large'>
+                  {shadowUser && <Tooltip title={shadowUser} placement="bottom">
+                    <Avatar style={{ backgroundColor: "#87d068" }} icon={<UserOutlined />} />
+                  </Tooltip>}
+                  <Avatar size={50} style={{ backgroundColor: avatarColor() }} icon={<UserOutlined />} />
+                </Avatar.Group>
+                <table><tbody><tr><td><div className='username'>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</div></td></tr><tr><td><div className='userrole'>{t(token ? 'user.' + JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : '')}</div></td></tr></tbody></table>
+              </div><UserLogin shadowUser={shadowUser} token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} activeInput={activeInput} setActiveInput={setActiveInput} />
             </div>
             <div className="clock">
               <div className="time">{curTime}</div><div className="date">{curDate}</div>
@@ -401,6 +414,7 @@ const App: React.FC = () => {
               <div className="site-layout-content">
                 <Routes>
                   <Route index element={<Overview />} />
+                  <Route path={'/machineInfo'} element={<MachineInfo />} />
                   <Route path={'/logs'} element={<ModeLog token={token} />} />
                   <Route path={'/logs/modelog'} element={<ModeLog token={token} />} />
                   <Route path={'/logs/userlog'} element={<UserLog token={token} />} />
@@ -420,7 +434,7 @@ const App: React.FC = () => {
                   style={{ position: 'absolute', }}
                   bodyStyle={{ margin: "0px", padding: "0px" }}
                 >
-                  <Menu style={{ fontSize: '150%' }} mode="inline" items={bigItems} selectedKeys={location.pathname == '/' ? ['overview'] : location.pathname.split("/").filter((item) => item)} defaultSelectedKeys={['overview']}>
+                  <Menu style={{ fontSize: '150%' }} mode="inline" items={bigItems} openKeys={openKeys} onOpenChange={onOpenChange} selectedKeys={location.pathname == '/' ? ['overview'] : location.pathname.split("/").filter((item) => item)} defaultSelectedKeys={['overview']}>
                   </Menu>
                 </Drawer>
                 <Drawer

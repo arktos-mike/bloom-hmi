@@ -46,6 +46,16 @@ CREATE TABLE IF NOT EXISTS userlog (
   logoutby text
 );
 CREATE INDEX IF NOT EXISTS userlog_tstzrange_idx ON userlog USING GIST (timestamp);
+CREATE TABLE IF NOT EXISTS lifetime (
+  type text,
+  serialno text PRIMARY KEY,
+  mfgdate date,
+  picks NUMERIC,
+  cloth NUMERIC,
+  motor interval
+);
+DROP RULE IF EXISTS lifetime_del_protect ON lifetime;
+CREATE RULE lifetime_del_protect AS ON DELETE TO lifetime DO INSTEAD NOTHING;
 CREATE TABLE IF NOT EXISTS shiftconfig (
     shiftname text PRIMARY KEY not null,
     starttime TIMETZ(0),
@@ -185,24 +195,67 @@ create trigger modeChanged after insert or update on tags for row when (new.tag-
 DROP TRIGGER IF EXISTS modeupdate
   ON modelog;
 DROP FUNCTION IF EXISTS modeupdate;
-create function modeupdate()
-   returns trigger
-   language plpgsql
-  as $function$
-  begin
-  UPDATE modelog SET
-  timestamp = tstzrange(
-      lower(timestamp),
-      current_timestamp(6),
-      '[)'
-  ), picks = (case when (modecode = 1) then (select val from tags where (tag->>'name' = 'picksLastRun'))
-  else NULL end)
-  WHERE upper_inf(timestamp);
-  return new;
-  end;
+create or replace function modeupdate()
+ returns trigger
+ language plpgsql
+as $function$
+declare
+  picksLastRun numeric;
 
-  $function$
-  ;
+density numeric;
+
+code numeric;
+
+clock interval;
+
+begin
+	 picksLastRun :=(
+select
+	val
+from
+	tags
+where
+	(tag->>'name' = 'picksLastRun'));
+
+update
+	modelog
+set
+	timestamp = tstzrange(
+      lower(timestamp),
+	current_timestamp(6),
+	'[)'
+  ),
+	picks = (case
+		when (modecode = 1) then (picksLastRun)
+		else null
+	end)
+where
+	upper_inf(timestamp) returning modecode, (current_timestamp(6)-lower(timestamp)) into code, clock;
+
+if code = 1 then
+   density :=(
+select
+	val
+from
+	tags
+where
+	(tag->>'name' = 'planClothDensity'));
+
+update
+	lifetime
+set
+	picks = picks + picksLastRun,
+	cloth = cloth + (picksLastRun / (100 * density)),
+	motor = motor + clock
+where
+	serialno is not null;
+end if;
+
+return new;
+end;
+
+$function$
+;
 create trigger modeupdate before insert on modelog for row execute function modeupdate();
 create or replace function getstatinfo(starttime timestamp with time zone,
 endtime timestamp with time zone,

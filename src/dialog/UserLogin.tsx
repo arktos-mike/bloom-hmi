@@ -111,7 +111,7 @@ const UserLogin: React.FC<Props> = ({
           body: JSON.stringify({ name: values.user, password: values.password, }),
         });
         const json = await response.json();
-        setToken(json.token || null);
+        setToken(json.token || token);
         openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
         if (!response.ok) { throw Error(response.statusText); }
       }
@@ -143,7 +143,7 @@ const UserLogin: React.FC<Props> = ({
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
           initialValues={{ remember: true }}
-          size='large'
+          size='middle'
           onFinish={onFinish}
           form={form}
           preserve={false}
@@ -182,15 +182,15 @@ const UserLogin: React.FC<Props> = ({
           <Form.Item name="remember" valuePropName="checked" wrapperCol={{ offset: 8, span: 16 }}>
             <Checkbox>{t('user.remember')}</Checkbox>
           </Form.Item>
-          <Form.Item wrapperCol={{ offset: 8, span: 16 }} hidden={!token} >
-            <Button type="link" onClick={() => { setEditVisible(true); }}>{t('user.change')}</Button>
-            <UserEdit isModalVisible={editVisible} setIsModalVisible={setEditVisible} token={token} setToken={setToken} activeInput={activeInput} setActiveInput={setActiveInput} />
-          </Form.Item >
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button size="large" type="primary" htmlType="submit" >
               {t('user.login')}
             </Button>
           </Form.Item>
+          <Form.Item wrapperCol={{ offset: 8, span: 16 }} hidden={!token} >
+            <Button type="link" onClick={() => { setEditVisible(true); }}>{t('user.change')}</Button>
+            <UserEdit isModalVisible={editVisible} setIsModalVisible={setEditVisible} token={token} setToken={setToken} activeInput={activeInput} setActiveInput={setActiveInput} />
+          </Form.Item >
           {token && <Form.Item wrapperCol={{ offset: 8, span: 16 }} >
             <Button type="link" onClick={() => { setRegVisible(true); }}>{t('user.register')}</Button>
             <UserRegister isModalVisible={regVisible} setIsModalVisible={setRegVisible} activeInput={activeInput} setActiveInput={setActiveInput} token={token} />

@@ -59,7 +59,7 @@ const ModeLog: React.FC<Props> = ({
   }
   const duration2text = (start: any, end: any) => {
     let diff = dayjs.duration(dayjs(end).diff(start))
-    return (diff.days() > 0 ? diff.days() + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + t('shift.secs') : "")
+    return (diff.days() > 0 ? diff.days() + " " + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + " " + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + " " + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + " " + t('shift.secs') : "")
   }
 
   const handleChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter, currentDataSource) => {
@@ -116,7 +116,7 @@ const ModeLog: React.FC<Props> = ({
       key: 'modecode',
       filters: [
         {
-          text: <span>{modeCodeObj(0).icon} {modeCodeObj(0).text}</span> ,
+          text: <span>{modeCodeObj(0).icon} {modeCodeObj(0).text}</span>,
           value: 0,
         },
         {

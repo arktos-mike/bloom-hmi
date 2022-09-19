@@ -12,6 +12,7 @@ const locale = {
     "logs": "GÜNLÜKLER",
     "modelog": "BAŞLAT-DURDUR GÜNLÜĞÜ",
     "userlog": "ERİŞİM GÜNLÜĞÜ",
+    "machineInfo": "TEZGAH BİLGİSİ",
     "settingsDev": "VERI TOPLAMA",
     "settingsTech": "TEKNOLOJİ"
   },
@@ -164,6 +165,7 @@ const locale = {
     "language": "Dil seçimi",
     "actions": "Eylemler",
     "network": "Ağ ayarları",
+    "lifetime": "Ömür boyu tezgah istatistikleri",
     "setpoints": "Planlanan ayar noktaları",
     "equipment": "Ekipman parametreleri"
   },

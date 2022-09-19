@@ -12,6 +12,7 @@ const locale = {
     "logs": "REGISTROS",
     "modelog": "REGISTRO DE INICIO Y PARADA",
     "userlog": "REGISTRO DE ACCESO",
+    "machineInfo": "INFORMACIÓN DEL TELAR",
     "settingsDev": "ADQUISICIÓN DE DATOS",
     "settingsTech": "TECNOLOGÍA"
   },
@@ -164,6 +165,7 @@ const locale = {
     "language": "Selección de idioma",
     "actions": "Acciones",
     "network": "Configuración de red",
+    "lifetime": "Estadísticas de telar de por vida",
     "setpoints": "Puntos de ajuste planificados",
     "equipment": "Parámetros del equipo"
   },
