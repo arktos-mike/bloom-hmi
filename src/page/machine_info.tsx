@@ -57,7 +57,7 @@ const MachineInfo: React.FC = () => {
                 <span style={{ fontSize: '24px' }}>{state['picks'] + ' ' + t('tags.planClothDensity.eng').split('/')[0]}</span>
               </Form.Item>
               <Form.Item label={<FabricPieceIcon style={{ fontSize: '220%', color: "#1890ff" }} />} >
-                <span style={{ fontSize: '24px' }}>{Number(state['cloth']).toFixed(2) + ' ' + t('tags.planClothDensity.eng').split('/')[1].slice(-1)}</span>
+                <span style={{ fontSize: '24px' }}>{Number(Number(state['cloth']).toFixed(2).toString()).toLocaleString(i18n.language) + ' ' + t('tags.planClothDensity.eng')?.split('/')[1]?.slice(-1)}</span>
               </Form.Item>
               <Form.Item label={<HistoryOutlined style={{ fontSize: '200%', color: "#1890ff" }} />} >
                 <span style={{ fontSize: '24px' }}>{duration2text(state['motor'])}</span>

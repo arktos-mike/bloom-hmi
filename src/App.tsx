@@ -279,7 +279,7 @@ const App: React.FC = () => {
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
       (json || []).map((tag: any) => (
-        tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec'])));
+        tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec']).toString()));
       setTags({ data: json });
       let obj = tags.data.find(o => o['tag']['name'] == 'modeCode')
       obj && setModeCode({ val: obj['val'], updated: dayjs(obj['updated']) })
@@ -289,7 +289,7 @@ const App: React.FC = () => {
 
   const getTagVal = (tagName: string) => {
     let obj = tags.data.find(o => o['tag']['name'] == tagName)
-    if (obj) { return obj['val']; }
+    if (obj) { return Number(obj['val']).toLocaleString(i18n.language); }
     else { return null };
   }
 
@@ -390,7 +390,7 @@ const App: React.FC = () => {
             <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={location.pathname == '/' ? ['overview'] : [location.pathname.split("/").slice(-1)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? smallItemsMan : smallItems : smallItems} />
             <div className="speed">{modeCode.val == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode.val == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}</div><div className="sub">{modeCode.val == 1 ? t('tags.speedMainDrive.eng') : '°'}</div>
             <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode.val).color }}>{modeCodeObj(modeCode.val).text + ' '}{modeCodeObj(modeCode.val).icon}<div className='stopwatch'>{stopwatch(modeCode.updated)}</div></div>
-            {shift.name && <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' ' + shift.name}<div className="percent">{Number(shift.efficiency).toFixed(shift.efficiency < 10 ? 2 : 1) + '%'}</div></Space></div><div className="progress"><Progress percent={shift.efficiency} showInfo={false} size="small" /></div></div>}
+            {shift.name && <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' ' + shift.name}<div className="percent">{Number(Number(shift.efficiency).toFixed(shift.efficiency < 10 ? 2 : 1).toString()).toLocaleString(i18n.language) + '%'}</div></Space></div><div className="progress"><Progress percent={shift.efficiency} showInfo={false} size="small" /></div></div>}
             <div className="user">
               <div className="user" onClick={showUserDialog}>
                 <Avatar.Group size='large'>
