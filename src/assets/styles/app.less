@@ -80,8 +80,14 @@ body {
   justify-content: center !important;
 }
 
-.ant-table-column-title{
+.ant-table-column-title,
+.ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
   z-index: inherit !important;
+}
+
+.ant-divider-horizontal.ant-divider-with-text::before,
+.ant-divider-horizontal.ant-divider-with-text::after {
+  position: inherit !important;
 }
 
 .ant-statistic-content {
@@ -383,7 +389,7 @@ body {
   height: 100% !important;
 }
 
-.ant-input-number-wrapper .ant-input-number-group .ant-input-number-group-addon{
+.ant-input-number-wrapper .ant-input-number-group .ant-input-number-group-addon {
   font-size: 16px !important;
 }
 
@@ -392,7 +398,7 @@ body {
   font-size: 14px !important;
 }
 
-.ant-input-number:not(.narrow){
+.ant-input-number:not(.narrow) {
   font-size: 24px !important;
   padding-top: 6.5px !important;
   padding-bottom: 6.5px !important;

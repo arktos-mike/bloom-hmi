@@ -50,6 +50,15 @@ const locale = {
       "descr": "Densidad planificada",
       "eng": "pasadas/cm"
     },
+    "planOrderLength": {
+      "descr": "Longitud del pedido",
+      "eng": "m"
+    },
+    "modeControl": {
+      "descr": "Producción de una pieza",
+      "0": "con indicación",
+      "1": "con parada de la máquina"
+    },
     "takeupDiam": {
       "descr": "Diámetro de rodillo de recogida",
       "eng": "cm"

@@ -1,15 +1,13 @@
-import { Card, Col, notification, Row, Select, } from 'antd';
+import { Card, Col, Divider, notification, Row, Select, } from 'antd';
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next';
-import { DesktopOutlined, WifiOutlined, GlobalOutlined, CalendarOutlined, ClockCircleOutlined, ReloadOutlined } from '@ant-design/icons';
-import { DatePicker, TimePicker, Button, InputNumber, } from '../components';
+import { InputNumber, Options } from '../components';
 import format from 'dayjs';
 import dayjs from 'dayjs';
 
 const cardStyle = { background: "whitesmoke", width: '100%', display: 'flex', flexDirection: 'column' as 'column' }
 const cardHeadStyle = { background: "#1890ff", color: "white" }
 const cardBodyStyle = { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'start', flexDirection: 'column' as 'column' }
-const { Option } = Select;
 
 type Props = {
   token: any;
@@ -40,7 +38,7 @@ const SettingsTech: React.FC<Props> = ({
 
   useEffect(() => {
     setActiveInput({ ...activeInput, form: '', id: '' });
-    fetchTags(['planSpeedMainDrive', 'takeupDiam', 'takeupRatio', 'planClothDensity']);
+    fetchTags(['planSpeedMainDrive', 'takeupDiam', 'takeupRatio', 'planClothDensity', 'planOrderLength', 'modeControl']);
     return () => { isSubscribed = false }
   }, [])
 
@@ -100,6 +98,9 @@ const SettingsTech: React.FC<Props> = ({
           <Card title={t('panel.setpoints')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
             <InputNumber className="narrow" eng descr value={activeInput.id == ('speed') ? activeInput.input : getTagVal('planSpeedMainDrive')} tag={getTag('planSpeedMainDrive')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.planSpeedMainDrive.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('planSpeedMainDrive', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'speed', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
             <InputNumber className="narrow" eng descr value={activeInput.id == ('density') ? activeInput.input : getTagVal('planClothDensity')} tag={getTag('planClothDensity')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.planClothDensity.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('planClothDensity', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'density', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
+            <Divider style={{fontWeight:500, color:'#0000006F'}} orientation="left" >{t('tags.modeControl.descr')}</Divider>
+            <InputNumber className="narrow" eng descr value={activeInput.id == ('length') ? activeInput.input : getTagVal('planOrderLength')} tag={getTag('planOrderLength')} userRights={['admin', 'manager', 'fixer', 'weaver']} token={token} placeholder='tags.planOrderLength.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('planOrderLength', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'length', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
+            <Options userRights={['admin', 'manager', 'fixer', 'weaver']} token={token} value={Number(getTagVal('modeControl'))} text='tags.modeControl.descr' options={[{ key: 0, text: 'tags.modeControl.0' }, { key: 1, text: 'tags.modeControl.1' }]} onChange={(value: number) => { setTagVal('modeControl', value) }}></Options>
           </Card>
         </Col>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>

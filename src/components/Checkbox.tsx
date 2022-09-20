@@ -16,13 +16,15 @@ const Component = (props: any) => {
 
     if (props.userRights && (props.token ? props.userRights.includes(JSON.parse(Buffer.from(props.token.split('.')[1], 'base64').toString()).role) ? false : true : true)) {
         return (
-            <div style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Checkbox defaultChecked={props.defaultChecked ? props.defaultChecked : null} checked={props.checked ? props.checked : null} onChange={() => { openNotificationWithIcon('error', t('notifications.rightserror'), 2); }}>{t(props.text)}</Checkbox></div>
+            //<div style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Checkbox defaultChecked={props.defaultChecked ? props.defaultChecked : null} checked={props.checked ? props.checked : null} style={props.style} onChange={() => { openNotificationWithIcon('error', t('notifications.rightserror'), 2); }}>{t(props.text)}</Checkbox>
+            //  </div>
         );
     }
     return (
-        <div style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} >
-            <Checkbox defaultChecked={props.defaultChecked ? props.defaultChecked : null} checked={props.checked ? props.checked : null} onChange={props.onChange}>{t(props.text)}</Checkbox>
-        </div>
+       // <div style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} >
+            <Checkbox defaultChecked={props.defaultChecked ? props.defaultChecked : null} checked={props.checked ? props.checked : null} style={props.style} onChange={props.onChange}>{t(props.text)}</Checkbox>
+        //</div>
     );
 }
 export default Component;

@@ -50,6 +50,15 @@ const locale = {
       "descr": "Planlanan yoğunluk",
       "eng": "atkı/cm"
     },
+    "planOrderLength": {
+      "descr": "Sipariş uzunluğu",
+      "eng": "m"
+    },
+    "modeControl": {
+      "descr": "Bir parçanın üretimi",
+      "0": "göstergeli",
+      "1": "makine durdurma ile"
+    },
     "takeupDiam": {
       "descr": "Silindir çapını al",
       "eng": "cm"

@@ -50,6 +50,15 @@ const locale = {
       "descr": "Planned density",
       "eng": "picks/cm"
     },
+    "planOrderLength": {
+      "descr": "Order length",
+      "eng": "m"
+    },
+    "modeControl": {
+      "descr": "Production of a piece",
+      "0": "with indication",
+      "1": "with machine stop"
+    },
     "takeupDiam": {
       "descr": "Take up diameter",
       "eng": "cm"

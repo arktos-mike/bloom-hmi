@@ -90,7 +90,8 @@ const dbInit = async () => {
       { tag: { name: "takeupDiam", group: "setting", dev: "rtu1", addr: "10", type: "float", reg: "rw", min: 1, max: 20, dec: 1 } },
       { tag: { name: "modeControl", group: "setting", dev: "rtu1", addr: "12", type: "word", reg: "rw", min: 0, max: 2, dec: 0 } },
       { tag: { name: "planSpeedMainDrive", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 600, dec: 1 }, val: 200.0 },
-      { tag: { name: "planClothDensity", group: "setting", dev: "op", type: "float", reg: "rw", min: 0.5, max: 25, dec: 2 }, val: 10.0 },
+      { tag: { name: "planClothDensity", group: "setting", dev: "op", type: "float", reg: "rw", min: 0.5, max: 1000, dec: 2 }, val: 10.0 },
+      { tag: { name: "planOrderLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0.5, max: 1000, dec: 2 }, val: 120.0 },
     ]
 
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])
