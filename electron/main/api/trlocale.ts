@@ -55,9 +55,9 @@ const locale = {
       "eng": "m"
     },
     "modeControl": {
-      "descr": "Bir parçanın üretimi",
-      "0": "göstergeli",
-      "1": "makine durdurma ile"
+      "descr": "Çalışma modu",
+      "0": "sürekli",
+      "1": "özel siparişi kes"
     },
     "takeupDiam": {
       "descr": "Silindir çapını al",

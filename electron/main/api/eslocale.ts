@@ -55,9 +55,9 @@ const locale = {
       "eng": "m"
     },
     "modeControl": {
-      "descr": "Producción de una pieza",
-      "0": "con indicación",
-      "1": "con parada de la máquina"
+      "descr": "Modo de ejecución",
+      "0": "continuo",
+      "1": "cortar pedido personalizado"
     },
     "takeupDiam": {
       "descr": "Diámetro de rodillo de recogida",

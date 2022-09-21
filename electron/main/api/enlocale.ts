@@ -55,9 +55,9 @@ const locale = {
       "eng": "m"
     },
     "modeControl": {
-      "descr": "Production of a piece",
-      "0": "with indication",
-      "1": "with machine stop"
+      "descr": "Run mode",
+      "0": "continuous",
+      "1": "сut custom order"
     },
     "takeupDiam": {
       "descr": "Take up diameter",

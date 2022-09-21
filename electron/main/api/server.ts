@@ -80,18 +80,17 @@ const dbInit = async () => {
     const comConf = { opCOM1: { path: com1.path, conf: { baudRate: 230400, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 500 }, opCOM2: { path: com2.path, conf: { baudRate: 115200, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 0 } }
     const rtuConf = { rtu1: { com: 'opCOM1', sId: 1, swapBytes: true, swapWords: true } }
     const tags = [
-      { tag: { name: "stopAngle", group: "visual", dev: "rtu1", addr: "13", type: "word", reg: "r", min: 0, max: 359, dec: 0 } },
-      { tag: { name: "speedCloth", group: "monitoring", dev: "rtu1", addr: "6", type: "float", reg: "r", min: 1, max: 5, dec: 1 } },
+      { tag: { name: "stopAngle", group: "monitoring", dev: "rtu1", addr: "6", type: "word", reg: "r", min: 0, max: 359, dec: 0 } },
+      { tag: { name: "orderLength", group: "monitoring", dev: "rtu1", addr: "4", type: "float", reg: "r", min: 0, max: 1000, dec: 2 } },
       { tag: { name: "speedMainDrive", group: "monitoring", dev: "rtu1", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 } },
       { tag: { name: "modeCode", group: "monitoring", dev: "rtu1", addr: "8", type: "word", reg: "r", min: 0, max: 3, dec: 0 } },
       { tag: { name: "picksLastRun", group: "monitoring", dev: "rtu1", addr: "0", type: "dword", reg: "r", min: 0, max: 4294967295, dec: 0 } },
-      { tag: { name: "clothDensity", group: "monitoring", dev: "rtu1", addr: "4", type: "float", reg: "r", min: 0.5, max: 25, dec: 2 } },
-      { tag: { name: "takeupRatio", group: "setting", dev: "rtu1", addr: "9", type: "word", reg: "rw", min: 1, max: 65535, dec: 0 } },
-      { tag: { name: "takeupDiam", group: "setting", dev: "rtu1", addr: "10", type: "float", reg: "rw", min: 1, max: 20, dec: 1 } },
       { tag: { name: "modeControl", group: "setting", dev: "rtu1", addr: "12", type: "word", reg: "rw", min: 0, max: 2, dec: 0 } },
       { tag: { name: "planSpeedMainDrive", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 600, dec: 1 }, val: 200.0 },
-      { tag: { name: "planClothDensity", group: "setting", dev: "op", type: "float", reg: "rw", min: 0.5, max: 1000, dec: 2 }, val: 10.0 },
-      { tag: { name: "planOrderLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0.5, max: 1000, dec: 2 }, val: 120.0 },
+      { tag: { name: "planClothDensity", group: "setting", dev: "rtu1", type: "float", addr: "10", reg: "rw", min: 0.5, max: 1000, dec: 2 } },
+      { tag: { name: "planOrderLength", group: "setting", dev: "rtu1", type: "float", addr: "14", reg: "rw", min: 0, max: 1000, dec: 2 } },
+      { tag: { name: "fullWarpBeamLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
+      { tag: { name: "warpBeamLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
     ]
 
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])

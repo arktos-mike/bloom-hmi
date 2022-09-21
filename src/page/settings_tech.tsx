@@ -1,7 +1,8 @@
 import { Card, Col, Divider, notification, Row, Select, } from 'antd';
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next';
-import { InputNumber, Options } from '../components';
+import { InputNumber, Options, Display, Button } from '../components';
+import { RedoOutlined } from '@ant-design/icons';
 import format from 'dayjs';
 import dayjs from 'dayjs';
 
@@ -38,7 +39,7 @@ const SettingsTech: React.FC<Props> = ({
 
   useEffect(() => {
     setActiveInput({ ...activeInput, form: '', id: '' });
-    fetchTags(['planSpeedMainDrive', 'takeupDiam', 'takeupRatio', 'planClothDensity', 'planOrderLength', 'modeControl']);
+    fetchTags(['planSpeedMainDrive', 'planClothDensity', 'orderLength', 'planOrderLength', 'modeControl', 'fullWarpBeamLength', 'warpBeamLength']);
     return () => { isSubscribed = false }
   }, [])
 
@@ -94,19 +95,31 @@ const SettingsTech: React.FC<Props> = ({
   return (
     <div className='wrapper'>
       <Row gutter={[8, 8]} style={{ flex: '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
-        <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
-          <Card title={t('panel.setpoints')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
-            <InputNumber className="narrow" eng descr value={activeInput.id == ('speed') ? activeInput.input : getTagVal('planSpeedMainDrive')} tag={getTag('planSpeedMainDrive')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.planSpeedMainDrive.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('planSpeedMainDrive', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'speed', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
-            <InputNumber className="narrow" eng descr value={activeInput.id == ('density') ? activeInput.input : getTagVal('planClothDensity')} tag={getTag('planClothDensity')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.planClothDensity.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('planClothDensity', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'density', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
-            <Divider style={{fontWeight:500, color:'#0000006F'}} orientation="left" >{t('tags.modeControl.descr')}</Divider>
-            <InputNumber className="narrow" eng descr value={activeInput.id == ('length') ? activeInput.input : getTagVal('planOrderLength')} tag={getTag('planOrderLength')} userRights={['admin', 'manager', 'fixer', 'weaver']} token={token} placeholder='tags.planOrderLength.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('planOrderLength', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'length', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
-            <Options userRights={['admin', 'manager', 'fixer', 'weaver']} token={token} value={Number(getTagVal('modeControl'))} text='tags.modeControl.descr' options={[{ key: 0, text: 'tags.modeControl.0' }, { key: 1, text: 'tags.modeControl.1' }]} onChange={(value: number) => { setTagVal('modeControl', value) }}></Options>
-          </Card>
+        <Col span={12} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
+          <Row style={{ marginBottom: '8px', flex: '1 1 50%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
+            <Card title={t('panel.equipment')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
+              <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center', marginTop: '15px' }}>
+                <Display tag={getTag('warpBeamLength')} />
+                <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<RedoOutlined style={{fontSize: '150%'}} />} size="large" type="primary" style={{ margin: 10 }} onClick={confirm} ></Button>
+              </div>
+              <InputNumber className="narrow" eng descr value={activeInput.id == ('length') ? activeInput.input : getTagVal('fullWarpBeamLength')} tag={getTag('fullWarpBeamLength')} userRights={['admin', 'manager']} token={token} placeholder='tags.fullWarpBeamLength.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('fullWarpBeamLength', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'warp', id: 'length', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
+            </Card>
+          </Row>
+          <Row style={{ flex: '1 1 50%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
+            <Card title={t('tags.modeControl.descr')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
+              <Options userRights={['admin', 'manager']} token={token} value={Number(getTagVal('modeControl'))} text='tags.modeControl.descr' options={[{ key: 0, text: 'tags.modeControl.0' }, { key: 1, text: 'tags.modeControl.1' }]} onChange={(value: number) => { setTagVal('modeControl', value) }}></Options>
+              <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center', marginTop: '15px' }}>
+                <Display tag={getTag('orderLength')} />
+                <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<RedoOutlined style={{fontSize: '150%'}} />} size="large" type="primary" style={{ margin: 10 }} onClick={confirm} ></Button>
+              </div>
+              <InputNumber className="narrow" eng descr value={activeInput.id == ('length') ? activeInput.input : getTagVal('planOrderLength')} tag={getTag('planOrderLength')} userRights={['admin', 'manager']} token={token} placeholder='tags.planOrderLength.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('planOrderLength', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'length', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
+            </Card>
+          </Row>
         </Col>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
-          <Card title={t('panel.equipment')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} >
-            <InputNumber className="narrow" descr value={activeInput.id == ('ratio') ? activeInput.input : getTagVal('takeupRatio')} tag={getTag('takeupRatio')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.takeupRatio.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('takeupRatio', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'eqip', id: 'ratio', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
-            <InputNumber className="narrow" eng descr value={activeInput.id == ('diam') ? activeInput.input : getTagVal('takeupDiam')} tag={getTag('takeupDiam')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.takeupDiam.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('takeupDiam', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'eqip', id: 'diam', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
+          <Card title={t('panel.setpoints')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} >
+            <InputNumber className="narrow" eng descr value={activeInput.id == ('speed') ? activeInput.input : getTagVal('planSpeedMainDrive')} tag={getTag('planSpeedMainDrive')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.planSpeedMainDrive.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('planSpeedMainDrive', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'speed', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
+            <InputNumber className="narrow" eng descr value={activeInput.id == ('density') ? activeInput.input : getTagVal('planClothDensity')} tag={getTag('planClothDensity')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.planClothDensity.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('planClothDensity', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'density', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
           </Card>
         </Col>
       </Row>

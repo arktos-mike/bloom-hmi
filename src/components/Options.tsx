@@ -16,7 +16,7 @@ const Component = (props: any) => {
 
   if (props.userRights && (props.token ? props.userRights.includes(JSON.parse(Buffer.from(props.token.split('.')[1], 'base64').toString()).role) ? false : true : true)) {
     return (
-      <div style={{ marginTop: '15px', alignItems: 'center', justifyContent: 'center' }} >
+      <div style={{ alignItems: 'center', justifyContent: 'center' }} >
         <span style={{ marginRight: '15px' }}>{t(props.text)}</span>
         <Radio.Group onChange={() => { openNotificationWithIcon('error', t('notifications.rightserror'), 2); }} value={props.value} buttonStyle='solid' size="large" >
           {[...Array.from({ length: props.options.length }, (v, i) => i)].map(i => (
@@ -29,7 +29,7 @@ const Component = (props: any) => {
     );
   }
   return (
-    <div style={{ marginTop: '15px', alignItems: 'center', justifyContent: 'center' }} >
+    <div style={{ alignItems: 'center', justifyContent: 'center' }} >
       <span style={{ marginRight: '15px' }}>{t(props.text)}</span>
       <Radio.Group onChange={(e) => { props.onChange(e.target.value) }} value={props.value} buttonStyle='solid' size="large" >
         {[...Array.from({ length: props.options.length }, (v, i) => i)].map(i => (
