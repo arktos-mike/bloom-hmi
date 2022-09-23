@@ -54,6 +54,22 @@ const locale = {
       "descr": "Длина рулона",
       "eng": "м"
     },
+    "orderLength": {
+      "descr": "Текущая длина рулона",
+      "eng": "м"
+    },
+    "fullWarpBeamLength": {
+      "descr": "Полный навой",
+      "eng": "м"
+    },
+    "warpBeamLength": {
+      "descr": "Основы на навое",
+      "eng": "м"
+    },
+    "warpShrinkage": {
+      "descr": "Уработка основы",
+      "eng": "%"
+    },
     "modeControl": {
       "descr": "Режим работы",
       "0": "непрерывный",

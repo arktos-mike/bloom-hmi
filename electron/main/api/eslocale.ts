@@ -54,6 +54,22 @@ const locale = {
       "descr": "Longitud del pedido",
       "eng": "m"
     },
+    "orderLength": {
+      "descr": "Longitud de rollo",
+      "eng": "m"
+    },
+    "fullWarpBeamLength": {
+      "descr": "Pleno plegador",
+      "eng": "m"
+    },
+    "warpBeamLength": {
+      "descr": "Plegador de urdimbre",
+      "eng": "m"
+    },
+    "warpShrinkage": {
+      "descr": "Contracción de urdimbre",
+      "eng": "%"
+    },
     "modeControl": {
       "descr": "Modo de ejecución",
       "0": "continuo",

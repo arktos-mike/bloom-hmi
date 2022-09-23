@@ -54,6 +54,22 @@ const locale = {
       "descr": "Order length",
       "eng": "m"
     },
+    "orderLength": {
+      "descr": "Roll length",
+      "eng": "m"
+    },
+    "fullWarpBeamLength": {
+      "descr": "Full warp beam",
+      "eng": "m"
+    },
+    "warpBeamLength": {
+      "descr": "On warp beam",
+      "eng": "m"
+    },
+    "warpShrinkage": {
+      "descr": "Warp shrinkage",
+      "eng": "%"
+    },
     "modeControl": {
       "descr": "Run mode",
       "0": "continuous",

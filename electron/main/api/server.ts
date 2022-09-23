@@ -68,7 +68,7 @@ let com2 = { path: '', conf: {}, scan: 0, timeout: 0, mbsState: MBS_STATE_STEADY
 const dbInit = async () => {
   // create table
   await db.query(createTableText)
-  await db.query('INSERT INTO lifetime VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT (serialno) DO NOTHING;', ['СТБУТТ1-280Кр', '00000001', new Date('2022-12-31T12:00:00.000Z'), 0,0, '0H']);
+  await db.query('INSERT INTO lifetime VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT (serialno) DO NOTHING;', ['СТБУТТ1-280Кр', '00000001', new Date('2022-12-31T12:00:00.000Z'), 0, 0, '0H']);
   await network.get_active_interface(async function (err, obj) {
     const ipConf = { opIP: obj, plcIP1: "192.168.1.6", plcIP2: "192.168.1.7" }
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
@@ -85,12 +85,13 @@ const dbInit = async () => {
       { tag: { name: "speedMainDrive", group: "monitoring", dev: "rtu1", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 } },
       { tag: { name: "modeCode", group: "monitoring", dev: "rtu1", addr: "8", type: "word", reg: "r", min: 0, max: 3, dec: 0 } },
       { tag: { name: "picksLastRun", group: "monitoring", dev: "rtu1", addr: "0", type: "dword", reg: "r", min: 0, max: 4294967295, dec: 0 } },
-      { tag: { name: "modeControl", group: "setting", dev: "rtu1", addr: "12", type: "word", reg: "rw", min: 0, max: 2, dec: 0 } },
+      { tag: { name: "modeControl", group: "setting", dev: "rtu1", addr: "12", type: "word", reg: "rw", min: 0, max: 65535, dec: 0 } },
       { tag: { name: "planSpeedMainDrive", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 600, dec: 1 }, val: 200.0 },
       { tag: { name: "planClothDensity", group: "setting", dev: "rtu1", type: "float", addr: "10", reg: "rw", min: 0.5, max: 1000, dec: 2 } },
       { tag: { name: "planOrderLength", group: "setting", dev: "rtu1", type: "float", addr: "14", reg: "rw", min: 0, max: 1000, dec: 2 } },
       { tag: { name: "fullWarpBeamLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
       { tag: { name: "warpBeamLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
+      { tag: { name: "warpShrinkage", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 100, dec: 1 }, val: 4.0 },
     ]
 
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])
@@ -353,9 +354,7 @@ function delay(ms) {
 }
 //==============================================================
 const runModbus = async function (client, port) {
-  if (updFlagCOM1 || updFlagCOM2) { let com = port.path; await dbInit(); if (port.path != com) { await client.close(); await connectClient(client, port); } else { await client.setTimeout(port.timeout ? port.timeout : 1000); } }
-  updFlagCOM1 && resetFlagCOM1();
-  updFlagCOM2 && resetFlagCOM2();
+  if (updFlagCOM1 || updFlagCOM2) { await dbInit(); await client.close(); await connectClient(client, port); }
   let nextAction;
   let slave = port.slaves[port.act];
   if (port.slaves.length > 0 && slave?.tags?.length > 0) {
@@ -392,11 +391,15 @@ const runModbus = async function (client, port) {
     // execute "next action" function if defined
     if (nextAction !== undefined) {
       //console.log("[" + port.path + "]" + nextAction);
-      await nextAction();
-      port.mbsState = MBS_STATE_IDLE;
+      if (!updFlagCOM1 && !updFlagCOM2) {
+        await nextAction();
+        port.mbsState = MBS_STATE_IDLE;
+      }
     }
   }
   else if (port.slaves.length == 0) { if (client.isOpen) client.close(() => { console.log("[" + port.path + "]closed") }) }
+  updFlagCOM1 && resetFlagCOM1();
+  updFlagCOM2 && resetFlagCOM2();
   port.act++;
   if (port.act === port.slaves.length) {
     port.act = 0;

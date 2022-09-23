@@ -54,6 +54,22 @@ const locale = {
       "descr": "Sipariş uzunluğu",
       "eng": "m"
     },
+    "orderLength": {
+      "descr": "Rulo uzunluğu",
+      "eng": "m"
+    },
+    "fullWarpBeamLength": {
+      "descr": "Dolu levent",
+      "eng": "m"
+    },
+    "warpBeamLength": {
+      "descr": "Çözgü levendi",
+      "eng": "m"
+    },
+    "warpShrinkage": {
+      "descr": "Çözgü büzülmesi",
+      "eng": "%"
+    },
     "modeControl": {
       "descr": "Çalışma modu",
       "0": "sürekli",

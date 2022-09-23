@@ -208,6 +208,10 @@ code numeric;
 
 clock interval;
 
+warpLength numeric;
+
+warpShrinkage numeric;
+
 begin
 	 picksLastRun :=(
 select
@@ -241,6 +245,22 @@ from
 where
 	(tag->>'name' = 'planClothDensity'));
 
+warpShrinkage :=(
+  select
+    val
+  from
+    tags
+  where
+    (tag->>'name' = 'warpShrinkage'));
+
+UPDATE
+  tags
+SET
+  val = val - (picksLastRun / (100 * density * (1 - 0.01 * warpShrinkage))),
+  updated = current_timestamp
+where
+  tag->>'name'= 'warpBeamLength';
+
 update
 	lifetime
 set
@@ -271,6 +291,7 @@ out stops jsonb)
 as $function$
 
 begin
+
 select
 	sum(
 case when not (timestamp &> tstzrange(starttime, endtime, '[)'))
@@ -289,9 +310,9 @@ end
 ),
 	sum(dur),
 	sum(case when upper_inf(timestamp) then
-cpicks * 6000 /(planspeed * durqs)
+cpicks * 6000 /(planspeed * (durqs-exdurs))
 else
-ppicks * 6000 /(planspeed * durqs)
+ppicks * 6000 /(planspeed * (durqs-exdurs))
 end ),
 	sum(case when upper_inf(timestamp) then
 cpicks /(100 * plandensity)
@@ -326,7 +347,21 @@ from
 		extract(epoch
 	from
 		(upper(tstzrange(starttime, endtime, '[)'))-lower(tstzrange(starttime, endtime, '[)')))) as durqs) querysecduration,
-	lateral (
+  lateral(
+  select
+    sum((select upper(timestamp * tstzrange(starttime, endtime, '[)'))-lower(timestamp * tstzrange(starttime, endtime, '[)')))) as exdur
+  from
+    modelog
+  where
+    tstzrange(starttime, endtime, '[)') && timestamp
+  and
+    modecode = 2) normstop,
+  lateral (
+  select
+    extract(epoch
+  from
+    exdur) as exdurs) normstopsecduration,
+  lateral (
 	select
 		val as cpicks
 	from
