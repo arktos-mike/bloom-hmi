@@ -277,7 +277,8 @@ end;
 $function$
 ;
 create trigger modeupdate before insert on modelog for row execute function modeupdate();
-create or replace function getstatinfo(starttime timestamp with time zone,
+create or replace
+function getstatinfo(starttime timestamp with time zone,
 endtime timestamp with time zone,
 out sumpicks numeric,
 out efficiency numeric,
@@ -291,7 +292,6 @@ out stops jsonb)
 as $function$
 
 begin
-
 select
 	sum(
 case when not (timestamp &> tstzrange(starttime, endtime, '[)'))
@@ -347,21 +347,24 @@ from
 		extract(epoch
 	from
 		(upper(tstzrange(starttime, endtime, '[)'))-lower(tstzrange(starttime, endtime, '[)')))) as durqs) querysecduration,
-  lateral(
-  select
-    sum((select upper(timestamp * tstzrange(starttime, endtime, '[)'))-lower(timestamp * tstzrange(starttime, endtime, '[)')))) as exdur
-  from
-    modelog
-  where
-    tstzrange(starttime, endtime, '[)') && timestamp
-  and
-    modecode = 2) normstop,
-  lateral (
-  select
-    extract(epoch
-  from
-    exdur) as exdurs) normstopsecduration,
-  lateral (
+	lateral(
+	select
+		sum((select upper(timestamp * tstzrange(starttime, endtime, '[)'))-lower(timestamp * tstzrange(starttime, endtime, '[)')))) as exdur
+	from
+		modelog
+	where
+		tstzrange(starttime,
+		endtime,
+		'[)') && timestamp
+		and
+    (modecode = 2
+			or modecode = 0)) normstop,
+	lateral (
+	select
+		extract(epoch
+	from
+		exdur) as exdurs) normstopsecduration,
+	lateral (
 	select
 		val as cpicks
 	from
