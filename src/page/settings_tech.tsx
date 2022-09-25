@@ -12,12 +12,14 @@ const cardBodyStyle = { flex: 1, display: 'flex', alignItems: 'center', justifyC
 
 type Props = {
   token: any;
+  modeCode: { val: Number, updated: any };
   activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string };
   setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string }) => void;
 };
 
 const SettingsTech: React.FC<Props> = ({
   token,
+  modeCode,
   activeInput,
   setActiveInput,
 }) => {
@@ -85,7 +87,7 @@ const SettingsTech: React.FC<Props> = ({
   }, [])
 
   useEffect(() => {
-    fetchTags(['planSpeedMainDrive', 'planClothDensity', 'orderLength', 'planOrderLength', 'modeControl', 'fullWarpBeamLength', 'warpBeamLength', 'warpShrinkage']);
+    fetchTags(['picksLastRun', 'planSpeedMainDrive', 'planClothDensity', 'orderLength', 'planOrderLength', 'modeControl', 'fullWarpBeamLength', 'warpBeamLength', 'warpShrinkage']);
     return () => { isSubscribed = false }
   }, [tags])
 
@@ -94,10 +96,17 @@ const SettingsTech: React.FC<Props> = ({
     if (obj) { return obj['tag']; }
     else { return null };
   }
-  const getTagVal = (tagName: string) => {
+  const getTagVal = (tagName: string): string => {
     let obj = tags.data.find((o: any) => o['tag']['name'] == tagName)
-    if (obj) { return Number(obj['val']).toLocaleString(i18n.language); }
-    else { return null };
+    if (obj) {
+      if (tagName == 'warpBeamLength' && modeCode.val == 1) {
+        return Number((Number(obj['val']) - (localeParseFloat(getTagVal('picksLastRun')) / (100 * localeParseFloat(getTagVal('planClothDensity')) * (1 - 0.01 * localeParseFloat(getTagVal('warpShrinkage')))))).toFixed(obj['tag']['dec'])).toLocaleString(i18n.language);
+      }
+      else {
+        return Number(obj['val']).toLocaleString(i18n.language);
+      }
+    }
+    else { return '' };
   }
   const setTagVal = async (tagName: string, tagValue: number) => {
     try {
