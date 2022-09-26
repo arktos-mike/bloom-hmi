@@ -281,16 +281,16 @@ create or replace
 function getstatinfo(starttime timestamp with time zone,
 endtime timestamp with time zone,
 out sumpicks numeric,
-out efficiency numeric,
-out runtime interval,
-out rpm numeric,
 out meters numeric,
+out rpm numeric,
 out mps numeric,
+out efficiency numeric,
+out starts numeric,
+out runtime interval,
 out stops jsonb)
  returns record
  language plpgsql
 as $function$
-
 begin
 select
 	sum(
@@ -309,6 +309,7 @@ else picks
 end
 ),
 	sum(dur),
+	count(*),
 	sum(case when upper_inf(timestamp) then
 cpicks * 6000 /(planspeed * (durqs-exdurs))
 else
@@ -322,6 +323,7 @@ end )
 into
 	sumpicks,
 	runtime,
+	starts,
 	efficiency,
 	meters
 from

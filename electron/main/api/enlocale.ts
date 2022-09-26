@@ -13,6 +13,8 @@ const locale = {
     "modelog": "START-STOP LOG",
     "userlog": "ACCESS LOG",
     "machineInfo": "LOOM INFO",
+    "reports": "REPORTS",
+    "monthReport": "INFORME MENSUAL",
     "settingsDev": "DATA AQUISITION",
     "settingsTech": "TECHNOLOGY"
   },

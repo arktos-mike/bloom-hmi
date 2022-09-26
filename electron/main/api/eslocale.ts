@@ -13,6 +13,8 @@ const locale = {
     "modelog": "REGISTRO DE INICIO Y PARADA",
     "userlog": "REGISTRO DE ACCESO",
     "machineInfo": "INFORMACIÓN DEL TELAR",
+    "reports": "INFORMES",
+    "monthReport": "МЕСЯЧНЫЙ ОТЧЁТ",
     "settingsDev": "ADQUISICIÓN DE DATOS",
     "settingsTech": "TECNOLOGÍA"
   },

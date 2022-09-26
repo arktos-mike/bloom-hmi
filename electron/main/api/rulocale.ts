@@ -13,6 +13,8 @@ const locale = {
     "modelog": "ЖУРНАЛ ПУСКОВ-СТОПОВ",
     "userlog": "ЖУРНАЛ ДОСТУПА",
     "machineInfo": "ИНФО СТАНКА",
+    "reports": "ОТЧЁТЫ",
+    "monthReport": "МЕСЯЧНЫЙ ОТЧЁТ",
     "settingsDev": "СБОР ДАННЫХ",
     "settingsTech": "ТЕХНОЛОГИЯ"
   },

@@ -13,6 +13,8 @@ const locale = {
     "modelog": "BAŞLAT-DURDUR GÜNLÜĞÜ",
     "userlog": "ERİŞİM GÜNLÜĞÜ",
     "machineInfo": "TEZGAH BİLGİSİ",
+    "reports": "RAPORLAR",
+    "monthReport": "AY RAPORU",
     "settingsDev": "VERI TOPLAMA",
     "settingsTech": "TEKNOLOJİ"
   },
