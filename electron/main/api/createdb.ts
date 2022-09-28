@@ -170,7 +170,7 @@ AS $function$
   insert
     into
     modelog
-  values(tstzrange(current_timestamp(6),NULL,'[)'),
+  values(tstzrange(current_timestamp(3),NULL,'[)'),
   new.val,
   null,(select
 	val
@@ -226,7 +226,7 @@ update
 set
 	timestamp = tstzrange(
       lower(timestamp),
-	current_timestamp(6),
+	current_timestamp(3),
 	'[)'
   ),
 	picks = (case
@@ -234,7 +234,7 @@ set
 		else null
 	end)
 where
-	upper_inf(timestamp) returning modecode, (current_timestamp(6)-lower(timestamp)) into code, clock;
+	upper_inf(timestamp) returning modecode, (current_timestamp(3)-lower(timestamp)) into code, clock;
 
 if code = 1 then
    density :=(

@@ -69,7 +69,7 @@ router.post('/register', async (req, res) => {
 router.post('/logout', async (req, res) => {
   try {
     const { id, logoutby } = req.body;
-    await db.query(`UPDATE userlog SET timestamp = tstzrange(lower(timestamp),current_timestamp(6),'[)'), logoutby=$2 WHERE upper_inf(timestamp) AND id=$1`, [id, logoutby]) //Verifying if the user exists in the database
+    await db.query(`UPDATE userlog SET timestamp = tstzrange(lower(timestamp),current_timestamp(3),'[)'), logoutby=$2 WHERE upper_inf(timestamp) AND id=$1`, [id, logoutby]) //Verifying if the user exists in the database
     res.status(200).json({
       message: "notifications.logout",
     });
@@ -197,7 +197,7 @@ router.delete('/:id', async (req, res) => {
           })
         }
         else {
-          db.query(`UPDATE userlog SET timestamp = tstzrange(lower(timestamp),current_timestamp(6),'[)'), logoutby=$2 WHERE upper_inf(timestamp) AND id=$1`, [user[0].id, "delete"]);
+          db.query(`UPDATE userlog SET timestamp = tstzrange(lower(timestamp),current_timestamp(3),'[)'), logoutby=$2 WHERE upper_inf(timestamp) AND id=$1`, [user[0].id, "delete"]);
           res.status(200).send({ message: "notifications.userdel", id: req.params.id });
         }
       })
