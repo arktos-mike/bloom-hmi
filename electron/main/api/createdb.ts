@@ -430,5 +430,41 @@ end;
 
 $function$
 ;
+CREATE OR REPLACE FUNCTION public.monthreport(starttime timestamp with time zone, endtime timestamp with time zone)
+ RETURNS TABLE(stime timestamp with time zone, etime timestamp with time zone, picks numeric, clothmeters numeric, speedrpm numeric, speedmps numeric, loomefficiency numeric, startattempts numeric, runtimedur interval, descrstops jsonb)
+ LANGUAGE plpgsql
+AS $function$
+begin
+return QUERY (
+with dates as (
+select
+	date as st,
+	date + interval '24 hours' as et
+from
+	generate_series(
+        starttime::date,
+        endtime,
+        '1 day'
+    ) date
+)
+select
+	st,
+	et,
+	sumpicks,
+meters,
+rpm,
+mps,
+efficiency,
+starts,
+runtime,
+stops
+from
+	dates,getstatinfo(st,
+	et)
+);
+end;
+
+$function$
+;
 `
 export default createTableText
