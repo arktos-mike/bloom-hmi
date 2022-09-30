@@ -9,6 +9,7 @@ import reboot from './reboot'
 import shifts from './shifts'
 import logs from './logs'
 import machine from './machine'
+import reports from './reports'
 //api.use('/config', config);
 
 export default (api) => {
@@ -21,4 +22,5 @@ export default (api) => {
     api.use('/shifts', shifts);
     api.use('/logs', logs);
     api.use('/machine', machine);
+    api.use('/reports', reports);
 }

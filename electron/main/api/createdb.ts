@@ -153,7 +153,7 @@ create or replace
   end if;
   end if;
 
-  shiftdur := shiftend - shiftstart;
+  shiftdur := justify_hours(shiftend - shiftstart);
   end;
 
   $function$
@@ -265,7 +265,7 @@ update
 	lifetime
 set
 	picks = picks + picksLastRun,
-	cloth = cloth + (picksLastRun / (100 * density)),
+	cloth = justify_hours(cloth + (picksLastRun / (100 * density))),
 	motor = motor + clock
 where
 	serialno is not null;
@@ -283,7 +283,7 @@ endtime timestamp with time zone,
 out sumpicks numeric,
 out meters numeric,
 out rpm numeric,
-out mps numeric,
+out mph numeric,
 out efficiency numeric,
 out starts numeric,
 out runtime interval,
@@ -308,7 +308,7 @@ end
 else picks
 end
 ),
-	sum(dur),
+justify_hours(sum(dur)),
 	count(*),
 	sum(case when upper_inf(timestamp) then
 cpicks * 6000 /(planspeed * (durqs-exdurs))
@@ -385,11 +385,11 @@ select
 from
 	runtime) )));
 
-mps := (round(meters /(
+mph := (meters /(
 select
 	extract(epoch
 from
-	runtime) )));
+	runtime)/3600 ));
 
 stops := (
 with t(num,
@@ -412,7 +412,7 @@ values (0,
 'fabric') ) as t(num,
 	stop) )
 select
-	jsonb_agg(json_build_object(t.stop, json_build_object('total', total , 'dur', dur)))
+	jsonb_agg(json_build_object(t.stop, json_build_object('total', total , 'dur', justify_hours(dur))))
 from
 	t,
 	lateral(
@@ -431,7 +431,7 @@ end;
 $function$
 ;
 CREATE OR REPLACE FUNCTION public.monthreport(starttime timestamp with time zone, endtime timestamp with time zone)
- RETURNS TABLE(stime timestamp with time zone, etime timestamp with time zone, picks numeric, clothmeters numeric, speedrpm numeric, speedmps numeric, loomefficiency numeric, startattempts numeric, runtimedur interval, descrstops jsonb)
+ RETURNS TABLE(stime timestamp with time zone, etime timestamp with time zone, picks numeric, clothmeters numeric, speedrpm numeric, speedmph numeric, loomefficiency numeric, startattempts numeric, runtimedur interval, descrstops jsonb)
  LANGUAGE plpgsql
 AS $function$
 begin
@@ -453,7 +453,7 @@ select
 	sumpicks,
 meters,
 rpm,
-mps,
+mph,
 efficiency,
 starts,
 runtime,

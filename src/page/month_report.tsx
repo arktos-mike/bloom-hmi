@@ -11,9 +11,16 @@ import { Button, DatePicker, RangePicker } from '@/components';
 dayjs.extend(duration);
 
 interface DataType {
-  modecode: number;
+  stime: any;
+  etime: any;
   picks: number;
-  timestamp: any;
+  clothmeters: number;
+  speedrpm: number;
+  speedmph: number;
+  loomefficiency: number;
+  startattempts: number;
+  runtimedur: any;
+  descrstops: any;
 }
 
 type Props = {
@@ -45,20 +52,8 @@ const MonthReport: React.FC<Props> = ({
       });
   };
 
-  const modeCodeObj = (code: Number) => {
-    let obj;
-    if (code == 0) { obj = { color: '#000000FF', text: t('tags.mode.init'), icon: <QuestionCircleOutlined style={{ fontSize: '175%', color: '#000000FF', paddingInline: 5 }} /> } }
-    else if (code == 1) { obj = { color: '#43A047FF', text: t('tags.mode.run'), icon: <SyncOutlined style={{ fontSize: '175%', color: '#43A047FF', paddingInline: 5 }} /> } }
-    else if (code == 2) { obj = { color: '#7339ABFF', text: t('tags.mode.stop'), icon: <ButtonIcon style={{ fontSize: '175%', color: '#7339ABFF', paddingInline: 5 }} /> } }
-    else if (code == 3) { obj = { color: '#FF7F27FF', text: t('tags.mode.stop'), icon: <WarpBeamIcon style={{ fontSize: '175%', color: '#FF7F27FF', paddingInline: 5 }} /> } }
-    else if (code == 4) { obj = { color: '#FFB300FF', text: t('tags.mode.stop'), icon: <WeftIcon style={{ fontSize: '175%', color: '#FFB300FF', paddingInline: 5 }} /> } }
-    else if (code == 5) { obj = { color: '#E53935FF', text: t('tags.mode.stop'), icon: <ToolOutlined style={{ fontSize: '175%', color: '#E53935FF', paddingInline: 5 }} /> } }
-    else if (code == 6) { obj = { color: '#005498FF', text: t('tags.mode.stop'), icon: <FabricFullIcon style={{ fontSize: '175%', color: '#005498FF', paddingInline: 5 }} /> } }
-    else { obj = { color: '#00000000', text: t('tags.mode.unknown'), icon: <QuestionCircleOutlined style={{ fontSize: '175%', color: '#00000000', paddingInline: 5 }} /> } }
-    return obj;
-  }
-  const duration2text = (start: any, end: any) => {
-    let diff = dayjs.duration(dayjs(end).diff(start))
+  const duration2text = (start: any) => {
+    let diff = dayjs.duration(dayjs().diff(start))
     return (diff.days() > 0 ? diff.days() + " " + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + " " + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + " " + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + " " + t('shift.secs') : "")
   }
 
@@ -69,31 +64,6 @@ const MonthReport: React.FC<Props> = ({
     setPagination(pagination);
   };
 
-  const handleDelete = async () => {
-    try {
-      if (!period) {
-        openNotificationWithIcon('warning', t('notifications.dataerror'), 3);
-      }
-      else {
-        const response = await fetch('http://localhost:3000/logs/startstops/delete', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json;charset=UTF-8', },
-          body: JSON.stringify({ start: period[0], end: period[1] }),
-        });
-        if (!response.ok) { throw Error(response.statusText); }
-        const json = await response.json();
-        openNotificationWithIcon('success', t('notifications.logupdate'), 3);
-        setPagination({
-          total: json.length,
-          defaultPageSize: 8, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default', showSizeChanger: false
-        });
-        setData(json);
-        setLoading(false);
-      }
-    }
-    catch (error) { console.log(error) }
-    fetchData();
-  };
   const confirm = () => {
     Modal.confirm({
       title: t('confirm.title'),
@@ -104,50 +74,19 @@ const MonthReport: React.FC<Props> = ({
       centered: true,
       okButtonProps: { size: 'large', danger: true },
       cancelButtonProps: { size: 'large' },
-      onOk: () => { handleDelete() },
+      onOk: () => {  },
     });
   };
 
 
   const columns: ColumnsType<DataType> = [
     {
-      title: t('log.event'),
-      dataIndex: 'modecode',
-      key: 'modecode',
-      filters: [
-        {
-          text: <span>{modeCodeObj(0).icon} {modeCodeObj(0).text}</span>,
-          value: 0,
-        },
-        {
-          text: <span>{modeCodeObj(1).icon} {modeCodeObj(1).text}</span>,
-          value: 1,
-        },
-        {
-          text: <span>{modeCodeObj(2).icon} {modeCodeObj(2).text}</span>,
-          value: 2,
-        },
-        {
-          text: <span>{modeCodeObj(3).icon} {modeCodeObj(3).text}</span>,
-          value: 3,
-        },
-        {
-          text: <span>{modeCodeObj(4).icon} {modeCodeObj(4).text}</span>,
-          value: 4,
-        },
-        {
-          text: <span>{modeCodeObj(5).icon} {modeCodeObj(5).text}</span>,
-          value: 5,
-        },
-        {
-          text: <span>{modeCodeObj(6).icon} {modeCodeObj(6).text}</span>,
-          value: 6,
-        },
-      ],
-      onFilter: (value, record) => record.modecode == value,
+      title: t('reports.date'),
+      dataIndex: 'stime',
+      key: 'stime',
       ellipsis: true,
-      width: '45%',
-      render: (_, record) => <b>{modeCodeObj(record.modecode).icon} {' ' + modeCodeObj(record.modecode).text}</b>
+      width: '10%',
+      render: (_, record) => dayjs(record.stime).format('LL')
     },
     {
       title: t('tags.picks.descr'),
@@ -160,32 +99,70 @@ const MonthReport: React.FC<Props> = ({
       render: (_, record) => <b>{record.picks}</b>,
     },
     {
+      title: t('reports.meters'),
+      dataIndex: 'clothmeters',
+      key: 'clothmeters',
+      ellipsis: true,
+      width: '10%',
+      render: (_, record) => record?.clothmeters?.toFixed(2)
+    },
+    {
+      title: t('reports.rpm'),
+      dataIndex: 'speedrpm',
+      key: 'speedrpm',
+      ellipsis: true,
+      width: '10%',
+      render: (_, record) => record?.speedrpm?.toFixed(1)
+    },
+    {
+      title: t('reports.mph'),
+      dataIndex: 'speedmph',
+      key: 'speedmph',
+      ellipsis: true,
+      width: '10%',
+      render: (_, record) => record?.speedmph?.toFixed(2)
+    },
+    {
+      title: t('reports.efficiency'),
+      dataIndex: 'loomefficiency',
+      key: 'loomefficiency',
+      ellipsis: true,
+      width: '10%',
+      render: (_, record) => record?.loomefficiency?.toFixed(2)
+    },
+    {
+      title: t('reports.starts'),
+      dataIndex: 'startattempts',
+      key: 'startattempts',
+      ellipsis: true,
+      width: '10%',
+      render: (_, record) => record.startattempts
+    },
+    {
       title: t('shift.duration'),
-      dataIndex: 'timestamp',
-      key: 'duration',
+      dataIndex: 'runtimedur',
+      key: 'runtimedur',
       //sorter: (a, b) => dayjs.duration(dayjs(a.timestamp.upper).diff(a.timestamp.lower)).asMilliseconds() - dayjs.duration(dayjs(b.timestamp.upper).diff(b.timestamp.lower)).asMilliseconds(),
       //sortOrder: sortedInfo.columnKey === 'duration' ? sortedInfo.order : null,
       ellipsis: true,
-      width: '20%',
-      render: (_, record) => duration2text(record.timestamp['lower'], record.timestamp['upper']),
+      width: '10%',
+      render: (_, record) => duration2text(record.runtimedur),
     },
     {
-      title: t('shift.starttime'),
-      dataIndex: 'timestamp',
-      key: 'start',
-      sorter: (a, b) => dayjs(a.timestamp.lower).unix() - dayjs(b.timestamp.lower).unix(),
-      sortOrder: sortedInfo.columnKey === 'start' ? sortedInfo.order : null,
+      title: t('reports.stops'),
+      dataIndex: 'descrstops',
+      key: 'descrstops',
       ellipsis: true,
-      render: (_, record) => dayjs(record.timestamp['lower']).format('LL LTS'),
+      render: (_, record) => record?.descrstops[0].toString(),
     },
   ];
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/logs/startstops', {
+      const response = await fetch('http://localhost:3000/reports/monthreport', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
-        body: JSON.stringify({ start: period ? period[0] : dayjs().startOf('day'), end: period ? period[1] : dayjs() }),
+        body: JSON.stringify({ start: period ? period[0] : dayjs().startOf('month'), end: period ? period[1] : dayjs() }),
       });
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
@@ -200,7 +177,6 @@ const MonthReport: React.FC<Props> = ({
   };
 
   useEffect(() => {
-    console.log(period)
     dayjs.locale(i18n.language)
     fetchData();
   }, [period]);
@@ -210,7 +186,7 @@ const MonthReport: React.FC<Props> = ({
       <div>
         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}><h1 style={{ margin: 10 }}>{t('log.select')}</h1>
               <DatePicker style={{ flexGrow: 1 }} picker="month" format='MMMM YYYY' defaultValue={dayjs().month()} onChange={(e: any) => { setPeriod([e ? e?.startOf('month') : dayjs().startOf('month'), e ? e?.endOf('month') : dayjs()]) }} />
-              <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" danger={true} style={{ margin: 10 }} onClick={confirm} ></Button>
+              <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={confirm} ></Button>
         </div>
         <Table
           columns={columns}
