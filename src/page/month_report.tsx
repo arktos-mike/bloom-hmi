@@ -1,4 +1,4 @@
-import { Modal, notification, Table } from 'antd';
+import { Modal, notification, Table, Badge } from 'antd';
 import type { ColumnsType, TablePaginationConfig, TableProps } from 'antd/es/table';
 import { ToolOutlined, QuestionCircleOutlined, SyncOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "../components/Icons"
@@ -52,9 +52,31 @@ const MonthReport: React.FC<Props> = ({
       });
   };
 
-  const duration2text = (start: any) => {
-    let diff = dayjs.duration(dayjs().diff(start))
+  const modeCodeObj = (code: Number) => {
+    let obj;
+    if (code == 0) { obj = { color: '#000000FF', text: t('tags.mode.init'), icon: <QuestionCircleOutlined style={{ fontSize: '175%', color: '#000000FF', paddingInline: 5 }} /> } }
+    else if (code == 1) { obj = { color: '#43A047FF', text: t('tags.mode.run'), icon: <SyncOutlined style={{ fontSize: '175%', color: '#43A047FF', paddingInline: 5 }} /> } }
+    else if (code == 2) { obj = { color: '#7339ABFF', text: t('tags.mode.stop'), icon: <ButtonIcon style={{ fontSize: '175%', color: '#7339ABFF', paddingInline: 5 }} /> } }
+    else if (code == 3) { obj = { color: '#FF7F27FF', text: t('tags.mode.stop'), icon: <WarpBeamIcon style={{ fontSize: '175%', color: '#FF7F27FF', paddingInline: 5 }} /> } }
+    else if (code == 4) { obj = { color: '#FFB300FF', text: t('tags.mode.stop'), icon: <WeftIcon style={{ fontSize: '175%', color: '#FFB300FF', paddingInline: 5 }} /> } }
+    else if (code == 5) { obj = { color: '#E53935FF', text: t('tags.mode.stop'), icon: <ToolOutlined style={{ fontSize: '175%', color: '#E53935FF', paddingInline: 5 }} /> } }
+    else if (code == 6) { obj = { color: '#005498FF', text: t('tags.mode.stop'), icon: <FabricFullIcon style={{ fontSize: '175%', color: '#005498FF', paddingInline: 5 }} /> } }
+    else { obj = { color: '#00000000', text: t('tags.mode.unknown'), icon: <QuestionCircleOutlined style={{ fontSize: '175%', color: '#00000000', paddingInline: 5 }} /> } }
+    return obj;
+  }
+
+  const duration2text = (diff: any) => {
     return (diff.days() > 0 ? diff.days() + " " + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + " " + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + " " + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + " " + t('shift.secs') : "")
+  }
+
+  const stopsAgg = (stops: any) => {
+    let dur = dayjs.duration(0)
+    let total = 0
+    stops.map((part: any) => {
+      dur = dur.add(part[Object.keys(part)[0]].dur)
+      total = total + part[Object.keys(part)[0]].total
+    })
+    return Object.assign({ dur: dur, total: total })
   }
 
   const handleChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter, currentDataSource) => {
@@ -74,7 +96,7 @@ const MonthReport: React.FC<Props> = ({
       centered: true,
       okButtonProps: { size: 'large', danger: true },
       cancelButtonProps: { size: 'large' },
-      onOk: () => {  },
+      onOk: () => { },
     });
   };
 
@@ -96,7 +118,7 @@ const MonthReport: React.FC<Props> = ({
       sortOrder: sortedInfo.columnKey === 'picks' ? sortedInfo.order : null,
       ellipsis: true,
       width: '10%',
-      render: (_, record) => <b>{record.picks}</b>,
+      render: (_, record) => record.picks,
     },
     {
       title: t('reports.meters'),
@@ -104,7 +126,7 @@ const MonthReport: React.FC<Props> = ({
       key: 'clothmeters',
       ellipsis: true,
       width: '10%',
-      render: (_, record) => record?.clothmeters?.toFixed(2)
+      render: (_, record) => record?.clothmeters && (Number(record?.clothmeters).toFixed(2) + " " + t(''))
     },
     {
       title: t('reports.rpm'),
@@ -112,7 +134,7 @@ const MonthReport: React.FC<Props> = ({
       key: 'speedrpm',
       ellipsis: true,
       width: '10%',
-      render: (_, record) => record?.speedrpm?.toFixed(1)
+      render: (_, record) => record?.speedrpm && (Number(record?.speedrpm).toFixed(1) + " " + t(''))
     },
     {
       title: t('reports.mph'),
@@ -120,7 +142,7 @@ const MonthReport: React.FC<Props> = ({
       key: 'speedmph',
       ellipsis: true,
       width: '10%',
-      render: (_, record) => record?.speedmph?.toFixed(2)
+      render: (_, record) => record?.speedmph && (Number(record?.speedmph).toFixed(2) + " " + t(''))
     },
     {
       title: t('reports.efficiency'),
@@ -128,7 +150,7 @@ const MonthReport: React.FC<Props> = ({
       key: 'loomefficiency',
       ellipsis: true,
       width: '10%',
-      render: (_, record) => record?.loomefficiency?.toFixed(2)
+      render: (_, record) => <b>{record?.loomefficiency && (Number(record?.loomefficiency).toFixed(2) + " %")}</b>
     },
     {
       title: t('reports.starts'),
@@ -136,24 +158,20 @@ const MonthReport: React.FC<Props> = ({
       key: 'startattempts',
       ellipsis: true,
       width: '10%',
-      render: (_, record) => record.startattempts
-    },
-    {
-      title: t('shift.duration'),
-      dataIndex: 'runtimedur',
-      key: 'runtimedur',
-      //sorter: (a, b) => dayjs.duration(dayjs(a.timestamp.upper).diff(a.timestamp.lower)).asMilliseconds() - dayjs.duration(dayjs(b.timestamp.upper).diff(b.timestamp.lower)).asMilliseconds(),
-      //sortOrder: sortedInfo.columnKey === 'duration' ? sortedInfo.order : null,
-      ellipsis: true,
-      width: '10%',
-      render: (_, record) => duration2text(record.runtimedur),
+      render: (_, record) => <div><Badge
+        count={record.startattempts}
+        style={{ backgroundColor: 'green' }}
+      /> {record?.runtimedur && duration2text(dayjs.duration(record?.runtimedur))}</div>
     },
     {
       title: t('reports.stops'),
       dataIndex: 'descrstops',
       key: 'descrstops',
       ellipsis: true,
-      render: (_, record) => record?.descrstops[0].toString(),
+      render: (_, record) => <div><Badge
+        count={stopsAgg(record?.descrstops).total}
+        style={{ backgroundColor: 'volcano' }}
+      /> {duration2text(stopsAgg(record?.descrstops).dur)}</div>
     },
   ];
   const fetchData = async () => {
@@ -185,19 +203,35 @@ const MonthReport: React.FC<Props> = ({
     <div>
       <div>
         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}><h1 style={{ margin: 10 }}>{t('log.select')}</h1>
-              <DatePicker style={{ flexGrow: 1 }} picker="month" format='MMMM YYYY' defaultValue={dayjs().month()} onChange={(e: any) => { setPeriod([e ? e?.startOf('month') : dayjs().startOf('month'), e ? e?.endOf('month') : dayjs()]) }} />
-              <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={confirm} ></Button>
+          <DatePicker style={{ flexGrow: 1 }} picker="month" format='MMMM YYYY' defaultValue={dayjs().month()} onChange={(e: any) => { setPeriod([e ? e?.startOf('month') : dayjs().startOf('month'), e ? e?.endOf('month') : dayjs()]) }} />
+          <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={confirm} ></Button>
         </div>
         <Table
           columns={columns}
           dataSource={data}
           pagination={pagination}
+          expandable={{
+            expandedRowRender: record => <div>
+              <Badge
+                count={record?.descrstops['other'].total}
+                style={{ backgroundColor: 'volcano' }}
+              /> {duration2text(dayjs.duration(record?.descrstops['other'].dur))}
+            </div>
+          }}
           loading={loading}
           rowKey={() => Math.random()}
           size='small'
           style={{ width: '100%' }}
           onChange={handleChange}
           showSorterTooltip={false}
+          summary={() => (
+            <Table.Summary fixed>
+              <Table.Summary.Row>
+                <Table.Summary.Cell index={0}>Summary</Table.Summary.Cell>
+                <Table.Summary.Cell index={1}>This is a summary content</Table.Summary.Cell>
+              </Table.Summary.Row>
+            </Table.Summary>
+          )}
         />
       </div>
     </div>
