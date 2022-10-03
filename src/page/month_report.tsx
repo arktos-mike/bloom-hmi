@@ -1,4 +1,4 @@
-import { Modal, notification, Table, Badge } from 'antd';
+import { Modal, notification, Table, Badge, Space } from 'antd';
 import type { ColumnsType, TablePaginationConfig, TableProps } from 'antd/es/table';
 import { ToolOutlined, QuestionCircleOutlined, SyncOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "../components/Icons"
@@ -163,6 +163,7 @@ const MonthReport: React.FC<Props> = ({
         style={{ backgroundColor: 'green' }}
       /> {record?.runtimedur && duration2text(dayjs.duration(record?.runtimedur))}</div>
     },
+    Table.EXPAND_COLUMN,
     {
       title: t('reports.stops'),
       dataIndex: 'descrstops',
@@ -211,15 +212,17 @@ const MonthReport: React.FC<Props> = ({
           dataSource={data}
           pagination={pagination}
           expandable={{
-            expandedRowRender: record => <div>
-              <Badge
-                count={record?.descrstops['other'].total}
-                style={{ backgroundColor: 'volcano' }}
-              /> {duration2text(dayjs.duration(record?.descrstops['other'].dur))}
-            </div>
+            expandedRowRender: record => <Space direction="horizontal" style={{ width: '100%', justifyContent: 'space-evenly' }}>
+              {record?.descrstops.map((stop: any) => (
+                stop[Object.keys(stop)[0]]['total'] > 0 && <span key={Object.keys(stop)[0]}><Badge
+                  count={stop[Object.keys(stop)[0]]['total']}
+                  style={{ backgroundColor: 'volcano' }}
+                /> {duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</span>))
+              }
+            </Space>
           }}
           loading={loading}
-          rowKey={() => Math.random()}
+          rowKey={record => JSON.stringify(record.stime)}
           size='small'
           style={{ width: '100%' }}
           onChange={handleChange}
@@ -227,8 +230,8 @@ const MonthReport: React.FC<Props> = ({
           summary={() => (
             <Table.Summary fixed>
               <Table.Summary.Row>
-                <Table.Summary.Cell index={0}>Summary</Table.Summary.Cell>
-                <Table.Summary.Cell index={1}>This is a summary content</Table.Summary.Cell>
+                <Table.Summary.Cell index={1}>Summary</Table.Summary.Cell>
+                <Table.Summary.Cell index={2}>This</Table.Summary.Cell>
               </Table.Summary.Row>
             </Table.Summary>
           )}

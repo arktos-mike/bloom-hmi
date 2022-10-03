@@ -216,7 +216,7 @@ const ModeLog: React.FC<Props> = ({
           dataSource={data}
           pagination={pagination}
           loading={loading}
-          rowKey={() => Math.random()}
+          rowKey={record => JSON.stringify(record.timestamp)}
           size='small'
           style={{ width: '100%' }}
           onChange={handleChange}
