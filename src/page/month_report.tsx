@@ -1,6 +1,6 @@
 import { Modal, notification, Table, Badge, Space } from 'antd';
 import type { ColumnsType, TablePaginationConfig, TableProps } from 'antd/es/table';
-import { ToolOutlined, QuestionCircleOutlined, SyncOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
+import { MinusCircleTwoTone, PlusCircleTwoTone, ToolOutlined, QuestionCircleOutlined, SyncOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "../components/Icons"
 import { FilterValue, SorterResult } from 'antd/es/table/interface';
 import React, { useEffect, useState } from 'react'
@@ -35,9 +35,6 @@ const MonthReport: React.FC<Props> = ({
   const [data, setData] = useState();
   const [period, setPeriod] = useState([null, null]);
   const [loading, setLoading] = useState(false);
-  const [pagination, setPagination] = useState<TablePaginationConfig>({
-    defaultPageSize: 8, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default', showSizeChanger: false
-  });
   const [filteredInfo, setFilteredInfo] = useState<Record<string, FilterValue | null>>({});
   const [sortedInfo, setSortedInfo] = useState<SorterResult<DataType>>({});
 
@@ -52,15 +49,14 @@ const MonthReport: React.FC<Props> = ({
       });
   };
 
-  const modeCodeObj = (code: Number) => {
+  const stopObj = (reason: string) => {
     let obj;
-    if (code == 0) { obj = { color: '#000000FF', text: t('tags.mode.init'), icon: <QuestionCircleOutlined style={{ fontSize: '175%', color: '#000000FF', paddingInline: 5 }} /> } }
-    else if (code == 1) { obj = { color: '#43A047FF', text: t('tags.mode.run'), icon: <SyncOutlined style={{ fontSize: '175%', color: '#43A047FF', paddingInline: 5 }} /> } }
-    else if (code == 2) { obj = { color: '#7339ABFF', text: t('tags.mode.stop'), icon: <ButtonIcon style={{ fontSize: '175%', color: '#7339ABFF', paddingInline: 5 }} /> } }
-    else if (code == 3) { obj = { color: '#FF7F27FF', text: t('tags.mode.stop'), icon: <WarpBeamIcon style={{ fontSize: '175%', color: '#FF7F27FF', paddingInline: 5 }} /> } }
-    else if (code == 4) { obj = { color: '#FFB300FF', text: t('tags.mode.stop'), icon: <WeftIcon style={{ fontSize: '175%', color: '#FFB300FF', paddingInline: 5 }} /> } }
-    else if (code == 5) { obj = { color: '#E53935FF', text: t('tags.mode.stop'), icon: <ToolOutlined style={{ fontSize: '175%', color: '#E53935FF', paddingInline: 5 }} /> } }
-    else if (code == 6) { obj = { color: '#005498FF', text: t('tags.mode.stop'), icon: <FabricFullIcon style={{ fontSize: '175%', color: '#005498FF', paddingInline: 5 }} /> } }
+    if (reason == 'other') { obj = { color: '#000000FF', text: t('tags.mode.init'), icon: <QuestionCircleOutlined style={{ fontSize: '175%', color: '#000000FF', paddingInline: 5 }} /> } }
+    else if (reason == 'button') { obj = { color: '#7339ABFF', text: t('tags.mode.stop'), icon: <ButtonIcon style={{ fontSize: '175%', color: '#7339ABFF', paddingInline: 5 }} /> } }
+    else if (reason == 'warp') { obj = { color: '#FF7F27FF', text: t('tags.mode.stop'), icon: <WarpBeamIcon style={{ fontSize: '175%', color: '#FF7F27FF', paddingInline: 5 }} /> } }
+    else if (reason == 'weft') { obj = { color: '#FFB300FF', text: t('tags.mode.stop'), icon: <WeftIcon style={{ fontSize: '175%', color: '#FFB300FF', paddingInline: 5 }} /> } }
+    else if (reason == 'tool') { obj = { color: '#E53935FF', text: t('tags.mode.stop'), icon: <ToolOutlined style={{ fontSize: '175%', color: '#E53935FF', paddingInline: 5 }} /> } }
+    else if (reason == 'fabric') { obj = { color: '#005498FF', text: t('tags.mode.stop'), icon: <FabricFullIcon style={{ fontSize: '175%', color: '#005498FF', paddingInline: 5 }} /> } }
     else { obj = { color: '#00000000', text: t('tags.mode.unknown'), icon: <QuestionCircleOutlined style={{ fontSize: '175%', color: '#00000000', paddingInline: 5 }} /> } }
     return obj;
   }
@@ -82,8 +78,6 @@ const MonthReport: React.FC<Props> = ({
   const handleChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter, currentDataSource) => {
     setFilteredInfo(filters);
     setSortedInfo(sorter as SorterResult<DataType>);
-    pagination.total = currentDataSource.currentDataSource.length
-    setPagination(pagination);
   };
 
   const confirm = () => {
@@ -159,7 +153,7 @@ const MonthReport: React.FC<Props> = ({
       ellipsis: true,
       width: '10%',
       render: (_, record) => <div><Badge
-        count={record.startattempts}
+        count={record.startattempts} overflowCount={999}
         style={{ backgroundColor: 'green' }}
       /> {record?.runtimedur && duration2text(dayjs.duration(record?.runtimedur))}</div>
     },
@@ -170,7 +164,7 @@ const MonthReport: React.FC<Props> = ({
       key: 'descrstops',
       ellipsis: true,
       render: (_, record) => <div><Badge
-        count={stopsAgg(record?.descrstops).total}
+        count={stopsAgg(record?.descrstops).total} overflowCount={999}
         style={{ backgroundColor: 'volcano' }}
       /> {duration2text(stopsAgg(record?.descrstops).dur)}</div>
     },
@@ -185,10 +179,6 @@ const MonthReport: React.FC<Props> = ({
       });
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
-      setPagination({
-        total: json.length,
-        defaultPageSize: 8, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default', showSizeChanger: false
-      });
       setData(json);
       setLoading(false);
     }
@@ -210,16 +200,25 @@ const MonthReport: React.FC<Props> = ({
         <Table
           columns={columns}
           dataSource={data}
-          pagination={pagination}
+          pagination={false}
+          scroll={{ x: '100%', y: 400 }}
+          sticky
           expandable={{
             expandedRowRender: record => <Space direction="horizontal" style={{ width: '100%', justifyContent: 'space-evenly' }}>
               {record?.descrstops.map((stop: any) => (
-                stop[Object.keys(stop)[0]]['total'] > 0 && <span key={Object.keys(stop)[0]}><Badge
-                  count={stop[Object.keys(stop)[0]]['total']}
-                  style={{ backgroundColor: 'volcano' }}
-                /> {duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</span>))
+                stop[Object.keys(stop)[0]]['total'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge
+                  count={stop[Object.keys(stop)[0]]['total']} overflowCount={999}
+                  style={{ backgroundColor: stopObj(Object.keys(stop)[0]).color, marginRight: '3px' }}
+                />{stopObj(Object.keys(stop)[0]).icon}{duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
               }
-            </Space>
+            </Space>,
+            rowExpandable: record => stopsAgg(record?.descrstops).total > 0,
+            expandIcon: ({ expanded, onExpand, record }) =>
+              stopsAgg(record?.descrstops).total == 0 ? null : expanded ? (
+                <MinusCircleTwoTone style={{ fontSize: '150%' }} onClick={e => onExpand(record, e)} />
+              ) : (
+                <PlusCircleTwoTone style={{ fontSize: '150%' }} onClick={e => onExpand(record, e)} />
+              )
           }}
           loading={loading}
           rowKey={record => JSON.stringify(record.stime)}
@@ -227,7 +226,39 @@ const MonthReport: React.FC<Props> = ({
           style={{ width: '100%' }}
           onChange={handleChange}
           showSorterTooltip={false}
-          summary={() => (
+          summary=
+          {pageData => {
+            let totalBorrow = 0;
+            let totalRepayment = 0;
+
+            pageData.forEach(({ borrow, repayment }) => {
+              totalBorrow += borrow;
+              totalRepayment += repayment;
+            });
+
+            return (
+              <Table.Summary fixed>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell index={0}>Total</Table.Summary.Cell>
+                  <Table.Summary.Cell index={1}>
+                    <Text type="danger">{totalBorrow}</Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={2}>
+                    <Text>{totalRepayment}</Text>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell index={0}>Balance</Table.Summary.Cell>
+                  <Table.Summary.Cell index={1} colSpan={2}>
+                    <Text type="danger">{totalBorrow - totalRepayment}</Text>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              </Table.Summary>
+            );
+          }}
+
+
+          {pageData => (
             <Table.Summary fixed>
               <Table.Summary.Row>
                 <Table.Summary.Cell index={1}>Summary</Table.Summary.Cell>
