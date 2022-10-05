@@ -34,7 +34,7 @@ const MonthReport: React.FC<Props> = ({
   const { t, i18n } = useTranslation();
   const [data, setData] = useState();
   const [total, setTotal] = useState();
-  const [period, setPeriod] = useState([null, null]);
+  const [period, setPeriod] = useState([dayjs().startOf('month'), dayjs()]);
   const [loading, setLoading] = useState(false);
   const [filteredInfo, setFilteredInfo] = useState<Record<string, FilterValue | null>>({});
   const [sortedInfo, setSortedInfo] = useState<SorterResult<DataType>>({});
@@ -224,8 +224,7 @@ const MonthReport: React.FC<Props> = ({
           columns={columns}
           dataSource={data}
           pagination={false}
-          scroll={{ x: '100%', y: 290 }}
-
+          scroll={{ x: '100%', y: 330 }}
           expandable={{
             expandedRowRender: record => <Space direction="horizontal" style={{ width: '100%', justifyContent: 'space-evenly' }}>
               {record?.descrstops.map((stop: any) => (
@@ -273,7 +272,7 @@ const MonthReport: React.FC<Props> = ({
                     <Badge
                       count={total && total[0]['starts']} overflowCount={999}
                       style={{ backgroundColor: '#52c41a' }}
-                    /> {total && duration2text(dayjs.duration(total[0]['runtime']?total[0]['runtime']:0))}
+                    /> {total && duration2text(dayjs.duration(total[0]['runtime'] ? total[0]['runtime'] : 0))}
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={7} colSpan={2}>
                     <Badge
