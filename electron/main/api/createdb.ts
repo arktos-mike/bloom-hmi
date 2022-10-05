@@ -153,7 +153,7 @@ create or replace
   end if;
   end if;
 
-  shiftdur := justify_hours(shiftend - shiftstart);
+  shiftdur := shiftend - shiftstart;
   end;
 
   $function$
@@ -265,7 +265,7 @@ update
 	lifetime
 set
 	picks = picks + picksLastRun,
-	cloth = justify_hours(cloth + (picksLastRun / (100 * density))),
+	cloth = cloth + (picksLastRun / (100 * density)),
 	motor = motor + clock
 where
 	serialno is not null;
@@ -308,7 +308,7 @@ end
 else picks
 end
 ),
-justify_hours(sum(dur)),
+	justify_hours(sum(dur)),
 	count(*),
 	sum(case when upper_inf(timestamp) then
 cpicks * 6000 /(planspeed * (durqs-exdurs))
@@ -330,12 +330,22 @@ from
 	modelog,
 	lateral (
 	select
-		extract(epoch
-	from
-		(upper(timestamp)-lower(timestamp))) as durrs) rowsecduration,
+		case
+			when upper_inf(timestamp) then
+            tstzrange(lower(timestamp),
+			current_timestamp,
+			'[)')
+			else
+            timestamp
+		end as tr) timerange,
 	lateral (
 	select
-		upper(timestamp * tstzrange(starttime, endtime, '[)'))-lower(timestamp * tstzrange(starttime, endtime, '[)')) as dur) intduration,
+		extract(epoch
+	from
+		(upper(tr)-lower(tr))) as durrs) rowsecduration,
+	lateral (
+	select
+		upper(tr * tstzrange(starttime, endtime, '[)'))-lower(tr * tstzrange(starttime, endtime, '[)')) as dur) intduration,
 	lateral (
 	select
 		extract(epoch
@@ -351,13 +361,23 @@ from
 		(upper(tstzrange(starttime, endtime, '[)'))-lower(tstzrange(starttime, endtime, '[)')))) as durqs) querysecduration,
 	lateral(
 	select
-		sum((select upper(timestamp * tstzrange(starttime, endtime, '[)'))-lower(timestamp * tstzrange(starttime, endtime, '[)')))) as exdur
+		sum((select upper(ts * tstzrange(starttime, endtime, '[)'))-lower(ts * tstzrange(starttime, endtime, '[)')))) as exdur
 	from
-		modelog
+		modelog,
+		lateral (
+		select
+			case
+				when upper_inf(timestamp) then
+              tstzrange(lower(timestamp),
+				current_timestamp,
+				'[)')
+				else
+              timestamp
+			end as ts) timeranges
 	where
 		tstzrange(starttime,
 		endtime,
-		'[)') && timestamp
+		'[)') && ts
 		and
     (modecode = 2
 			or modecode = 0)) normstop,
@@ -376,7 +396,7 @@ from
 where
 	tstzrange(starttime,
 	endtime,
-	'[)') && timestamp
+	'[)') && tr
 	and modecode = 1 ;
 
 rpm := (round((sumpicks * 60)/(
@@ -389,7 +409,7 @@ mph := (meters /(
 select
 	extract(epoch
 from
-	runtime)/3600 ));
+	runtime)/ 3600 ));
 
 stops := (
 with t(num,
@@ -418,13 +438,23 @@ from
 	lateral(
 	select
 		count(*) as total,
-		sum((select upper(timestamp * tstzrange(starttime, endtime, '[)'))-lower(timestamp * tstzrange(starttime, endtime, '[)')))) as dur
+		sum((select upper(tr * tstzrange(starttime, endtime, '[)'))-lower(tr * tstzrange(starttime, endtime, '[)')))) as dur
 	from
-		modelog
+		modelog,
+		lateral (
+		select
+			case
+				when upper_inf(timestamp) then
+              tstzrange(lower(timestamp),
+				current_timestamp,
+				'[)')
+				else
+              timestamp
+			end as tr) timerange
 	where
 		tstzrange(starttime,
 		endtime,
-		'[)') && timestamp
+		'[)') && tr
 			and modecode = t.num) stat );
 end;
 
@@ -442,7 +472,7 @@ select
 	date + interval '24 hours' as et
 from
 	generate_series(
-        starttime::date,
+        starttime,
         endtime,
         '1 day'
     ) date

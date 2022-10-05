@@ -33,6 +33,7 @@ const MonthReport: React.FC<Props> = ({
 ) => {
   const { t, i18n } = useTranslation();
   const [data, setData] = useState();
+  const [total, setTotal] = useState();
   const [period, setPeriod] = useState([null, null]);
   const [loading, setLoading] = useState(false);
   const [filteredInfo, setFilteredInfo] = useState<Record<string, FilterValue | null>>({});
@@ -62,7 +63,7 @@ const MonthReport: React.FC<Props> = ({
   }
 
   const duration2text = (diff: any) => {
-    return (diff.days() > 0 ? diff.days() + " " + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + " " + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + " " + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + " " + t('shift.secs') : "")
+    return (diff.days() > 0 ? diff.days() + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + t('shift.secs') : "")
   }
 
   const stopsAgg = (stops: any) => {
@@ -154,7 +155,7 @@ const MonthReport: React.FC<Props> = ({
       width: '10%',
       render: (_, record) => <div><Badge
         count={record.startattempts} overflowCount={999}
-        style={{ backgroundColor: 'green' }}
+        style={{ backgroundColor: '#52c41a' }}
       /> {record?.runtimedur && duration2text(dayjs.duration(record?.runtimedur))}</div>
     },
     Table.EXPAND_COLUMN,
@@ -165,28 +166,50 @@ const MonthReport: React.FC<Props> = ({
       ellipsis: true,
       render: (_, record) => <div><Badge
         count={stopsAgg(record?.descrstops).total} overflowCount={999}
-        style={{ backgroundColor: 'volcano' }}
+        style={{ backgroundColor: '#1890ff' }}
       /> {duration2text(stopsAgg(record?.descrstops).dur)}</div>
     },
   ];
-  const fetchData = async () => {
-    setLoading(true);
+
+  const fetchStatInfo = async () => {
     try {
-      const response = await fetch('http://localhost:3000/reports/monthreport', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json;charset=UTF-8', },
-        body: JSON.stringify({ start: period ? period[0] : dayjs().startOf('month'), end: period ? period[1] : dayjs() }),
-      });
-      if (!response.ok) { throw Error(response.statusText); }
-      const json = await response.json();
-      setData(json);
-      setLoading(false);
+      if (period[0] && period[1]) {
+        setLoading(true);
+        const response = await fetch('http://localhost:3000/shifts/getstatinfo', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json;charset=UTF-8', },
+          body: JSON.stringify({ start: period ? period[0] : dayjs().startOf('month'), end: period ? period[1] : dayjs() }),
+        });
+        if (!response.ok) { throw Error(response.statusText); }
+        const json = await response.json();
+        setTotal(json);
+        setLoading(false);
+      }
+    }
+    catch (error) { console.log(error); }
+  };
+
+  const fetchData = async () => {
+    try {
+      if (period[0] && period[1]) {
+        setLoading(true);
+        const response = await fetch('http://localhost:3000/reports/monthreport', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json;charset=UTF-8', },
+          body: JSON.stringify({ start: period ? period[0] : dayjs().startOf('month'), end: period ? period[1] : dayjs() }),
+        });
+        if (!response.ok) { throw Error(response.statusText); }
+        const json = await response.json();
+        setData(json);
+        setLoading(false);
+      }
     }
     catch (error) { console.log(error); }
   };
 
   useEffect(() => {
     dayjs.locale(i18n.language)
+    fetchStatInfo();
     fetchData();
   }, [period]);
 
@@ -201,8 +224,8 @@ const MonthReport: React.FC<Props> = ({
           columns={columns}
           dataSource={data}
           pagination={false}
-          scroll={{ x: '100%', y: 400 }}
-          sticky
+          scroll={{ x: '100%', y: 290 }}
+
           expandable={{
             expandedRowRender: record => <Space direction="horizontal" style={{ width: '100%', justifyContent: 'space-evenly' }}>
               {record?.descrstops.map((stop: any) => (
@@ -223,49 +246,55 @@ const MonthReport: React.FC<Props> = ({
           loading={loading}
           rowKey={record => JSON.stringify(record.stime)}
           size='small'
-          style={{ width: '100%' }}
           onChange={handleChange}
           showSorterTooltip={false}
           summary=
-          {pageData => {
-            let totalBorrow = 0;
-            let totalRepayment = 0;
-
-            pageData.forEach(({ borrow, repayment }) => {
-              totalBorrow += borrow;
-              totalRepayment += repayment;
-            });
-
+          {() => {
             return (
               <Table.Summary fixed>
                 <Table.Summary.Row>
-                  <Table.Summary.Cell index={0}>Total</Table.Summary.Cell>
+                  <Table.Summary.Cell index={0}><b>{period[0] && dayjs(period[0]).format('MMMM YYYY')}</b></Table.Summary.Cell>
                   <Table.Summary.Cell index={1}>
-                    <Text type="danger">{totalBorrow}</Text>
+                    {total && total[0]['sumpicks']}
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={2}>
-                    <Text>{totalRepayment}</Text>
+                    {total && Number(total[0]['meters']).toFixed(2) + " " + t('')}
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={3}>
+                    {total && Number(total[0]['rpm']).toFixed(1) + " " + t('')}
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={4}>
+                    {total && Number(total[0]['mph']).toFixed(2) + " " + t('')}
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={5}>
+                    <b>{total && Number(total[0]['efficiency']).toFixed(2) + " %"}</b>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={6}>
+                    <Badge
+                      count={total && total[0]['starts']} overflowCount={999}
+                      style={{ backgroundColor: '#52c41a' }}
+                    /> {total && duration2text(dayjs.duration(total[0]['runtime']?total[0]['runtime']:0))}
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={7} colSpan={2}>
+                    <Badge
+                      count={total && stopsAgg(total[0]['stops']).total} overflowCount={999}
+                      style={{ backgroundColor: '#1890ff' }}
+                    /> {total && duration2text(stopsAgg(total[0]['stops']).dur)}
                   </Table.Summary.Cell>
                 </Table.Summary.Row>
                 <Table.Summary.Row>
-                  <Table.Summary.Cell index={0}>Balance</Table.Summary.Cell>
-                  <Table.Summary.Cell index={1} colSpan={2}>
-                    <Text type="danger">{totalBorrow - totalRepayment}</Text>
-                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={0} colSpan={24}><Space direction="horizontal" style={{ width: '100%', justifyContent: 'space-evenly' }}>
+                    {total && (total[0]['stops'] as []).map((stop: any) => (
+                      stop[Object.keys(stop)[0]]['total'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge
+                        count={stop[Object.keys(stop)[0]]['total']} overflowCount={999}
+                        style={{ backgroundColor: stopObj(Object.keys(stop)[0]).color, marginRight: '3px' }}
+                      />{stopObj(Object.keys(stop)[0]).icon}{duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
+                    }
+                  </Space></Table.Summary.Cell>
                 </Table.Summary.Row>
               </Table.Summary>
             );
           }}
-
-
-          {pageData => (
-            <Table.Summary fixed>
-              <Table.Summary.Row>
-                <Table.Summary.Cell index={1}>Summary</Table.Summary.Cell>
-                <Table.Summary.Cell index={2}>This</Table.Summary.Cell>
-              </Table.Summary.Row>
-            </Table.Summary>
-          )}
         />
       </div>
     </div>
