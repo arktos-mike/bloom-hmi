@@ -98,11 +98,11 @@ const MonthReport: React.FC<Props> = ({
 
   const columns: ColumnsType<DataType> = [
     {
-      title: t('reports.date'),
+      title: t('report.date'),
       dataIndex: 'stime',
       key: 'stime',
       ellipsis: true,
-      width: '10%',
+      width: '16%',
       render: (_, record) => dayjs(record.stime).format('LL')
     },
     {
@@ -116,31 +116,31 @@ const MonthReport: React.FC<Props> = ({
       render: (_, record) => record.picks,
     },
     {
-      title: t('reports.meters'),
+      title: t('tags.clothMeters.descr'),
       dataIndex: 'clothmeters',
       key: 'clothmeters',
       ellipsis: true,
-      width: '10%',
-      render: (_, record) => record?.clothmeters && (Number(record?.clothmeters).toFixed(2) + " " + t(''))
+      width: '8%',
+      render: (_, record) => record?.clothmeters && (Number(record?.clothmeters).toFixed(2) + " " + t('tags.clothMeters.eng'))
     },
     {
-      title: t('reports.rpm'),
+      title: t('tags.speedMainDrive.descr'),
       dataIndex: 'speedrpm',
       key: 'speedrpm',
       ellipsis: true,
       width: '10%',
-      render: (_, record) => record?.speedrpm && (Number(record?.speedrpm).toFixed(1) + " " + t(''))
+      render: (_, record) => record?.speedrpm && (Number(record?.speedrpm).toFixed(1) + " " + t('tags.speedMainDrive.eng'))
     },
     {
-      title: t('reports.mph'),
+      title: t('tags.speedCloth.descr'),
       dataIndex: 'speedmph',
       key: 'speedmph',
       ellipsis: true,
-      width: '10%',
-      render: (_, record) => record?.speedmph && (Number(record?.speedmph).toFixed(2) + " " + t(''))
+      width: '8%',
+      render: (_, record) => record?.speedmph && (Number(record?.speedmph).toFixed(2) + " " + t('tags.speedCloth.eng'))
     },
     {
-      title: t('reports.efficiency'),
+      title: t('tags.efficiency.descr'),
       dataIndex: 'loomefficiency',
       key: 'loomefficiency',
       ellipsis: true,
@@ -148,11 +148,10 @@ const MonthReport: React.FC<Props> = ({
       render: (_, record) => <b>{record?.loomefficiency && (Number(record?.loomefficiency).toFixed(2) + " %")}</b>
     },
     {
-      title: t('reports.starts'),
+      title: t('report.starts'),
       dataIndex: 'startattempts',
       key: 'startattempts',
       ellipsis: true,
-      width: '10%',
       render: (_, record) => <div><Badge
         count={record.startattempts} overflowCount={999}
         style={{ backgroundColor: '#52c41a' }}
@@ -160,7 +159,7 @@ const MonthReport: React.FC<Props> = ({
     },
     Table.EXPAND_COLUMN,
     {
-      title: t('reports.stops'),
+      title: t('report.stops'),
       dataIndex: 'descrstops',
       key: 'descrstops',
       ellipsis: true,
@@ -209,6 +208,9 @@ const MonthReport: React.FC<Props> = ({
 
   useEffect(() => {
     dayjs.locale(i18n.language)
+  }, []);
+
+  useEffect(() => {
     fetchStatInfo();
     fetchData();
   }, [period]);
@@ -257,16 +259,16 @@ const MonthReport: React.FC<Props> = ({
                     {total && total[0]['sumpicks']}
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={2}>
-                    {total && Number(total[0]['meters']).toFixed(2) + " " + t('')}
+                    {total && total[0]['meters'] && Number(total[0]['meters']).toFixed(2) + " " + t('tags.clothMeters.eng')}
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={3}>
-                    {total && Number(total[0]['rpm']).toFixed(1) + " " + t('')}
+                    {total && total[0]['rpm'] && Number(total[0]['rpm']).toFixed(1) + " " + t('tags.speedMainDrive.eng')}
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={4}>
-                    {total && Number(total[0]['mph']).toFixed(2) + " " + t('')}
+                    {total && total[0]['mph'] && Number(total[0]['mph']).toFixed(2) + " " + t('tags.speedCloth.eng')}
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={5}>
-                    <b>{total && Number(total[0]['efficiency']).toFixed(2) + " %"}</b>
+                    <b>{total && total[0]['efficiency'] && Number(total[0]['efficiency']).toFixed(2) + " %"}</b>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={6}>
                     <Badge

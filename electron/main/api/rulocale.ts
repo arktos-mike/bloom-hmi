@@ -42,11 +42,24 @@ const locale = {
       "eng": "мс"
     },
     "speedMainDrive": {
+      "descr": "Скорость",
       "eng": "об/мин"
     },
     "planSpeedMainDrive": {
       "descr": "Плановая скорость",
       "eng": "об/мин"
+    },
+    "clothMeters": {
+      "descr": "Ткань",
+      "eng": "м"
+    },
+    "speedCloth": {
+      "descr": "Скорость",
+      "eng": "м/ч"
+    },
+    "efficiency": {
+      "descr": "КПВ",
+      "eng": "%"
     },
     "planClothDensity": {
       "descr": "Плановая плотность",
@@ -201,6 +214,11 @@ const locale = {
     "logout": "Выход из системы",
     "select": "Выбранный диапазон:",
     "event": "Событие"
+  },
+  "report": {
+    "date": "Дата",
+    "starts": "Работа",
+    "stops": "Простой"
   },
   "system": {
     "reboot": "ПЕРЕЗАГРУЗКА ПАНЕЛИ"

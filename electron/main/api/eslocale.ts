@@ -14,7 +14,7 @@ const locale = {
     "userlog": "REGISTRO DE ACCESO",
     "machineInfo": "INFORMACIÓN DEL TELAR",
     "reports": "INFORMES",
-    "monthReport": "МЕСЯЧНЫЙ ОТЧЁТ",
+    "monthReport": "INFORME MENSUAL",
     "settingsDev": "ADQUISICIÓN DE DATOS",
     "settingsTech": "TECNOLOGÍA"
   },
@@ -42,7 +42,20 @@ const locale = {
       "eng": "ms"
     },
     "speedMainDrive": {
+      "descr": "Velocidad",
       "eng": "rpm"
+    },
+    "clothMeters": {
+      "descr": "Tela",
+      "eng": "m"
+    },
+    "speedCloth": {
+      "descr": "Velocidad",
+      "eng": "m/h"
+    },
+    "efficiency": {
+      "descr": "Eficiencia",
+      "eng": "%"
     },
     "planSpeedMainDrive": {
       "descr": "Velocidad planificada",
@@ -201,6 +214,11 @@ const locale = {
     "logout": "Cerrar sesión",
     "select": "Rango seleccionado:",
     "event": "Evento"
+  },
+  "report": {
+    "date": "Fecha",
+    "starts": "Ejecución",
+    "stops": "Isnactividad"
   },
   "system": {
     "reboot": "REINICIAR DISPOSITIVO"

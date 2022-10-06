@@ -14,7 +14,7 @@ const locale = {
     "userlog": "ACCESS LOG",
     "machineInfo": "LOOM INFO",
     "reports": "REPORTS",
-    "monthReport": "INFORME MENSUAL",
+    "monthReport": "MONTH REPORT",
     "settingsDev": "DATA AQUISITION",
     "settingsTech": "TECHNOLOGY"
   },
@@ -42,7 +42,20 @@ const locale = {
       "eng": "ms"
     },
     "speedMainDrive": {
+      "descr": "Speed",
       "eng": "rpm"
+    },
+    "clothMeters": {
+      "descr": "Cloth",
+      "eng": "m"
+    },
+    "speedCloth": {
+      "descr": "Speed",
+      "eng": "m/h"
+    },
+    "efficiency": {
+      "descr": "Efficiency",
+      "eng": "%"
     },
     "planSpeedMainDrive": {
       "descr": "Planned speed",
@@ -201,6 +214,11 @@ const locale = {
     "logout": "Logout",
     "select": "Selected range:",
     "event": "Event"
+  },
+  "report": {
+    "date": "Date",
+    "starts": "Runtime",
+    "stops": "Downtime"
   },
   "system": {
     "reboot": "REBOOT DEVICE"

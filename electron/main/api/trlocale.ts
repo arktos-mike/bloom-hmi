@@ -42,7 +42,20 @@ const locale = {
       "eng": "ms"
     },
     "speedMainDrive": {
+      "descr": "Hız",
       "eng": "rpm"
+    },
+    "clothMeters": {
+      "descr": "Kumaş",
+      "eng": "m"
+    },
+    "speedCloth": {
+      "descr": "Hız",
+      "eng": "m/s"
+    },
+    "efficiency": {
+      "descr": "Verimlilik",
+      "eng": "%"
     },
     "planSpeedMainDrive": {
       "descr": "Planlanan hız",
@@ -201,6 +214,11 @@ const locale = {
     "logout": "Çıkış",
     "select": "Seçili aralık:",
     "event": "Etkinlik"
+  },
+  "report": {
+    "date": "Tarih",
+    "starts": "Çalışma zamanı",
+    "stops": "Kapalı kalma süresi"
   },
   "system": {
     "reboot": "CİHAZI YENİDEN BAŞLAT"
