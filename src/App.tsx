@@ -16,6 +16,7 @@ import ModeLog from "./page/modelog";
 import UserLog from "./page/userlog";
 import MachineInfo from "./page/machine_info";
 import MonthReport from "./page/month_report";
+import UserReport from "./page/user_report";
 
 import './i18n/config';
 import { useTranslation } from 'react-i18next';
@@ -376,7 +377,7 @@ const App: React.FC = () => {
   const bigItems = [
     { label: <Link onClick={showDrawer} to="/">{t('menu.overview')}</Link>, title: '', key: 'overview', icon: <EyeOutlined style={{ fontSize: '100%' }} /> },
     { label: t('menu.settings'), title: '', key: 'settings', icon: <SettingOutlined style={{ fontSize: '100%' }} />, children: [{ label: <Link onClick={showDrawer} to="/settings/settingsTech">{t('menu.settingsTech')}</Link>, title: '', key: 'settingsTech', }, { label: <Link onClick={showDrawer} to="/settings/settingsOp">{t('menu.settingsOp')}</Link>, title: '', key: 'settingsOp', }, { label: <Link onClick={showDrawer} to="/settings/settingsDev">{t('menu.settingsDev')}</Link>, title: '', key: 'settingsDev', }] },
-    { label: t('menu.reports'), title: '', key: 'reports', icon: <ReconciliationOutlined style={{ fontSize: '100%' }} />, children: [{ label: <Link onClick={showDrawer} to="/reports/monthReport">{t('menu.monthReport')}</Link>, title: '', key: 'monthReport', },] },
+    { label: t('menu.reports'), title: '', key: 'reports', icon: <ReconciliationOutlined style={{ fontSize: '100%' }} />, children: [{ label: <Link onClick={showDrawer} to="/reports/monthReport">{t('menu.monthReport')}</Link>, title: '', key: 'monthReport', },{ label: <Link onClick={showDrawer} to="/reports/userReport">{t('menu.userReport')}</Link>, title: '', key: 'userReport', }] },
     { label: t('menu.logs'), title: '', key: 'logs', icon: <ReadOutlined style={{ fontSize: '100%' }} />, children: [{ label: <Link onClick={showDrawer} to="/logs/modelog">{t('menu.modelog')}</Link>, title: '', key: 'modelog', }, { label: <Link onClick={showDrawer} to="/logs/userlog">{t('menu.userlog')}</Link>, title: '', key: 'userlog', },] },
     { label: <Link onClick={showDrawer} to="/machineInfo">{t('menu.machineInfo')}</Link>, title: '', key: 'machineInfo', icon: <TagsOutlined style={{ fontSize: '100%' }} /> },
   ];
@@ -419,6 +420,7 @@ const App: React.FC = () => {
                   <Route path={'/machineInfo'} element={<MachineInfo />} />
                   <Route path={'/reports'} element={<MonthReport token={token} />} />
                   <Route path={'/reports/monthReport'} element={<MonthReport token={token} />} />
+                  <Route path={'/reports/userReport'} element={<UserReport token={token} />} />
                   <Route path={'/logs'} element={<ModeLog token={token} />} />
                   <Route path={'/logs/modelog'} element={<ModeLog token={token} />} />
                   <Route path={'/logs/userlog'} element={<UserLog token={token} />} />

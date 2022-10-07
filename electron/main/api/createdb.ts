@@ -356,9 +356,9 @@ from
 		(durs / durrs) * picks as ppicks) partialpicks,
 	lateral (
 	select
-		extract(epoch
+  coalesce((extract(epoch
 	from
-		(upper(tstzrange(starttime, endtime, '[)'))-lower(tstzrange(starttime, endtime, '[)')))) as durqs) querysecduration,
+		(upper(tstzrange(starttime, endtime, '[)'))-lower(tstzrange(starttime, endtime, '[)'))))),0) as durqs) querysecduration,
 	lateral(
 	select
 		sum((select upper(ts * tstzrange(starttime, endtime, '[)'))-lower(ts * tstzrange(starttime, endtime, '[)')))) as exdur
@@ -383,9 +383,9 @@ from
 			or modecode = 0)) normstop,
 	lateral (
 	select
-		extract(epoch
+		coalesce((extract(epoch
 	from
-		exdur) as exdurs) normstopsecduration,
+		exdur)),0) as exdurs) normstopsecduration,
 	lateral (
 	select
 		val as cpicks
@@ -460,7 +460,7 @@ end;
 
 $function$
 ;
-CREATE OR REPLACE FUNCTION public.monthreport(starttime timestamp with time zone, endtime timestamp with time zone)
+CREATE OR REPLACE FUNCTION monthreport(starttime timestamp with time zone, endtime timestamp with time zone)
  RETURNS TABLE(stime timestamp with time zone, etime timestamp with time zone, picks numeric, clothmeters numeric, speedrpm numeric, speedmph numeric, loomefficiency numeric, startattempts numeric, runtimedur interval, descrstops jsonb)
  LANGUAGE plpgsql
 AS $function$
@@ -476,6 +476,40 @@ from
         endtime,
         '1 day'
     ) date
+)
+select
+	st,
+	et,
+	sumpicks,
+meters,
+rpm,
+mph,
+efficiency,
+starts,
+runtime,
+stops
+from
+	dates,getstatinfo(st,
+	et)
+);
+end;
+
+$function$
+;
+CREATE OR REPLACE FUNCTION userreport(userid numeric, starttime timestamp with time zone, endtime timestamp with time zone)
+ RETURNS TABLE(stime timestamp with time zone, etime timestamp with time zone, picks numeric, clothmeters numeric, speedrpm numeric, speedmph numeric, loomefficiency numeric, startattempts numeric, runtimedur interval, descrstops jsonb)
+ LANGUAGE plpgsql
+AS $function$
+begin
+return QUERY (
+with dates as (
+select
+	lower(tstzrange(starttime, endtime, '[)') * timestamp) as st,
+	upper(tstzrange(starttime, endtime, '[)') * timestamp) as et
+from
+  userlog
+where
+  id=userid and role='weaver' and tstzrange(starttime, endtime, '[)') && timestamp
 )
 select
 	st,

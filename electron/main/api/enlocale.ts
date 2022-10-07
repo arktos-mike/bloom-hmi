@@ -15,6 +15,7 @@ const locale = {
     "machineInfo": "LOOM INFO",
     "reports": "REPORTS",
     "monthReport": "MONTH REPORT",
+    "userReport": "WEAVER REPORT",
     "settingsDev": "DATA AQUISITION",
     "settingsTech": "TECHNOLOGY"
   },

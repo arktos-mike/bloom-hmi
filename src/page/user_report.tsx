@@ -27,7 +27,7 @@ type Props = {
   token: any;
 };
 
-const MonthReport: React.FC<Props> = ({
+const UserReport: React.FC<Props> = ({
   token
 }
 ) => {
@@ -302,4 +302,4 @@ const MonthReport: React.FC<Props> = ({
   )
 }
 
-export default MonthReport
+export default UserReport

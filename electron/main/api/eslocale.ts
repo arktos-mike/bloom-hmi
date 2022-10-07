@@ -15,6 +15,7 @@ const locale = {
     "machineInfo": "INFORMACIÓN DEL TELAR",
     "reports": "INFORMES",
     "monthReport": "INFORME MENSUAL",
+    "userReport": "INFORME DEL TEJEDOR",
     "settingsDev": "ADQUISICIÓN DE DATOS",
     "settingsTech": "TECNOLOGÍA"
   },

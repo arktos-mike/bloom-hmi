@@ -15,6 +15,7 @@ const locale = {
     "machineInfo": "ИНФО СТАНКА",
     "reports": "ОТЧЁТЫ",
     "monthReport": "МЕСЯЧНЫЙ ОТЧЁТ",
+    "userReport": "ОТЧЁТ ПО ТКАЧУ",
     "settingsDev": "СБОР ДАННЫХ",
     "settingsTech": "ТЕХНОЛОГИЯ"
   },

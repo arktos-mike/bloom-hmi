@@ -18,4 +18,15 @@ router.post('/monthreport', async (req, res) => {
   res.status(200).send(rows)
 })
 
+router.post('/userreport', async (req, res) => {
+  const { id, start, end } = req.body;
+  const { rows } = await db.query(`SELECT * FROM userreport($1,$2,$3)`, [id, start, end]);
+  rows.map((row: any) => {
+    row['descrstops'].map((part: any) => {
+      part[Object.keys(part)[0]].dur = parseInterval(part[Object.keys(part)[0]].dur)
+    })
+  });
+  res.status(200).send(rows)
+})
+
 export default router

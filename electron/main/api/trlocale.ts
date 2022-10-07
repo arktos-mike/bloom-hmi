@@ -15,6 +15,7 @@ const locale = {
     "machineInfo": "TEZGAH BİLGİSİ",
     "reports": "RAPORLAR",
     "monthReport": "AY RAPORU",
+    "userReport": "DOKUMA RAPORU",
     "settingsDev": "VERI TOPLAMA",
     "settingsTech": "TEKNOLOJİ"
   },
