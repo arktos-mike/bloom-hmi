@@ -310,9 +310,9 @@ end
 ),
 	justify_hours(sum(dur)),
 	count(*),
-	sum(case when upper_inf(timestamp) then
+	sum(case when upper_inf(timestamp) and durqs > exdurs then
 cpicks * 6000 /(planspeed * (durqs-exdurs))
-else
+when durqs > exdurs then
 ppicks * 6000 /(planspeed * (durqs-exdurs))
 end ),
 	sum(case when upper_inf(timestamp) then
@@ -496,6 +496,7 @@ end;
 
 $function$
 ;
+
 CREATE OR REPLACE FUNCTION userreport(userid numeric, starttime timestamp with time zone, endtime timestamp with time zone)
  RETURNS TABLE(stime timestamp with time zone, etime timestamp with time zone, picks numeric, clothmeters numeric, speedrpm numeric, speedmph numeric, loomefficiency numeric, startattempts numeric, runtimedur interval, descrstops jsonb)
  LANGUAGE plpgsql
