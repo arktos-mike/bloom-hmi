@@ -9,7 +9,7 @@ const router = PromiseRouter();
 
 router.post('/monthreport', async (req, res) => {
   const { start, end } = req.body;
-  const { rows } = await db.query(`SELECT * FROM monthreport($1,$2)`, [start, end]);
+  const { rows } = await db.query(`SELECT * FROM monthreport($1,$2) WHERE startattempts > 0 OR (descrstops->'other'->'total')::integer > 0 OR (descrstops->'button'->'total')::integer > 0 OR (descrstops->'weft'->'total')::integer > 0 OR (descrstops->'warp'->'total')::integer > 0 OR (descrstops->'tool'->'total')::integer > 0 OR (descrstops->'fabric'->'total')::integer > 0`, [start, end]);
   rows.map((row: any) => {
     row['descrstops'].map((part: any) => {
       part[Object.keys(part)[0]].dur = parseInterval(part[Object.keys(part)[0]].dur)
