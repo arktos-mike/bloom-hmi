@@ -63,6 +63,7 @@ const MonthReport: React.FC<Props> = ({
   }
 
   const duration2text = (diff: any) => {
+    if (diff == null) return null
     return (diff.days() > 0 ? diff.days() + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + t('shift.secs') : "")
   }
 
@@ -70,8 +71,10 @@ const MonthReport: React.FC<Props> = ({
     let dur = dayjs.duration(0)
     let total = 0
     stops.map((part: any) => {
-      dur = dur.add(part[Object.keys(part)[0]].dur)
-      total = total + part[Object.keys(part)[0]].total
+      if (part[Object.keys(part)[0]].dur != null) {
+        dur = dur.add(part[Object.keys(part)[0]].dur)
+        total = total + part[Object.keys(part)[0]].total
+      }
     })
     return Object.assign({ dur: dur, total: total })
   }
