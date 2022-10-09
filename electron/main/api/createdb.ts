@@ -496,6 +496,181 @@ end;
 
 $function$
 ;
+CREATE OR REPLACE FUNCTION getuserstatinfo(userid numeric, starttime timestamp with time zone, endtime timestamp with time zone)
+ RETURNS TABLE(stime timestamp with time zone, etime timestamp with time zone, sumpicks numeric, meters numeric, rpm numeric, mph numeric, efficiency numeric, starts numeric, runtime interval, stops jsonb)
+ LANGUAGE plpgsql
+AS $function$
+begin
+return QUERY (
+with query as (
+  with dates as (
+select
+	lower(tstzrange(starttime, endtime, '[)') * timestamp) as st,
+	upper(tstzrange(starttime, endtime, '[)') * timestamp) as et
+from
+	userlog
+where
+	id = userid
+	and role = 'weaver'
+	and tstzrange(starttime,
+	endtime,
+	'[)') && timestamp
+    )
+select
+	dates.st,
+	dates.et,
+	sum(
+        case when not (timestamp &> tstzrange(dates.st, dates.et, '[)'))
+        then ceil(ppicks)
+        when (timestamp @> tstzrange(dates.st, dates.et, '[)'))
+        then round(ppicks)
+        when not (timestamp &< tstzrange(dates.st, dates.et, '[)'))
+        then
+        case when upper_inf(timestamp) then
+        cpicks
+        else
+        floor(ppicks)
+        end
+        else picks
+        end
+        ) as sumpicks,
+	sum(case when upper_inf(timestamp) then
+        cpicks /(100 * plandensity)
+        else
+        ppicks /(100 * plandensity)
+        end ) as meters,
+	sum(case when upper_inf(timestamp) then
+        cpicks * 6000 /(planspeed * durqs)
+        else
+        ppicks * 6000 /(planspeed * durqs)
+        end ) as efficiency,
+	count(*) as starts,
+	justify_hours(sum(dur)) as runtime
+from
+	dates,
+	modelog,
+	lateral (
+	select
+		case
+			when upper_inf(timestamp) then
+              tstzrange(lower(timestamp),
+			current_timestamp,
+			'[)')
+			else
+              timestamp
+		end as tr) timerange,
+	lateral (
+	select
+		extract(epoch
+	from
+		(upper(tr)-lower(tr))) as durrs) rowsecduration,
+	lateral (
+	select
+		upper(tr * tstzrange(dates.st, dates.et, '[)'))-lower(tr * tstzrange(dates.st, dates.et, '[)')) as dur) intduration,
+	lateral (
+	select
+		extract(epoch
+	from
+		dur) as durs) intsecduration,
+	lateral (
+	select
+		(durs / durrs) * picks as ppicks) partialpicks,
+	lateral (
+	select
+		coalesce((extract(epoch
+    from
+      (upper(tstzrange(dates.st, dates.et, '[)'))-lower(tstzrange(dates.st, dates.et, '[)'))))), 0) as durqs) querysecduration,
+	lateral (
+	select
+		val as cpicks
+	from
+		tags
+	where
+		(tag->>'name' = 'picksLastRun') ) currentpicks
+where
+	tstzrange(dates.st,
+	dates.et,
+	'[)') && tr
+	and modecode = 1
+)
+select
+	query.st,
+	query.et,
+	sumpicks,
+	meters,
+	rpm,
+	mph,
+	efficiency,
+	starts,
+	runtime,
+	stops
+from
+	query,
+	lateral(
+	select
+		round((sumpicks * 60)/(
+        select
+          extract(epoch
+        from
+          runtime) )) as rpm
+    ) speedMainDrive,
+	lateral(
+	select
+		meters /(
+		select
+			extract(epoch
+		from
+			runtime)/ 3600 ) as mph) speedCloth,
+	lateral (
+      with t(num,
+	stop) as (
+	select
+		*
+	from
+		(
+	values (0,
+	'other'),
+	(2,
+	'button'),
+	(3,
+	'warp'),
+	(4,
+	'weft'),
+	(5,
+	'tool'),
+	(6,
+	'fabric') ) as t(num,
+		stop) )
+	select
+		jsonb_agg(json_build_object(t.stop, json_build_object('total', total , 'dur', justify_hours(dur)))) as stops
+	from
+		t,
+		lateral(
+		select
+			count(*) as total,
+			sum((select upper(tr * tstzrange(query.st, query.et, '[)'))-lower(tr * tstzrange(query.st, query.et, '[)')))) as dur
+		from
+			modelog,
+			lateral (
+			select
+				case
+					when upper_inf(timestamp) then
+                    tstzrange(lower(timestamp),
+					current_timestamp,
+					'[)')
+					else
+                    timestamp
+				end as tr) timerange
+		where
+			tstzrange(query.st,
+			query.et,
+			'[)') && tr
+				and modecode = t.num) stat) descrstops
+);
+end;
+
+$function$
+;
 
 CREATE OR REPLACE FUNCTION userreport(userid numeric, starttime timestamp with time zone, endtime timestamp with time zone)
  RETURNS TABLE(stime timestamp with time zone, etime timestamp with time zone, picks numeric, clothmeters numeric, speedrpm numeric, speedmph numeric, loomefficiency numeric, startattempts numeric, runtimedur interval, descrstops jsonb)
