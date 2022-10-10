@@ -496,10 +496,22 @@ end;
 
 $function$
 ;
-CREATE OR REPLACE FUNCTION getuserstatinfo(userid numeric, starttime timestamp with time zone, endtime timestamp with time zone)
- RETURNS TABLE(stime timestamp with time zone, etime timestamp with time zone, sumpicks numeric, meters numeric, rpm numeric, mph numeric, efficiency numeric, starts numeric, runtime interval, stops jsonb)
- LANGUAGE plpgsql
-AS $function$
+create or replace
+function getuserstatinfo(userid numeric,
+starttime timestamp with time zone,
+endtime timestamp with time zone)
+ returns table(stime timestamp with time zone,
+etime timestamp with time zone,
+sumpicks numeric,
+meters numeric,
+rpm numeric,
+mph numeric,
+efficiency numeric,
+starts numeric,
+runtime interval,
+stops jsonb)
+ language plpgsql
+as $function$
 begin
 return QUERY (
 with query as (
@@ -517,9 +529,18 @@ where
 	'[)') && timestamp
     )
 select
-	dates.st,
-	dates.et,
-	sum(
+	dates.st as st,
+	dates.et as et,
+	spicks,
+	clothmeters,
+	eff,
+	runstarts,
+	mototime
+from
+	dates,
+	lateral (
+	select
+		sum(
         case when not (timestamp &> tstzrange(dates.st, dates.et, '[)'))
         then ceil(ppicks)
         when (timestamp @> tstzrange(dates.st, dates.et, '[)'))
@@ -533,94 +554,95 @@ select
         end
         else picks
         end
-        ) as sumpicks,
-	sum(case when upper_inf(timestamp) then
+        ) as spicks,
+		sum(case when upper_inf(timestamp) then
         cpicks /(100 * plandensity)
         else
         ppicks /(100 * plandensity)
-        end ) as meters,
-	sum(case when upper_inf(timestamp) then
+        end ) as clothmeters,
+		sum(case when upper_inf(timestamp) then
         cpicks * 6000 /(planspeed * durqs)
         else
         ppicks * 6000 /(planspeed * durqs)
-        end ) as efficiency,
-	count(*) as starts,
-	justify_hours(sum(dur)) as runtime
-from
-	dates,
-	modelog,
-	lateral (
-	select
-		case
-			when upper_inf(timestamp) then
+        end ) as eff,
+		count(*) as runstarts,
+		justify_hours(sum(dur)) as mototime
+	from
+		modelog,
+		lateral (
+		select
+			case
+				when upper_inf(timestamp) then
               tstzrange(lower(timestamp),
-			current_timestamp,
-			'[)')
-			else
+				current_timestamp,
+				'[)')
+				else
               timestamp
-		end as tr) timerange,
-	lateral (
-	select
-		extract(epoch
-	from
-		(upper(tr)-lower(tr))) as durrs) rowsecduration,
-	lateral (
-	select
-		upper(tr * tstzrange(dates.st, dates.et, '[)'))-lower(tr * tstzrange(dates.st, dates.et, '[)')) as dur) intduration,
-	lateral (
-	select
-		extract(epoch
-	from
-		dur) as durs) intsecduration,
-	lateral (
-	select
-		(durs / durrs) * picks as ppicks) partialpicks,
-	lateral (
-	select
-		coalesce((extract(epoch
+			end as tr) timerange,
+		lateral (
+		select
+			extract(epoch
+		from
+			(upper(tr)-lower(tr))) as durrs) rowsecduration,
+		lateral (
+		select
+			upper(tr * tstzrange(dates.st, dates.et, '[)'))-lower(tr * tstzrange(dates.st, dates.et, '[)')) as dur) intduration,
+		lateral (
+		select
+			extract(epoch
+		from
+			dur) as durs) intsecduration,
+		lateral (
+		select
+			(durs / durrs) * picks as ppicks) partialpicks,
+		lateral (
+		select
+			coalesce((extract(epoch
     from
       (upper(tstzrange(dates.st, dates.et, '[)'))-lower(tstzrange(dates.st, dates.et, '[)'))))), 0) as durqs) querysecduration,
-	lateral (
-	select
-		val as cpicks
-	from
-		tags
+		lateral (
+		select
+			val as cpicks
+		from
+			tags
+		where
+			(tag->>'name' = 'picksLastRun') ) currentpicks
 	where
-		(tag->>'name' = 'picksLastRun') ) currentpicks
-where
-	tstzrange(dates.st,
-	dates.et,
-	'[)') && tr
-	and modecode = 1
+		tstzrange(dates.st,
+		dates.et,
+		'[)') && tr
+			and modecode = 1
+	) modedata
+
 )
 select
 	query.st,
 	query.et,
-	sumpicks,
-	meters,
-	rpm,
-	mph,
-	efficiency,
-	starts,
-	runtime,
-	stops
+	query.spicks::numeric,
+	query.clothmeters::numeric,
+	speedMainDrive::numeric,
+	speedCloth::numeric,
+	query.eff::numeric,
+	query.runstarts::numeric,
+	query.mototime,
+	descrstops
 from
 	query,
 	lateral(
 	select
-		round((sumpicks * 60)/(
+		round((query.spicks * 60)/(
         select
           extract(epoch
         from
-          runtime) )) as rpm
+          query.mototime) )) as speedMainDrive
     ) speedMainDrive,
 	lateral(
 	select
-		meters /(
+		query.clothmeters /(
 		select
 			extract(epoch
 		from
-			runtime)/ 3600 ) as mph) speedCloth,
+			query.mototime)/ 3600 ) as speedCloth) speedCloth,
 	lateral (
       with t(num,
 	stop) as (
@@ -642,7 +664,7 @@ from
 	'fabric') ) as t(num,
 		stop) )
 	select
-		jsonb_agg(json_build_object(t.stop, json_build_object('total', total , 'dur', justify_hours(dur)))) as stops
+		jsonb_agg(json_build_object(t.stop, json_build_object('total', total , 'dur', justify_hours(dur)))) as descrstops
 	from
 		t,
 		lateral(
@@ -668,43 +690,70 @@ from
 				and modecode = t.num) stat) descrstops
 );
 end;
-
 $function$
 ;
-
 CREATE OR REPLACE FUNCTION userreport(userid numeric, starttime timestamp with time zone, endtime timestamp with time zone)
- RETURNS TABLE(stime timestamp with time zone, etime timestamp with time zone, picks numeric, clothmeters numeric, speedrpm numeric, speedmph numeric, loomefficiency numeric, startattempts numeric, runtimedur interval, descrstops jsonb)
+ RETURNS TABLE(dates tstzmultirange, picks numeric, clothmeters numeric, speedrpm numeric, speedmph numeric, loomefficiency numeric, startattempts numeric, runtimedur interval, descrstops jsonb)
  LANGUAGE plpgsql
 AS $function$
 begin
 return QUERY (
-with dates as (
+with periods as (
 select
-	lower(tstzrange(starttime, endtime, '[)') * timestamp) as st,
-	upper(tstzrange(starttime, endtime, '[)') * timestamp) as et
+	*
 from
-  userlog
-where
-  id=userid and role='weaver' and tstzrange(starttime, endtime, '[)') && timestamp
+	getuserstatinfo(userid,
+	starttime,
+	endtime)
 )
 select
-	st,
-	et,
-	sumpicks,
-meters,
-rpm,
-mph,
-efficiency,
-starts,
-runtime,
-stops
+	range_agg(tstzrange(periods.stime,
+	periods.etime,
+	'[)')),
+	sum(sumpicks),
+	sum(periods.meters),
+	round((sum(sumpicks) * 60)/(
+        select
+          extract(epoch
+        from
+          sum(periods.runtime)))),
+	sum(periods.meters)/(
+	select
+			extract(epoch
+	from
+			sum(periods.runtime))/ 3600 ) ,
+	sum(sumpicks) / sum(periods.sumpicks * 6000 / periods.efficiency),
+	sum(periods.starts),
+	sum(periods.runtime),
+	(select
+		jsonb_agg(json_build_object(key, json_build_object('total', total , 'dur', dur)))
+	from
+		(
+		select
+			stopobj.key as key,
+			sum(((stopobj.value::jsonb->>'total')::numeric)) as total,
+			sum(((stopobj.value::jsonb->>'dur')::interval)) as dur
+		from
+		periods,
+			lateral (
+			select
+				*
+			from
+				jsonb_array_elements(periods.stops)) stop ,
+			lateral (
+			select
+				*
+			from
+				jsonb_each_text(stop.value) ) stopobj
+		group by
+			key) descrstop)
 from
-	dates,getstatinfo(st,
-	et)
+	periods
 );
 end;
 
 $function$
 ;
+
 `
 export default createTableText
