@@ -693,7 +693,7 @@ end;
 $function$
 ;
 CREATE OR REPLACE FUNCTION userreport(userid numeric, starttime timestamp with time zone, endtime timestamp with time zone)
- RETURNS TABLE(dates tstzmultirange, picks numeric, clothmeters numeric, speedrpm numeric, speedmph numeric, loomefficiency numeric, startattempts numeric, runtimedur interval, descrstops jsonb)
+ RETURNS TABLE(dates tstzmultirange, picks numeric, clothmeters numeric, speedrpm numeric, speedmph numeric, userefficiency numeric, startattempts numeric, runtimedur interval, descrstops jsonb)
  LANGUAGE plpgsql
 AS $function$
 begin
@@ -722,7 +722,7 @@ select
 			extract(epoch
 	from
 			sum(periods.runtime))/ 3600 ) ,
-	sum(sumpicks) / sum(periods.sumpicks * 6000 / periods.efficiency),
+	sum(sumpicks) * 6000 / sum(periods.sumpicks * 6000 / periods.efficiency),
 	sum(periods.starts),
 	sum(periods.runtime),
 	(select
