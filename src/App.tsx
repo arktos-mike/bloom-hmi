@@ -66,8 +66,9 @@ const App: React.FC = () => {
       if (!ans.ok) { throw Error(ans.statusText); }
       if (json.length && (token && (json[0].id != JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id))) {
         setShadowUser(json[0].name);
+        setShadowUserId(json[0].id);
       }
-      else { setShadowUser(null); }
+      else { setShadowUser(null); setShadowUserId(null);}
     }
     catch (error) { console.log(error); }
   }
@@ -151,6 +152,7 @@ const App: React.FC = () => {
   const [lngs, setLngs] = useState({ data: [] })
   const [token, setToken] = useState<string | null>(null)
   const [shadowUser, setShadowUser] = useState<string | null>(null)
+  const [shadowUserId, setShadowUserId] = useState(null)
   const [remember, setRemember] = useState(true)
   const [today, setDate] = useState(new Date())
   const [visible, setVisible] = useState(false)
@@ -420,7 +422,7 @@ const App: React.FC = () => {
                   <Route path={'/machineInfo'} element={<MachineInfo />} />
                   <Route path={'/reports'} element={<MonthReport token={token} />} />
                   <Route path={'/reports/monthReport'} element={<MonthReport token={token} />} />
-                  <Route path={'/reports/userReport'} element={<UserReport token={token} />} />
+                  <Route path={'/reports/userReport'} element={<UserReport token={token} shadowUserId={shadowUserId}/>} />
                   <Route path={'/logs'} element={<ModeLog token={token} />} />
                   <Route path={'/logs/modelog'} element={<ModeLog token={token} />} />
                   <Route path={'/logs/userlog'} element={<UserLog token={token} />} />

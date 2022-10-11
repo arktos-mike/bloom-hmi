@@ -25,17 +25,19 @@ interface DataType {
 
 type Props = {
   token: any;
+  shadowUserId: any;
 };
 
 const UserReport: React.FC<Props> = ({
-  token
+  token,
+  shadowUserId
 }
 ) => {
   const { t, i18n } = useTranslation();
   const [data, setData] = useState();
   const [users, setUsers] = useState();
   const [total, setTotal] = useState();
-  const [user, setUser] = useState(token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id : null);
+  const [user, setUser] = useState(token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id : Number(shadowUserId));
   const [period, setPeriod] = useState([dayjs().startOf('month'), dayjs()]);
   const [loading, setLoading] = useState(false);
   const [filteredInfo, setFilteredInfo] = useState<Record<string, FilterValue | null>>({});
@@ -229,6 +231,10 @@ const UserReport: React.FC<Props> = ({
   }, [token]);
 
   useEffect(() => {
+    shadowUserId && setUser(Number(shadowUserId));
+  }, [shadowUserId]);
+
+  useEffect(() => {
     fetchStatInfo();
     fetchData();
   }, [period, user]);
@@ -237,7 +243,7 @@ const UserReport: React.FC<Props> = ({
     <div>
       <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
         <h1 style={{ margin: 10 }}>{t('user.weaver')}</h1>
-        <Select style={{ width: '100%' }} userRights={['admin', 'manager', 'weaver']} token={token}
+        <Select style={{ width: '100%' }} userRights={['admin', 'manager']} token={token}
           value={user}
           onChange={(value: any) => { setUser(value) }}
           options={
@@ -281,8 +287,8 @@ const UserReport: React.FC<Props> = ({
           return (
             <Table.Summary fixed>
               <Table.Summary.Row>
-                <Table.Summary.Cell index={0}><b>{period[0] && dayjs(period[0]).locale(i18n.language).format('MMMM YYYY')}</b>
-                  <br />{total && total[0] && duration2text(dayjs.duration(total[0]['workdur']))}</Table.Summary.Cell>
+                <Table.Summary.Cell index={0}><b>{period[0] && dayjs(period[0]).locale(i18n.language).format('MMMM YYYY')}
+                  <br />{total && total[0] && duration2text(dayjs.duration(total[0]['workdur']))}</b></Table.Summary.Cell>
                 <Table.Summary.Cell index={1}>
                   {total && total[0] && total[0]['picks']}
                 </Table.Summary.Cell>
