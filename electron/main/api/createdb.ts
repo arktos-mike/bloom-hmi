@@ -497,7 +497,7 @@ end;
 $function$
 ;
 create or replace
-function getuserstatinfo(userid numeric,
+function userreport(userid numeric,
 starttime timestamp with time zone,
 endtime timestamp with time zone)
  returns table(stime timestamp with time zone,
@@ -692,8 +692,8 @@ from
 end;
 $function$
 ;
-CREATE OR REPLACE FUNCTION userreport(userid numeric, starttime timestamp with time zone, endtime timestamp with time zone)
- RETURNS TABLE(dates tstzmultirange, picks numeric, clothmeters numeric, speedrpm numeric, speedmph numeric, userefficiency numeric, startattempts numeric, runtimedur interval, descrstops jsonb)
+CREATE OR REPLACE FUNCTION getuserstatinfo(userid numeric, starttime timestamp with time zone, endtime timestamp with time zone)
+ RETURNS TABLE(workdur interval, picks numeric, clothmeters numeric, speedrpm numeric, speedmph numeric, userefficiency numeric, startattempts numeric, runtimedur interval, descrstops jsonb)
  LANGUAGE plpgsql
 AS $function$
 begin
@@ -702,14 +702,12 @@ with periods as (
 select
 	*
 from
-	getuserstatinfo(userid,
+	userreport(userid,
 	starttime,
 	endtime)
 )
 select
-	range_agg(tstzrange(periods.stime,
-	periods.etime,
-	'[)')),
+	justify_hours(sum(upper(tstzrange(periods.stime, periods.etime, '[)'))-lower(tstzrange(periods.stime, periods.etime, '[)')))),
 	sum(sumpicks),
 	sum(periods.meters),
 	round((sum(sumpicks) * 60)/(
@@ -751,9 +749,7 @@ from
 	periods
 );
 end;
-
 $function$
 ;
-
 `
 export default createTableText
