@@ -7,20 +7,20 @@ import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import { Button, DatePicker, RangePicker } from '@/components';
+import { Button, DatePicker, RangePicker, Select } from '@/components';
 dayjs.extend(duration);
 
 interface DataType {
-  stime: any;
-  etime: any;
+  starttime: any;
+  endtime: any;
   picks: number;
-  clothmeters: number;
-  speedrpm: number;
-  speedmph: number;
-  loomefficiency: number;
-  startattempts: number;
-  runtimedur: any;
-  descrstops: any;
+  meters: number;
+  rpm: number;
+  mph: number;
+  efficiency: number;
+  starts: number;
+  runtime: any;
+  stops: any;
 }
 
 type Props = {
@@ -33,7 +33,9 @@ const UserReport: React.FC<Props> = ({
 ) => {
   const { t, i18n } = useTranslation();
   const [data, setData] = useState();
+  const [users, setUsers] = useState();
   const [total, setTotal] = useState();
+  const [user, setUser] = useState(token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id : null);
   const [period, setPeriod] = useState([dayjs().startOf('month'), dayjs()]);
   const [loading, setLoading] = useState(false);
   const [filteredInfo, setFilteredInfo] = useState<Record<string, FilterValue | null>>({});
@@ -63,6 +65,7 @@ const UserReport: React.FC<Props> = ({
   }
 
   const duration2text = (diff: any) => {
+    if (diff == null) return null
     return (diff.days() > 0 ? diff.days() + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + t('shift.secs') : "")
   }
 
@@ -70,8 +73,10 @@ const UserReport: React.FC<Props> = ({
     let dur = dayjs.duration(0)
     let total = 0
     stops.map((part: any) => {
-      dur = dur.add(part[Object.keys(part)[0]].dur)
-      total = total + part[Object.keys(part)[0]].total
+      if (part[Object.keys(part)[0]].dur != null) {
+        dur = dur.add(part[Object.keys(part)[0]].dur)
+        total = total + part[Object.keys(part)[0]].total
+      }
     })
     return Object.assign({ dur: dur, total: total })
   }
@@ -99,11 +104,11 @@ const UserReport: React.FC<Props> = ({
   const columns: ColumnsType<DataType> = [
     {
       title: t('report.date'),
-      dataIndex: 'stime',
-      key: 'stime',
+      dataIndex: 'starttime',
+      key: 'starttime',
       ellipsis: true,
       width: '16%',
-      render: (_, record) => dayjs(record.stime).format('LL')
+      render: (_, record) => <>{dayjs(record.starttime).format('L LTS')}<br />{dayjs(record.endtime).format('L LTS')}</>
     },
     {
       title: t('tags.picks.descr'),
@@ -117,85 +122,94 @@ const UserReport: React.FC<Props> = ({
     },
     {
       title: t('tags.clothMeters.descr'),
-      dataIndex: 'clothmeters',
-      key: 'clothmeters',
+      dataIndex: 'meters',
+      key: 'meters',
       ellipsis: true,
       width: '8%',
-      render: (_, record) => record?.clothmeters && (Number(record?.clothmeters).toFixed(2) + " " + t('tags.clothMeters.eng'))
+      render: (_, record) => record?.meters && (Number(record?.meters).toFixed(2) + " " + t('tags.clothMeters.eng'))
     },
     {
       title: t('tags.speedMainDrive.descr'),
-      dataIndex: 'speedrpm',
-      key: 'speedrpm',
+      dataIndex: 'rpm',
+      key: 'rpm',
       ellipsis: true,
       width: '10%',
-      render: (_, record) => record?.speedrpm && (Number(record?.speedrpm).toFixed(1) + " " + t('tags.speedMainDrive.eng'))
+      render: (_, record) => record?.rpm && (Number(record?.rpm).toFixed(1) + " " + t('tags.speedMainDrive.eng'))
     },
     {
       title: t('tags.speedCloth.descr'),
-      dataIndex: 'speedmph',
-      key: 'speedmph',
+      dataIndex: 'mph',
+      key: 'mph',
       ellipsis: true,
       width: '8%',
-      render: (_, record) => record?.speedmph && (Number(record?.speedmph).toFixed(2) + " " + t('tags.speedCloth.eng'))
+      render: (_, record) => record?.mph && (Number(record?.mph).toFixed(2) + " " + t('tags.speedCloth.eng'))
     },
     {
       title: t('tags.efficiency.descr'),
-      dataIndex: 'loomefficiency',
-      key: 'loomefficiency',
+      dataIndex: 'efficiency',
+      key: 'efficiency',
       ellipsis: true,
       width: '10%',
-      render: (_, record) => <b>{record?.loomefficiency && (Number(record?.loomefficiency).toFixed(2) + " %")}</b>
+      render: (_, record) => <b>{record?.efficiency && (Number(record?.efficiency).toFixed(2) + " %")}</b>
     },
     {
       title: t('report.starts'),
-      dataIndex: 'startattempts',
-      key: 'startattempts',
+      dataIndex: 'starts',
+      key: 'starts',
       ellipsis: true,
       render: (_, record) => <div><Badge
-        count={record.startattempts} overflowCount={999}
+        count={record.starts} overflowCount={999}
         style={{ backgroundColor: '#52c41a' }}
-      /> {record?.runtimedur && duration2text(dayjs.duration(record?.runtimedur))}</div>
+      /> {record?.runtime && duration2text(dayjs.duration(record?.runtime))}</div>
     },
     Table.EXPAND_COLUMN,
     {
       title: t('report.stops'),
-      dataIndex: 'descrstops',
-      key: 'descrstops',
+      dataIndex: 'stops',
+      key: 'stops',
       ellipsis: true,
       render: (_, record) => <div><Badge
-        count={stopsAgg(record?.descrstops).total} overflowCount={999}
+        count={stopsAgg(record?.stops).total} overflowCount={999}
         style={{ backgroundColor: '#1890ff' }}
-      /> {duration2text(stopsAgg(record?.descrstops).dur)}</div>
+      /> {duration2text(stopsAgg(record?.stops).dur)}</div>
     },
   ];
 
   const fetchStatInfo = async () => {
     try {
-      if (period[0] && period[1]) {
+      if (user && period[0] && period[1]) {
         setLoading(true);
-        const response = await fetch('http://localhost:3000/shifts/getstatinfo', {
+        const response = await fetch('http://localhost:3000/shifts/getuserstatinfo', {
           method: 'POST',
           headers: { 'content-type': 'application/json;charset=UTF-8', },
-          body: JSON.stringify({ start: period ? period[0] : dayjs().startOf('month'), end: period ? period[1] : dayjs() }),
+          body: JSON.stringify({ id: user, start: period ? period[0] : dayjs().startOf('month'), end: period ? period[1] : dayjs() }),
         });
         if (!response.ok) { throw Error(response.statusText); }
         const json = await response.json();
         setTotal(json);
-        setLoading(false);
       }
+    }
+    catch (error) { console.log(error); }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/users/weavers');
+      if (!response.ok) { throw Error(response.statusText); }
+      const json = await response.json();
+      setUsers(json);
     }
     catch (error) { console.log(error); }
   };
 
   const fetchData = async () => {
     try {
-      if (period[0] && period[1]) {
+      if (user && period[0] && period[1]) {
         setLoading(true);
-        const response = await fetch('http://localhost:3000/reports/monthreport', {
+        const response = await fetch('http://localhost:3000/reports/userreport', {
           method: 'POST',
           headers: { 'content-type': 'application/json;charset=UTF-8', },
-          body: JSON.stringify({ start: period ? period[0] : dayjs().startOf('month'), end: period ? period[1] : dayjs() }),
+          body: JSON.stringify({ id: user, start: period ? period[0] : dayjs().startOf('month'), end: period ? period[1] : dayjs() }),
         });
         if (!response.ok) { throw Error(response.statusText); }
         const json = await response.json();
@@ -211,93 +225,107 @@ const UserReport: React.FC<Props> = ({
   }, []);
 
   useEffect(() => {
+    fetchUsers();
+  }, [token]);
+
+  useEffect(() => {
     fetchStatInfo();
     fetchData();
-  }, [period]);
+  }, [period, user]);
 
   return (
     <div>
-      <div>
-        <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}><h1 style={{ margin: 10 }}>{t('log.select')}</h1>
-          <DatePicker style={{ flexGrow: 1 }} picker="month" format='MMMM YYYY' defaultValue={dayjs().month()} onChange={(e: any) => { setPeriod([e ? e?.startOf('month') : dayjs().startOf('month'), e ? e?.endOf('month') : dayjs()]) }} />
-          <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={confirm} ></Button>
-        </div>
-        <Table
-          columns={columns}
-          dataSource={data}
-          pagination={false}
-          scroll={{ x: '100%', y: 330 }}
-          expandable={{
-            expandedRowRender: record => <Space direction="horizontal" style={{ width: '100%', justifyContent: 'space-evenly' }}>
-              {record?.descrstops.map((stop: any) => (
-                stop[Object.keys(stop)[0]]['total'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge
-                  count={stop[Object.keys(stop)[0]]['total']} overflowCount={999}
-                  style={{ backgroundColor: stopObj(Object.keys(stop)[0]).color, marginRight: '3px' }}
-                />{stopObj(Object.keys(stop)[0]).icon}{duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
-              }
-            </Space>,
-            rowExpandable: record => stopsAgg(record?.descrstops).total > 0,
-            expandIcon: ({ expanded, onExpand, record }) =>
-              stopsAgg(record?.descrstops).total == 0 ? null : expanded ? (
-                <MinusCircleTwoTone style={{ fontSize: '150%' }} onClick={e => onExpand(record, e)} />
-              ) : (
-                <PlusCircleTwoTone style={{ fontSize: '150%' }} onClick={e => onExpand(record, e)} />
-              )
-          }}
-          loading={loading}
-          rowKey={record => JSON.stringify(record.stime)}
-          size='small'
-          onChange={handleChange}
-          showSorterTooltip={false}
-          summary=
-          {() => {
-            return (
-              <Table.Summary fixed>
-                <Table.Summary.Row>
-                  <Table.Summary.Cell index={0}><b>{period[0] && dayjs(period[0]).locale(i18n.language).format('MMMM YYYY')}</b></Table.Summary.Cell>
-                  <Table.Summary.Cell index={1}>
-                    {total && total[0]['picks']}
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell index={2}>
-                    {total && total[0]['meters'] && Number(total[0]['meters']).toFixed(2) + " " + t('tags.clothMeters.eng')}
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell index={3}>
-                    {total && total[0]['rpm'] && Number(total[0]['rpm']).toFixed(1) + " " + t('tags.speedMainDrive.eng')}
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell index={4}>
-                    {total && total[0]['mph'] && Number(total[0]['mph']).toFixed(2) + " " + t('tags.speedCloth.eng')}
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell index={5}>
-                    <b>{total && total[0]['efficiency'] && Number(total[0]['efficiency']).toFixed(2) + " %"}</b>
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell index={6}>
-                    <Badge
-                      count={total && total[0]['starts']} overflowCount={999}
-                      style={{ backgroundColor: '#52c41a' }}
-                    /> {total && duration2text(dayjs.duration(total[0]['runtime'] ? total[0]['runtime'] : 0))}
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell index={7} colSpan={2}>
-                    <Badge
-                      count={total && stopsAgg(total[0]['stops']).total} overflowCount={999}
-                      style={{ backgroundColor: '#1890ff' }}
-                    /> {total && duration2text(stopsAgg(total[0]['stops']).dur)}
-                  </Table.Summary.Cell>
-                </Table.Summary.Row>
-                <Table.Summary.Row>
-                  <Table.Summary.Cell index={0} colSpan={24}><Space direction="horizontal" style={{ width: '100%', justifyContent: 'space-evenly' }}>
-                    {total && (total[0]['stops'] as []).map((stop: any) => (
-                      stop[Object.keys(stop)[0]]['total'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge
-                        count={stop[Object.keys(stop)[0]]['total']} overflowCount={999}
-                        style={{ backgroundColor: stopObj(Object.keys(stop)[0]).color, marginRight: '3px' }}
-                      />{stopObj(Object.keys(stop)[0]).icon}{duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
-                    }
-                  </Space></Table.Summary.Cell>
-                </Table.Summary.Row>
-              </Table.Summary>
-            );
-          }}
-        />
+      <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+        <h1 style={{ margin: 10 }}>{t('user.weaver')}</h1>
+        <Select style={{ width: '100%' }} userRights={['admin', 'manager', 'weaver']} token={token}
+          value={user}
+          onChange={(value: any) => { setUser(value) }}
+          options={
+            (users || []).map(user => (
+              { key: user['id'], value: user['id'], label: user['name'] }
+            ))
+          } />
+        <h1 style={{ margin: 10 }}>{t('log.select')}</h1>
+        <DatePicker style={{ flexGrow: 1 }} picker="month" format='MMMM YYYY' defaultValue={dayjs().month()} onChange={(e: any) => { setPeriod([e ? e?.startOf('month') : dayjs().startOf('month'), e ? e?.endOf('month') : dayjs()]) }} />
+        {false && <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={confirm} ></Button>}
       </div>
+      <Table
+        columns={columns}
+        dataSource={data}
+        pagination={false}
+        scroll={{ x: '100%', y: 310 }}
+        expandable={{
+          expandedRowRender: record => <Space direction="horizontal" style={{ width: '100%', justifyContent: 'space-evenly' }}>
+            {record?.stops.map((stop: any) => (
+              stop[Object.keys(stop)[0]]['total'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge
+                count={stop[Object.keys(stop)[0]]['total']} overflowCount={999}
+                style={{ backgroundColor: stopObj(Object.keys(stop)[0]).color, marginRight: '3px' }}
+              />{stopObj(Object.keys(stop)[0]).icon}{duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
+            }
+          </Space>,
+          rowExpandable: record => stopsAgg(record?.stops).total > 0,
+          expandIcon: ({ expanded, onExpand, record }) =>
+            stopsAgg(record?.stops).total == 0 ? null : expanded ? (
+              <MinusCircleTwoTone style={{ fontSize: '150%' }} onClick={e => onExpand(record, e)} />
+            ) : (
+              <PlusCircleTwoTone style={{ fontSize: '150%' }} onClick={e => onExpand(record, e)} />
+            )
+        }}
+        loading={loading}
+        rowKey={record => JSON.stringify(record.starttime)}
+        size='small'
+        onChange={handleChange}
+        showSorterTooltip={false}
+        summary=
+        {() => {
+          return (
+            <Table.Summary fixed>
+              <Table.Summary.Row>
+                <Table.Summary.Cell index={0}><b>{period[0] && dayjs(period[0]).locale(i18n.language).format('MMMM YYYY')}</b>
+                  <br />{total && total[0] && duration2text(dayjs.duration(total[0]['workdur']))}</Table.Summary.Cell>
+                <Table.Summary.Cell index={1}>
+                  {total && total[0] && total[0]['picks']}
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={2}>
+                  {total && total[0] && total[0]['meters'] && Number(total[0]['meters']).toFixed(2) + " " + t('tags.clothMeters.eng')}
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={3}>
+                  {total && total[0] && total[0]['rpm'] && Number(total[0]['rpm']).toFixed(1) + " " + t('tags.speedMainDrive.eng')}
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={4}>
+                  {total && total[0] && total[0]['mph'] && Number(total[0]['mph']).toFixed(2) + " " + t('tags.speedCloth.eng')}
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={5}>
+                  <b>{total && total[0] && total[0]['efficiency'] && Number(total[0]['efficiency']).toFixed(2) + " %"}</b>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={6}>
+                  <Badge
+                    count={total && total[0] && total[0]['starts']} overflowCount={999}
+                    style={{ backgroundColor: '#52c41a' }}
+                  /> {total && total[0] && duration2text(dayjs.duration(total[0]['runtime'] ? total[0]['runtime'] : 0))}
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={7} colSpan={2}>
+                  <Badge
+                    count={total && total[0] && stopsAgg(total[0]['stops']).total} overflowCount={999}
+                    style={{ backgroundColor: '#1890ff' }}
+                  /> {total && total[0] && duration2text(stopsAgg(total[0]['stops']).dur)}
+                </Table.Summary.Cell>
+              </Table.Summary.Row>
+              <Table.Summary.Row>
+                <Table.Summary.Cell index={0} colSpan={24}><Space direction="horizontal" style={{ width: '100%', justifyContent: 'space-evenly' }}>
+                  {total && total[0] && (total[0]['stops'] as []).map((stop: any) => (
+                    stop[Object.keys(stop)[0]]['total'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge
+                      count={stop[Object.keys(stop)[0]]['total']} overflowCount={999}
+                      style={{ backgroundColor: stopObj(Object.keys(stop)[0]).color, marginRight: '3px' }}
+                    />{stopObj(Object.keys(stop)[0]).icon}{duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
+                  }
+                </Space></Table.Summary.Cell>
+              </Table.Summary.Row>
+            </Table.Summary>
+          );
+        }}
+      />
+
     </div>
   )
 }

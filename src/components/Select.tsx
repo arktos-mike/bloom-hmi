@@ -20,6 +20,7 @@ const Component = (props: any) => {
         defaultValue={props.defaultValue}
         value={props.tag?.val ? props.tag?.val : props.value}
         options={props.options}
+        style={{ width: "100%", textAlign: "left" }}
         disabled
       />
     </div>);
@@ -31,6 +32,7 @@ const Component = (props: any) => {
         value={props.tag?.val ? props.tag?.val : props.value}
         onChange={props.onChange}
         options={props.options}
+        style={{ width: "100%", textAlign: "left" }}
         status={props.status}
       />
     </div>

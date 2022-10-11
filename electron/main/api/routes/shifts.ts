@@ -19,7 +19,7 @@ router.get('/currentshift', async (req, res) => {
 router.post('/getstatinfo', async (req, res) => {
   const { start, end } = req.body;
   const { rows } = await db.query(`SELECT * FROM getstatinfo($1,$2)`, [start, end]);
-  rows[0]['stops'].map((row: any) => {
+  rows[0] && rows[0]['stops'].map((row: any) => {
     row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
   });
   res.status(200).send(rows)
@@ -28,7 +28,7 @@ router.post('/getstatinfo', async (req, res) => {
 router.post('/getuserstatinfo', async (req, res) => {
   const { id, start, end } = req.body;
   const { rows } = await db.query(`SELECT * FROM getuserstatinfo($1,$2,$3)`, [id, start, end]);
-  rows[0]['stops'].map((row: any) => {
+  rows[0] && rows[0]['stops'].map((row: any) => {
     row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
   });
   res.status(200).send(rows)

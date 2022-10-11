@@ -222,7 +222,7 @@ const MonthReport: React.FC<Props> = ({
       <div>
         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}><h1 style={{ margin: 10 }}>{t('log.select')}</h1>
           <DatePicker style={{ flexGrow: 1 }} picker="month" format='MMMM YYYY' defaultValue={dayjs().month()} onChange={(e: any) => { setPeriod([e ? e?.startOf('month') : dayjs().startOf('month'), e ? e?.endOf('month') : dayjs()]) }} />
-          <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={confirm} ></Button>
+          {false && <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={confirm} ></Button>}
         </div>
         <Table
           columns={columns}
@@ -258,36 +258,36 @@ const MonthReport: React.FC<Props> = ({
                 <Table.Summary.Row>
                   <Table.Summary.Cell index={0}><b>{period[0] && dayjs(period[0]).locale(i18n.language).format('MMMM YYYY')}</b></Table.Summary.Cell>
                   <Table.Summary.Cell index={1}>
-                    {total && total[0]['picks']}
+                    {total && total[0] && total[0]['picks']}
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={2}>
-                    {total && total[0]['meters'] && Number(total[0]['meters']).toFixed(2) + " " + t('tags.clothMeters.eng')}
+                    {total && total[0] && total[0]['meters'] && Number(total[0]['meters']).toFixed(2) + " " + t('tags.clothMeters.eng')}
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={3}>
-                    {total && total[0]['rpm'] && Number(total[0]['rpm']).toFixed(1) + " " + t('tags.speedMainDrive.eng')}
+                    {total && total[0] && total[0]['rpm'] && Number(total[0]['rpm']).toFixed(1) + " " + t('tags.speedMainDrive.eng')}
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={4}>
-                    {total && total[0]['mph'] && Number(total[0]['mph']).toFixed(2) + " " + t('tags.speedCloth.eng')}
+                    {total && total[0] && total[0]['mph'] && Number(total[0]['mph']).toFixed(2) + " " + t('tags.speedCloth.eng')}
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={5}>
-                    <b>{total && total[0]['efficiency'] && Number(total[0]['efficiency']).toFixed(2) + " %"}</b>
+                    <b>{total && total[0] && total[0]['efficiency'] && Number(total[0]['efficiency']).toFixed(2) + " %"}</b>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={6}>
                     <Badge
-                      count={total && total[0]['starts']} overflowCount={999}
+                      count={total && total[0] && total[0]['starts']} overflowCount={999}
                       style={{ backgroundColor: '#52c41a' }}
-                    /> {total && duration2text(dayjs.duration(total[0]['runtime'] ? total[0]['runtime'] : 0))}
+                    /> {total && total[0] && duration2text(dayjs.duration(total[0]['runtime'] ? total[0]['runtime'] : 0))}
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={7} colSpan={2}>
                     <Badge
-                      count={total && stopsAgg(total[0]['stops']).total} overflowCount={999}
+                      count={total && total[0] && stopsAgg(total[0]['stops']).total} overflowCount={999}
                       style={{ backgroundColor: '#1890ff' }}
-                    /> {total && duration2text(stopsAgg(total[0]['stops']).dur)}
+                    /> {total && total[0] && duration2text(stopsAgg(total[0]['stops']).dur)}
                   </Table.Summary.Cell>
                 </Table.Summary.Row>
                 <Table.Summary.Row>
                   <Table.Summary.Cell index={0} colSpan={24}><Space direction="horizontal" style={{ width: '100%', justifyContent: 'space-evenly' }}>
-                    {total && (total[0]['stops'] as []).map((stop: any) => (
+                    {total && total[0] && (total[0]['stops'] as []).map((stop: any) => (
                       stop[Object.keys(stop)[0]]['total'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge
                         count={stop[Object.keys(stop)[0]]['total']} overflowCount={999}
                         style={{ backgroundColor: stopObj(Object.keys(stop)[0]).color, marginRight: '3px' }}

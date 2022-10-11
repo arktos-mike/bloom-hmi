@@ -19,6 +19,11 @@ router.get('/names', async (req, res) => {
   res.status(200).send(rows)
 })
 
+router.get('/weavers', async (req, res) => {
+  const { rows } = await db.query(`SELECT id, name FROM users WHERE role='weaver' ORDER BY name;`);
+  res.status(200).send(rows)
+})
+
 router.post('/register', async (req, res) => {
   const { id, name, email, phonenumber, password, role } = req.body;
   try {
