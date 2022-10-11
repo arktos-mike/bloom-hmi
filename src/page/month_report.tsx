@@ -11,16 +11,16 @@ import { Button, DatePicker, RangePicker } from '@/components';
 dayjs.extend(duration);
 
 interface DataType {
-  stime: any;
-  etime: any;
+  starttime: any;
+  endtime: any;
   picks: number;
-  clothmeters: number;
-  speedrpm: number;
-  speedmph: number;
-  loomefficiency: number;
-  startattempts: number;
-  runtimedur: any;
-  descrstops: any;
+  meters: number;
+  rpm: number;
+  mph: number;
+  efficiency: number;
+  starts: number;
+  runtime: any;
+  stops: any;
 }
 
 type Props = {
@@ -102,11 +102,11 @@ const MonthReport: React.FC<Props> = ({
   const columns: ColumnsType<DataType> = [
     {
       title: t('report.date'),
-      dataIndex: 'stime',
-      key: 'stime',
+      dataIndex: 'starttime',
+      key: 'starttime',
       ellipsis: true,
       width: '16%',
-      render: (_, record) => dayjs(record.stime).format('LL')
+      render: (_, record) => dayjs(record.starttime).format('LL')
     },
     {
       title: t('tags.picks.descr'),
@@ -120,56 +120,56 @@ const MonthReport: React.FC<Props> = ({
     },
     {
       title: t('tags.clothMeters.descr'),
-      dataIndex: 'clothmeters',
-      key: 'clothmeters',
+      dataIndex: 'meters',
+      key: 'meters',
       ellipsis: true,
       width: '8%',
-      render: (_, record) => record?.clothmeters && (Number(record?.clothmeters).toFixed(2) + " " + t('tags.clothMeters.eng'))
+      render: (_, record) => record?.meters && (Number(record?.meters).toFixed(2) + " " + t('tags.clothMeters.eng'))
     },
     {
       title: t('tags.speedMainDrive.descr'),
-      dataIndex: 'speedrpm',
-      key: 'speedrpm',
+      dataIndex: 'rpm',
+      key: 'rpm',
       ellipsis: true,
       width: '10%',
-      render: (_, record) => record?.speedrpm && (Number(record?.speedrpm).toFixed(1) + " " + t('tags.speedMainDrive.eng'))
+      render: (_, record) => record?.rpm && (Number(record?.rpm).toFixed(1) + " " + t('tags.speedMainDrive.eng'))
     },
     {
       title: t('tags.speedCloth.descr'),
-      dataIndex: 'speedmph',
-      key: 'speedmph',
+      dataIndex: 'mph',
+      key: 'mph',
       ellipsis: true,
       width: '8%',
-      render: (_, record) => record?.speedmph && (Number(record?.speedmph).toFixed(2) + " " + t('tags.speedCloth.eng'))
+      render: (_, record) => record?.mph && (Number(record?.mph).toFixed(2) + " " + t('tags.speedCloth.eng'))
     },
     {
       title: t('tags.efficiency.descr'),
-      dataIndex: 'loomefficiency',
-      key: 'loomefficiency',
+      dataIndex: 'efficiency',
+      key: 'efficiency',
       ellipsis: true,
       width: '10%',
-      render: (_, record) => <b>{record?.loomefficiency && (Number(record?.loomefficiency).toFixed(2) + " %")}</b>
+      render: (_, record) => <b>{record?.efficiency && (Number(record?.efficiency).toFixed(2) + " %")}</b>
     },
     {
       title: t('report.starts'),
-      dataIndex: 'startattempts',
-      key: 'startattempts',
+      dataIndex: 'starts',
+      key: 'starts',
       ellipsis: true,
       render: (_, record) => <div><Badge
-        count={record.startattempts} overflowCount={999}
+        count={record.starts} overflowCount={999}
         style={{ backgroundColor: '#52c41a' }}
-      /> {record?.runtimedur && duration2text(dayjs.duration(record?.runtimedur))}</div>
+      /> {record?.runtime && duration2text(dayjs.duration(record?.runtime))}</div>
     },
     Table.EXPAND_COLUMN,
     {
       title: t('report.stops'),
-      dataIndex: 'descrstops',
-      key: 'descrstops',
+      dataIndex: 'stops',
+      key: 'stops',
       ellipsis: true,
       render: (_, record) => <div><Badge
-        count={stopsAgg(record?.descrstops).total} overflowCount={999}
+        count={stopsAgg(record?.stops).total} overflowCount={999}
         style={{ backgroundColor: '#1890ff' }}
-      /> {duration2text(stopsAgg(record?.descrstops).dur)}</div>
+      /> {duration2text(stopsAgg(record?.stops).dur)}</div>
     },
   ];
 
@@ -231,23 +231,23 @@ const MonthReport: React.FC<Props> = ({
           scroll={{ x: '100%', y: 330 }}
           expandable={{
             expandedRowRender: record => <Space direction="horizontal" style={{ width: '100%', justifyContent: 'space-evenly' }}>
-              {record?.descrstops.map((stop: any) => (
+              {record?.stops.map((stop: any) => (
                 stop[Object.keys(stop)[0]]['total'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge
                   count={stop[Object.keys(stop)[0]]['total']} overflowCount={999}
                   style={{ backgroundColor: stopObj(Object.keys(stop)[0]).color, marginRight: '3px' }}
                 />{stopObj(Object.keys(stop)[0]).icon}{duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
               }
             </Space>,
-            rowExpandable: record => stopsAgg(record?.descrstops).total > 0,
+            rowExpandable: record => stopsAgg(record?.stops).total > 0,
             expandIcon: ({ expanded, onExpand, record }) =>
-              stopsAgg(record?.descrstops).total == 0 ? null : expanded ? (
+              stopsAgg(record?.stops).total == 0 ? null : expanded ? (
                 <MinusCircleTwoTone style={{ fontSize: '150%' }} onClick={e => onExpand(record, e)} />
               ) : (
                 <PlusCircleTwoTone style={{ fontSize: '150%' }} onClick={e => onExpand(record, e)} />
               )
           }}
           loading={loading}
-          rowKey={record => JSON.stringify(record.stime)}
+          rowKey={record => JSON.stringify(record.starttime)}
           size='small'
           onChange={handleChange}
           showSorterTooltip={false}
@@ -258,7 +258,7 @@ const MonthReport: React.FC<Props> = ({
                 <Table.Summary.Row>
                   <Table.Summary.Cell index={0}><b>{period[0] && dayjs(period[0]).locale(i18n.language).format('MMMM YYYY')}</b></Table.Summary.Cell>
                   <Table.Summary.Cell index={1}>
-                    {total && total[0]['sumpicks']}
+                    {total && total[0]['picks']}
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={2}>
                     {total && total[0]['meters'] && Number(total[0]['meters']).toFixed(2) + " " + t('tags.clothMeters.eng')}

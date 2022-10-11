@@ -256,7 +256,7 @@ const UserReport: React.FC<Props> = ({
                 <Table.Summary.Row>
                   <Table.Summary.Cell index={0}><b>{period[0] && dayjs(period[0]).locale(i18n.language).format('MMMM YYYY')}</b></Table.Summary.Cell>
                   <Table.Summary.Cell index={1}>
-                    {total && total[0]['sumpicks']}
+                    {total && total[0]['picks']}
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={2}>
                     {total && total[0]['meters'] && Number(total[0]['meters']).toFixed(2) + " " + t('tags.clothMeters.eng')}
