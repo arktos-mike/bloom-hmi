@@ -200,6 +200,8 @@ const locale = {
     "gw": "Gateway"
   },
   "panel": {
+    "loom": "by loom",
+    "weavers": "by weavers",
     "com": "COM Port settings",
     "rtu": "ModbusRTU settings",
     "tcp": "ModbusTCP settings",

@@ -1,6 +1,6 @@
-import { Modal, notification, Table, Badge, Space } from 'antd';
+import { Modal, notification, Table, Badge, Space, Tabs } from 'antd';
 import type { ColumnsType, TablePaginationConfig, TableProps } from 'antd/es/table';
-import { MinusCircleTwoTone, PlusCircleTwoTone, ToolOutlined, QuestionCircleOutlined, SyncOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
+import { ReconciliationOutlined, TeamOutlined, MinusCircleTwoTone, PlusCircleTwoTone, ToolOutlined, QuestionCircleOutlined, SyncOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "../components/Icons"
 import { FilterValue, SorterResult } from 'antd/es/table/interface';
 import React, { useEffect, useState } from 'react'
@@ -23,6 +23,19 @@ interface DataType {
   stops: any;
 }
 
+interface UserDataType {
+  userid: any;
+  workdur: any;
+  picks: number;
+  meters: number;
+  rpm: number;
+  mph: number;
+  efficiency: number;
+  starts: number;
+  runtime: any;
+  stops: any;
+}
+
 type Props = {
   token: any;
 };
@@ -35,6 +48,8 @@ const MonthReport: React.FC<Props> = ({
   const [data, setData] = useState();
   const [total, setTotal] = useState();
   const [period, setPeriod] = useState([dayjs().startOf('month'), dayjs()]);
+  const [users, setUsers] = useState([]);
+  const [userData, setUserData] = useState();
   const [loading, setLoading] = useState(false);
   const [filteredInfo, setFilteredInfo] = useState<Record<string, FilterValue | null>>({});
   const [sortedInfo, setSortedInfo] = useState<SorterResult<DataType>>({});
@@ -84,6 +99,11 @@ const MonthReport: React.FC<Props> = ({
     setSortedInfo(sorter as SorterResult<DataType>);
   };
 
+  const handleUserChange: TableProps<UserDataType>['onChange'] = (pagination, filters, sorter, currentDataSource) => {
+    setFilteredInfo(filters);
+    setSortedInfo(sorter as SorterResult<DataType>);
+  };
+
   const confirm = () => {
     Modal.confirm({
       title: t('confirm.title'),
@@ -98,6 +118,79 @@ const MonthReport: React.FC<Props> = ({
     });
   };
 
+  const userColumns: ColumnsType<UserDataType> = [
+    {
+      title: t('user.weaver'),
+      dataIndex: 'userid',
+      key: 'userid',
+      ellipsis: true,
+      width: '16%',
+      render: (_, record) => <><b>{(users?.filter((item: any) => item.id == record.userid))[0]['name']}</b><br />{period[0] && dayjs(period[0]).locale(i18n.language).format('MMMM YYYY')}<br />{duration2text(dayjs.duration(record.workdur))}</>
+    },
+    {
+      title: t('tags.picks.descr'),
+      dataIndex: 'picks',
+      key: 'picks',
+      sorter: (a, b) => a.picks - b.picks,
+      sortOrder: sortedInfo.columnKey === 'picks' ? sortedInfo.order : null,
+      ellipsis: true,
+      width: '10%',
+      render: (_, record) => record.picks,
+    },
+    {
+      title: t('tags.clothMeters.descr'),
+      dataIndex: 'meters',
+      key: 'meters',
+      ellipsis: true,
+      width: '8%',
+      render: (_, record) => record?.meters && (Number(record?.meters).toFixed(2) + " " + t('tags.clothMeters.eng'))
+    },
+    {
+      title: t('tags.speedMainDrive.descr'),
+      dataIndex: 'rpm',
+      key: 'rpm',
+      ellipsis: true,
+      width: '10%',
+      render: (_, record) => record?.rpm && (Number(record?.rpm).toFixed(1) + " " + t('tags.speedMainDrive.eng'))
+    },
+    {
+      title: t('tags.speedCloth.descr'),
+      dataIndex: 'mph',
+      key: 'mph',
+      ellipsis: true,
+      width: '8%',
+      render: (_, record) => record?.mph && (Number(record?.mph).toFixed(2) + " " + t('tags.speedCloth.eng'))
+    },
+    {
+      title: t('tags.efficiency.descr'),
+      dataIndex: 'efficiency',
+      key: 'efficiency',
+      ellipsis: true,
+      width: '10%',
+      render: (_, record) => <b>{record?.efficiency && (Number(record?.efficiency).toFixed(2) + " %")}</b>
+    },
+    {
+      title: t('report.starts'),
+      dataIndex: 'starts',
+      key: 'starts',
+      ellipsis: true,
+      render: (_, record) => <div><Badge
+        count={record.starts} overflowCount={999}
+        style={{ backgroundColor: '#52c41a' }}
+      /> {record?.runtime && duration2text(dayjs.duration(record?.runtime))}</div>
+    },
+    Table.EXPAND_COLUMN,
+    {
+      title: t('report.stops'),
+      dataIndex: 'stops',
+      key: 'stops',
+      ellipsis: true,
+      render: (_, record) => <div><Badge
+        count={stopsAgg(record?.stops).total} overflowCount={999}
+        style={{ backgroundColor: '#1890ff' }}
+      /> {duration2text(stopsAgg(record?.stops).dur)}</div>
+    },
+  ];
 
   const columns: ColumnsType<DataType> = [
     {
@@ -190,6 +283,16 @@ const MonthReport: React.FC<Props> = ({
     catch (error) { console.log(error); }
   };
 
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/users/weavers');
+      if (!response.ok) { throw Error(response.statusText); }
+      const json = await response.json();
+      setUsers(json);
+    }
+    catch (error) { console.log(error); }
+  };
+
   const fetchData = async () => {
     try {
       if (period[0] && period[1]) {
@@ -208,27 +311,43 @@ const MonthReport: React.FC<Props> = ({
     catch (error) { console.log(error); }
   };
 
+  const fetchUserData = async () => {
+    try {
+      if (period[0] && period[1]) {
+        setLoading(true);
+        const response = await fetch('http://localhost:3000/reports/usersreport', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json;charset=UTF-8', },
+          body: JSON.stringify({ start: period ? period[0] : dayjs().startOf('month'), end: period ? period[1] : dayjs() }),
+        });
+        if (!response.ok) { throw Error(response.statusText); }
+        const json = await response.json();
+        setUserData(json);
+        setLoading(false);
+      }
+    }
+    catch (error) { console.log(error); }
+  };
+
   useEffect(() => {
-    dayjs.locale(i18n.language)
+    dayjs.locale(i18n.language);
+    fetchUsers();
   }, []);
 
   useEffect(() => {
     fetchStatInfo();
     fetchData();
+    fetchUserData();
   }, [period]);
 
-  return (
-    <div>
-      <div>
-        <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}><h1 style={{ margin: 10 }}>{t('log.select')}</h1>
-          <DatePicker style={{ flexGrow: 1 }} picker="month" format='MMMM YYYY' defaultValue={dayjs().month()} onChange={(e: any) => { setPeriod([e ? e?.startOf('month') : dayjs().startOf('month'), e ? e?.endOf('month') : dayjs()]) }} />
-          {false && <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={confirm} ></Button>}
-        </div>
+  const items = [
+    {
+      label: <><ReconciliationOutlined />{t('panel.loom')}</>, key: 'loom', children:
         <Table
           columns={columns}
           dataSource={data}
           pagination={false}
-          scroll={{ x: '100%', y: 330 }}
+          scroll={{ x: '100%', y: 282 }}
           expandable={{
             expandedRowRender: record => <Space direction="horizontal" style={{ width: '100%', justifyContent: 'space-evenly' }}>
               {record?.stops.map((stop: any) => (
@@ -299,6 +418,47 @@ const MonthReport: React.FC<Props> = ({
             );
           }}
         />
+    }, // remember to pass the key prop
+    {
+      label: <><TeamOutlined />{t('panel.weavers')}</>, key: 'weavers', children:
+        <Table
+          columns={userColumns}
+          dataSource={userData}
+          pagination={false}
+          scroll={{ x: '100%', y: 282 }}
+          expandable={{
+            expandedRowRender: record => <Space direction="horizontal" style={{ width: '100%', justifyContent: 'space-evenly' }}>
+              {record?.stops.map((stop: any) => (
+                stop[Object.keys(stop)[0]]['total'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge
+                  count={stop[Object.keys(stop)[0]]['total']} overflowCount={999}
+                  style={{ backgroundColor: stopObj(Object.keys(stop)[0]).color, marginRight: '3px' }}
+                />{stopObj(Object.keys(stop)[0]).icon}{duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
+              }
+            </Space>,
+            rowExpandable: record => stopsAgg(record?.stops).total > 0,
+            expandIcon: ({ expanded, onExpand, record }) =>
+              stopsAgg(record?.stops).total == 0 ? null : expanded ? (
+                <MinusCircleTwoTone style={{ fontSize: '150%' }} onClick={e => onExpand(record, e)} />
+              ) : (
+                <PlusCircleTwoTone style={{ fontSize: '150%' }} onClick={e => onExpand(record, e)} />
+              )
+          }}
+          loading={loading}
+          rowKey={record => JSON.stringify(record.userid)}
+          size='small'
+          onChange={handleUserChange}
+          showSorterTooltip={false}
+        />
+    },
+  ];
+  return (
+    <div>
+      <div>
+        <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}><h1 style={{ margin: 10 }}>{t('log.select')}</h1>
+          <DatePicker style={{ flexGrow: 1 }} picker="month" format='MMMM YYYY' defaultValue={dayjs()} onChange={(e: any) => { setPeriod([e ? e?.startOf('month') : dayjs().startOf('month'), e ? e?.endOf('month') : dayjs()]) }} />
+          {false && <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={confirm} ></Button>}
+        </div>
+        <Tabs size='small' type='card' animated={{ inkBar: true, tabPane: true }} items={items} />
       </div>
     </div>
   )

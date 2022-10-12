@@ -825,5 +825,43 @@ end;
 
 $function$
 ;
+create or replace
+function usersreport( starttime timestamp with time zone,
+endtime timestamp with time zone)
+ returns table(userid integer,
+workdur interval,
+picks numeric,
+meters numeric,
+rpm numeric,
+mph numeric,
+efficiency numeric,
+starts numeric,
+runtime interval,
+stops jsonb)
+ language plpgsql
+as $function$
+begin
+return QUERY (
+with t(userid) as (
+select
+	id as userid
+from
+	users
+where
+	role = 'weaver'
+order by
+	name
+)
+select
+	*
+from
+	t,
+	public.getuserstatinfo(t.userid,
+	starttime,
+	endtime));
+end;
+
+$function$
+;
 `
 export default createTableText

@@ -24,6 +24,8 @@ export default defineConfig({
           '@border-radius-base': '10px',
           '@border-width-base': '2px',
           '@border-radius-sm': '3px',
+          '@tabs-title-font-size-sm':' @font-size-lg',
+          '@tabs-bar-margin': '0 0 @margin-xs 0',
           '@disabled-bg': '@white',
           '@disabled-active-bg': '@white',
           '@segmented-bg': 'fade(@black, 15%)',

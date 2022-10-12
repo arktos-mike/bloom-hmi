@@ -200,6 +200,8 @@ const locale = {
     "gw": "Шлюз"
   },
   "panel": {
+    "loom": "по станку",
+    "weavers": "по ткачам",
     "com": "Настройки COM-порта",
     "rtu": "Настройки ModbusRTU",
     "tcp": "Настройки ModbusTCP",

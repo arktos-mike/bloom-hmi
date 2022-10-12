@@ -130,7 +130,7 @@ const UserLogin: React.FC<Props> = ({
       cancelButtonProps={{ size: 'large' }}
       onOk={handleOk}
       onCancel={handleCancel}
-      visible={isModalVisible}
+      open={isModalVisible}
       destroyOnClose={true}
       //centered={true}
       afterClose={() => { setShowList(false) }}

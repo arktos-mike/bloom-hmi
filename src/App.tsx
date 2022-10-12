@@ -437,7 +437,7 @@ const App: React.FC = () => {
                 <Drawer
                   placement="left"
                   closable={false}
-                  visible={visible}
+                  open={visible}
                   getContainer={false}
                   style={{ position: 'absolute', }}
                   bodyStyle={{ margin: "0px", padding: "0px" }}
@@ -462,7 +462,7 @@ const App: React.FC = () => {
                   mask={true}
                   maskStyle={{ backgroundColor: "inherit", opacity: 0 }}
                   maskClosable={true}
-                  visible={activeInput.showKeyboard}
+                  open={activeInput.showKeyboard}
                   onClose={() => { setActiveInput({ ...activeInput, showKeyboard: false }); setBufferKeyboard(activeInput.input) }}
                   closeIcon={<CloseOutlined style={{ color: '#1890ff', fontSize: '150%' }} />}
                   headerStyle={{ padding: 0 }}

@@ -200,6 +200,8 @@ const locale = {
     "gw": "Ağ geçidi"
   },
   "panel": {
+    "loom": "tezgah tarafından",
+    "weavers": "dokumacılar tarafından",
     "com": "COM Bağlantı Noktası ayarları",
     "rtu": "ModbusRTU ayarları",
     "tcp": "ModbusTCP ayarları",
