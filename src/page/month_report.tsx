@@ -418,7 +418,7 @@ const MonthReport: React.FC<Props> = ({
             );
           }}
         />
-    }, // remember to pass the key prop
+    },
     {
       label: <><TeamOutlined />{t('panel.weavers')}</>, key: 'weavers', children:
         <Table

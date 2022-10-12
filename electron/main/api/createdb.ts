@@ -299,7 +299,7 @@ from
 	lateral (
 	select
 		case
-			when upper_inf(timestamp) then
+			when upper_inf(timestamp) and current_timestamp>lower(timestamp) then
             tstzrange(lower(timestamp),
 			current_timestamp,
 			'[)')
@@ -321,7 +321,7 @@ when (timestamp @> tstzrange(starttime, endtime, '[)'))
 then round(ppicks)
 when not (timestamp &< tstzrange(starttime, endtime, '[)'))
 then
-case when upper_inf(timestamp) then
+case when upper_inf(timestamp) and current_timestamp>lower(timestamp) then
 cpicks
 else
 floor(ppicks)
@@ -346,7 +346,7 @@ from
 		lateral (
 	select
 		case
-			when upper_inf(timestamp) then
+			when upper_inf(timestamp) and current_timestamp>lower(timestamp) then
             tstzrange(lower(timestamp),
 			current_timestamp,
 			'[)')
@@ -391,7 +391,7 @@ from
 		lateral (
 		select
 			case
-				when upper_inf(timestamp) then
+				when upper_inf(timestamp) and current_timestamp>lower(timestamp) then
               tstzrange(lower(timestamp),
 				current_timestamp,
 				'[)')
@@ -482,7 +482,7 @@ from
 			lateral (
 			select
 				case
-					when upper_inf(timestamp) then
+					when upper_inf(timestamp) and current_timestamp>lower(timestamp) then
                     tstzrange(lower(timestamp),
 					current_timestamp,
 					'[)')
@@ -564,7 +564,7 @@ from
 	lateral (
 	select
 			case
-				when upper_inf(timestamp) then
+				when upper_inf(timestamp) and current_timestamp>lower(timestamp) then
               tstzrange(lower(timestamp),
 				current_timestamp,
 				'[)')
@@ -622,7 +622,7 @@ from
 		lateral (
 		select
 			case
-				when upper_inf(timestamp) then
+				when upper_inf(timestamp) and current_timestamp>lower(timestamp) then
               tstzrange(lower(timestamp),
 				current_timestamp,
 				'[)')
@@ -727,7 +727,7 @@ from
 			lateral (
 			select
 				case
-					when upper_inf(timestamp) then
+					when upper_inf(timestamp) and current_timestamp>lower(timestamp) then
                     tstzrange(lower(timestamp),
 					current_timestamp,
 					'[)')
