@@ -1,6 +1,6 @@
 import { Modal, notification, Table, Badge, Space, Tabs } from 'antd';
-import type { ColumnsType, TablePaginationConfig, TableProps } from 'antd/es/table';
-import { ReconciliationOutlined, TeamOutlined, MinusCircleTwoTone, PlusCircleTwoTone, ToolOutlined, QuestionCircleOutlined, SyncOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
+import type { ColumnsType, TableProps } from 'antd/es/table';
+import { ScheduleOutlined, ReconciliationOutlined, TeamOutlined, MinusCircleTwoTone, PlusCircleTwoTone, ToolOutlined, QuestionCircleOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "../components/Icons"
 import { FilterValue, SorterResult } from 'antd/es/table/interface';
 import React, { useEffect, useState } from 'react'
@@ -36,6 +36,20 @@ interface UserDataType {
   stops: any;
 }
 
+interface ShiftDataType {
+  shiftname: any;
+  starttime: any;
+  endtime: any;
+  picks: number;
+  meters: number;
+  rpm: number;
+  mph: number;
+  efficiency: number;
+  starts: number;
+  runtime: any;
+  stops: any;
+}
+
 type Props = {
   token: any;
 };
@@ -50,6 +64,7 @@ const MonthReport: React.FC<Props> = ({
   const [period, setPeriod] = useState([dayjs().startOf('month'), dayjs()]);
   const [users, setUsers] = useState([]);
   const [userData, setUserData] = useState();
+  const [shiftData, setShiftData] = useState();
   const [loading, setLoading] = useState(false);
   const [filteredInfo, setFilteredInfo] = useState<Record<string, FilterValue | null>>({});
   const [sortedInfo, setSortedInfo] = useState<SorterResult<DataType>>({});
@@ -104,6 +119,11 @@ const MonthReport: React.FC<Props> = ({
     setSortedInfo(sorter as SorterResult<DataType>);
   };
 
+  const handleShiftChange: TableProps<ShiftDataType>['onChange'] = (pagination, filters, sorter, currentDataSource) => {
+    setFilteredInfo(filters);
+    setSortedInfo(sorter as SorterResult<DataType>);
+  };
+
   const confirm = () => {
     Modal.confirm({
       title: t('confirm.title'),
@@ -117,6 +137,82 @@ const MonthReport: React.FC<Props> = ({
       onOk: () => { },
     });
   };
+
+  const shiftColumns: ColumnsType<ShiftDataType> = [
+    {
+      title: t('shift.shift'),
+      dataIndex: 'shiftname',
+      key: 'shiftname',
+      ellipsis: true,
+      width: '16%',
+      render: (_, record) => <><b>{t('shift.shift') + ' ' + record.shiftname}</b><br />{dayjs(record.starttime).format('L LTS')}<br />{dayjs(record.endtime).format('L LTS')}</>
+    },
+    {
+      title: t('tags.picks.descr'),
+      dataIndex: 'picks',
+      key: 'picks',
+      sorter: (a, b) => a.picks - b.picks,
+      sortOrder: sortedInfo.columnKey === 'picks' ? sortedInfo.order : null,
+      ellipsis: true,
+      width: '10%',
+      render: (_, record) => record.picks,
+    },
+    {
+      title: t('tags.clothMeters.descr'),
+      dataIndex: 'meters',
+      key: 'meters',
+      ellipsis: true,
+      width: '8%',
+      render: (_, record) => record?.meters && (Number(record?.meters).toFixed(2) + " " + t('tags.clothMeters.eng'))
+    },
+    {
+      title: t('tags.speedMainDrive.descr'),
+      dataIndex: 'rpm',
+      key: 'rpm',
+      ellipsis: true,
+      width: '10%',
+      render: (_, record) => record?.rpm && (Number(record?.rpm).toFixed(1) + " " + t('tags.speedMainDrive.eng'))
+    },
+    {
+      title: t('tags.speedCloth.descr'),
+      dataIndex: 'mph',
+      key: 'mph',
+      ellipsis: true,
+      width: '8%',
+      render: (_, record) => record?.mph && (Number(record?.mph).toFixed(2) + " " + t('tags.speedCloth.eng'))
+    },
+    {
+      title: t('tags.efficiency.descr'),
+      dataIndex: 'efficiency',
+      key: 'efficiency',
+      sorter: (a, b) => Number(a.efficiency) - Number(b.efficiency),
+      sortOrder: sortedInfo.columnKey === 'efficiency' ? sortedInfo.order : null,
+      ellipsis: true,
+      width: '10%',
+      render: (_, record) => <b>{record?.efficiency && (Number(record?.efficiency).toFixed(2) + " %")}</b>
+    },
+    {
+      title: t('report.starts'),
+      dataIndex: 'starts',
+      key: 'starts',
+      ellipsis: true,
+      render: (_, record) => <div><Badge
+        count={record.starts} overflowCount={999}
+        style={{ backgroundColor: '#52c41a' }}
+      /> {record?.runtime && duration2text(dayjs.duration(record?.runtime))}</div>
+    },
+    Table.EXPAND_COLUMN,
+    {
+      title: t('report.stops'),
+      dataIndex: 'stops',
+      key: 'stops',
+      ellipsis: true,
+      render: (_, record) => <div><Badge
+        count={stopsAgg(record?.stops).total} overflowCount={999}
+        style={{ backgroundColor: '#1890ff' }}
+      /> {duration2text(stopsAgg(record?.stops).dur)}</div>
+    },
+  ];
 
   const userColumns: ColumnsType<UserDataType> = [
     {
@@ -165,6 +261,8 @@ const MonthReport: React.FC<Props> = ({
       title: t('tags.efficiency.descr'),
       dataIndex: 'efficiency',
       key: 'efficiency',
+      sorter: (a, b) => Number(a.efficiency) - Number(b.efficiency),
+      sortOrder: sortedInfo.columnKey === 'efficiency' ? sortedInfo.order : null,
       ellipsis: true,
       width: '10%',
       render: (_, record) => <b>{record?.efficiency && (Number(record?.efficiency).toFixed(2) + " %")}</b>
@@ -239,6 +337,8 @@ const MonthReport: React.FC<Props> = ({
       title: t('tags.efficiency.descr'),
       dataIndex: 'efficiency',
       key: 'efficiency',
+      sorter: (a, b) => Number(a.efficiency) - Number(b.efficiency),
+      sortOrder: sortedInfo.columnKey === 'efficiency' ? sortedInfo.order : null,
       ellipsis: true,
       width: '10%',
       render: (_, record) => <b>{record?.efficiency && (Number(record?.efficiency).toFixed(2) + " %")}</b>
@@ -329,6 +429,24 @@ const MonthReport: React.FC<Props> = ({
     catch (error) { console.log(error); }
   };
 
+  const fetchShiftData = async () => {
+    try {
+      if (period[0] && period[1]) {
+        setLoading(true);
+        const response = await fetch('http://localhost:3000/reports/shiftsreport', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json;charset=UTF-8', },
+          body: JSON.stringify({ start: period ? period[0] : dayjs().startOf('month'), end: period ? period[1] : dayjs() }),
+        });
+        if (!response.ok) { throw Error(response.statusText); }
+        const json = await response.json();
+        setShiftData(json);
+        setLoading(false);
+      }
+    }
+    catch (error) { console.log(error); }
+  };
+
   useEffect(() => {
     dayjs.locale(i18n.language);
     fetchUsers();
@@ -338,6 +456,7 @@ const MonthReport: React.FC<Props> = ({
     fetchStatInfo();
     fetchData();
     fetchUserData();
+    fetchShiftData();
   }, [period]);
 
   const items = [
@@ -425,7 +544,7 @@ const MonthReport: React.FC<Props> = ({
           columns={userColumns}
           dataSource={userData}
           pagination={false}
-          scroll={{ x: '100%', y: 282 }}
+          scroll={{ x: '100%', y: 365 }}
           expandable={{
             expandedRowRender: record => <Space direction="horizontal" style={{ width: '100%', justifyContent: 'space-evenly' }}>
               {record?.stops.map((stop: any) => (
@@ -447,6 +566,37 @@ const MonthReport: React.FC<Props> = ({
           rowKey={record => JSON.stringify(record.userid)}
           size='small'
           onChange={handleUserChange}
+          showSorterTooltip={false}
+        />
+    },
+    {
+      label: <><ScheduleOutlined />{t('panel.shifts')}</>, key: 'shifts', children:
+        <Table
+          columns={shiftColumns}
+          dataSource={shiftData}
+          pagination={false}
+          scroll={{ x: '100%', y: 365 }}
+          expandable={{
+            expandedRowRender: record => <Space direction="horizontal" style={{ width: '100%', justifyContent: 'space-evenly' }}>
+              {record?.stops.map((stop: any) => (
+                stop[Object.keys(stop)[0]]['total'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge
+                  count={stop[Object.keys(stop)[0]]['total']} overflowCount={999}
+                  style={{ backgroundColor: stopObj(Object.keys(stop)[0]).color, marginRight: '3px' }}
+                />{stopObj(Object.keys(stop)[0]).icon}{duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
+              }
+            </Space>,
+            rowExpandable: record => stopsAgg(record?.stops).total > 0,
+            expandIcon: ({ expanded, onExpand, record }) =>
+              stopsAgg(record?.stops).total == 0 ? null : expanded ? (
+                <MinusCircleTwoTone style={{ fontSize: '150%' }} onClick={e => onExpand(record, e)} />
+              ) : (
+                <PlusCircleTwoTone style={{ fontSize: '150%' }} onClick={e => onExpand(record, e)} />
+              )
+          }}
+          loading={loading}
+          rowKey={record => JSON.stringify(record.starttime)}
+          size='small'
+          onChange={handleShiftChange}
           showSorterTooltip={false}
         />
     },

@@ -21,19 +21,19 @@ const locale = {
   },
   "shift": {
     "shift": "Shift",
-    "days" : "d",
-    "hours" : "h",
-    "mins" : "m",
-    "secs" : "s",
-    "starttime" : "Beginning",
-    "duration" : "Duration",
-    "monday" : "Mon",
-    "tuesday" : "Tue",
-    "wednesday" : "Wed",
-    "thursday" : "Thu",
-    "friday" : "Fri",
-    "saturday" : "Sat",
-    "sunday" : "Sun"
+    "days": "d",
+    "hours": "h",
+    "mins": "m",
+    "secs": "s",
+    "starttime": "Beginning",
+    "duration": "Duration",
+    "monday": "Mon",
+    "tuesday": "Tue",
+    "wednesday": "Wed",
+    "thursday": "Thu",
+    "friday": "Fri",
+    "saturday": "Sat",
+    "sunday": "Sun"
   },
   "tags": {
     "picks": {
@@ -202,6 +202,7 @@ const locale = {
   "panel": {
     "loom": "by loom",
     "weavers": "by weavers",
+    "shifts": "by shifts",
     "com": "COM Port settings",
     "rtu": "ModbusRTU settings",
     "tcp": "ModbusTCP settings",

@@ -202,6 +202,7 @@ const locale = {
   "panel": {
     "loom": "tezgah tarafından",
     "weavers": "dokumacılar tarafından",
+    "shifts": "vardiyalara göre",
     "com": "COM Bağlantı Noktası ayarları",
     "rtu": "ModbusRTU ayarları",
     "tcp": "ModbusTCP ayarları",

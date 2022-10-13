@@ -21,19 +21,19 @@ const locale = {
   },
   "shift": {
     "shift": "Смена",
-    "days" : "д",
-    "hours" : "ч",
-    "mins" : "м",
-    "secs" : "c",
-    "starttime" : "Начало",
-    "duration" : "Продолжительность",
-    "monday" : "Пн",
-    "tuesday" : "Вт",
-    "wednesday" : "Ср",
-    "thursday" : "Чт",
-    "friday" : "Пт",
-    "saturday" : "Сб",
-    "sunday" : "Вс"
+    "days": "д",
+    "hours": "ч",
+    "mins": "м",
+    "secs": "c",
+    "starttime": "Начало",
+    "duration": "Продолжительность",
+    "monday": "Пн",
+    "tuesday": "Вт",
+    "wednesday": "Ср",
+    "thursday": "Чт",
+    "friday": "Пт",
+    "saturday": "Сб",
+    "sunday": "Вс"
   },
   "tags": {
     "picks": {
@@ -202,6 +202,7 @@ const locale = {
   "panel": {
     "loom": "по станку",
     "weavers": "по ткачам",
+    "shifts": "по сменам",
     "com": "Настройки COM-порта",
     "rtu": "Настройки ModbusRTU",
     "tcp": "Настройки ModbusTCP",

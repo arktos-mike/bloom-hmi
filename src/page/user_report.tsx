@@ -150,6 +150,8 @@ const UserReport: React.FC<Props> = ({
       title: t('tags.efficiency.descr'),
       dataIndex: 'efficiency',
       key: 'efficiency',
+      sorter: (a, b) => Number(a.efficiency) - Number(b.efficiency),
+      sortOrder: sortedInfo.columnKey === 'efficiency' ? sortedInfo.order : null,
       ellipsis: true,
       width: '10%',
       render: (_, record) => <b>{record?.efficiency && (Number(record?.efficiency).toFixed(2) + " %")}</b>

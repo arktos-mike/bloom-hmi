@@ -863,5 +863,85 @@ end;
 
 $function$
 ;
+create or replace
+function shiftsreport(stime timestamp with time zone,
+etime timestamp with time zone)
+ returns table(shiftname text,
+starttime timestamp with time zone,
+endtime timestamp with time zone,
+picks numeric,
+meters numeric,
+rpm numeric,
+mph numeric,
+efficiency numeric,
+starts numeric,
+runtime interval,
+stops jsonb)
+ language plpgsql
+as $function$
+begin
+return QUERY (
+with shifts as (
+with dates as (
+select
+	date as st,
+	date + interval '24 hours' as et
+from
+	generate_series(
+        stime,
+        etime,
+        '1 day'
+    ) date
+)
+select
+	shiftconfig.shiftname,
+	(dates.st::date + shiftconfig.starttime) as start ,
+	((dates.st::date + shiftconfig.starttime) + shiftconfig.duration ) as
+end
+from
+dates,
+shiftconfig,
+lateral (
+select
+	extract(ISODOW
+from
+	st) as dow ) dow
+where
+(monday
+	and dow = 1)
+or (tuesday
+	and dow = 2)
+or(wednesday
+	and dow = 3)
+or(thursday
+	and dow = 4)
+or(friday
+	and dow = 5)
+or(saturday
+	and dow = 6)
+or(sunday
+	and dow = 7)
+  )
+select
+	shifts.shiftname,
+	shifts.start,
+	shifts.end,
+	data.picks,
+	data.meters,
+	data.rpm,
+	data.mph,
+	data.efficiency,
+	data.starts,
+	data.runtime,
+	data.stops
+from
+	shifts,
+	getstatinfo(shifts.start,
+	shifts.end) as data
+);
+end;
+
+$function$
+;
 `
 export default createTableText

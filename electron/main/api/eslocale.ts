@@ -202,6 +202,7 @@ const locale = {
   "panel": {
     "loom": "por telar",
     "weavers": "por tejedores",
+    "shifts": "por turnos",
     "com": "Configuración del puerto COM",
     "rtu": "Configuración ModbusRTU",
     "tcp": "Configuración de ModbusTCP",
