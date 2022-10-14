@@ -66,6 +66,7 @@ const Overview: React.FC<Props> = ({
     }
     else { return '' };
   }
+
   useEffect(() => {
     fetchTags()
     return () => { isSubscribed = false }
@@ -77,7 +78,7 @@ const Overview: React.FC<Props> = ({
 
   return (
     <div ref={div} className='wrapper'>
-      <Carousel dotPosition ='top' dots={{className: 'dotsClass'}}>
+      <Carousel dotPosition='top'>
         <div>
           <div style={contentStyle}>
             <div className='wrapper'>
