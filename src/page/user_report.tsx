@@ -3,7 +3,7 @@ import type { ColumnsType, TablePaginationConfig, TableProps } from 'antd/es/tab
 import { MinusCircleTwoTone, PlusCircleTwoTone, ToolOutlined, QuestionCircleOutlined, SyncOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "../components/Icons"
 import { FilterValue, SorterResult } from 'antd/es/table/interface';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
@@ -42,6 +42,8 @@ const UserReport: React.FC<Props> = ({
   const [loading, setLoading] = useState(false);
   const [filteredInfo, setFilteredInfo] = useState<Record<string, FilterValue | null>>({});
   const [sortedInfo, setSortedInfo] = useState<SorterResult<DataType>>({});
+  const [height, setHeight] = useState<number | undefined>(0)
+  const div = useRef<HTMLDivElement | null>(null);
 
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
     if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
@@ -225,6 +227,7 @@ const UserReport: React.FC<Props> = ({
   };
 
   useEffect(() => {
+    setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
     dayjs.locale(i18n.language)
   }, []);
 
@@ -242,7 +245,7 @@ const UserReport: React.FC<Props> = ({
   }, [period, user]);
 
   return (
-    <div>
+    <div ref={div} className='wrapper'>
       <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
         <h1 style={{ margin: 10 }}>{t('user.weaver')}</h1>
         <Select style={{ width: '100%' }} userRights={['admin', 'manager']} token={token}
@@ -261,7 +264,7 @@ const UserReport: React.FC<Props> = ({
         columns={columns}
         dataSource={data}
         pagination={false}
-        scroll={{ x: '100%', y: 310 }}
+        scroll={{ x: '100%', y: height ? height - 175 : 0 }}
         expandable={{
           expandedRowRender: record => <Space direction="horizontal" style={{ width: '100%', justifyContent: 'space-evenly' }}>
             {record?.stops.map((stop: any) => (

@@ -2,7 +2,7 @@ import { Button, Modal, notification, Space, Table, Tag } from 'antd';
 import type { ColumnsType, TablePaginationConfig, TableProps } from 'antd/es/table';
 import { PlusOutlined, ExclamationCircleOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { FilterValue, SorterResult } from 'antd/es/table/interface';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import UserEditSA from "../dialog/UserEditSA";
 import UserRegister from "../dialog/UserRegister";
@@ -26,6 +26,8 @@ const Users: React.FC<Props> = ({
   token
 }
 ) => {
+  const [height, setHeight] = useState<number | undefined>(0)
+  const div = useRef<HTMLDivElement | null>(null);
   const { t } = useTranslation();
   const [user, setUser] = useState({})
   const [editVisible, setEditVisible] = useState(false)
@@ -33,7 +35,7 @@ const Users: React.FC<Props> = ({
   const [data, setData] = useState();
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<TablePaginationConfig>({
-    defaultPageSize: 6, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default'
+    hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default'
   });
   const [filteredInfo, setFilteredInfo] = useState<Record<string, FilterValue | null>>({});
   const [sortedInfo, setSortedInfo] = useState<SorterResult<DataType>>({});
@@ -156,10 +158,7 @@ const Users: React.FC<Props> = ({
       const response = await fetch('http://localhost:3000/users');
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
-      setPagination({
-        total: json.length,
-        defaultPageSize: 6, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default'
-      });
+      setPagination({ ...pagination, total: json.length });
       setData(json);
       setLoading(false);
 
@@ -172,8 +171,18 @@ const Users: React.FC<Props> = ({
     fetchData();
   }, [editVisible]);
 
+  useEffect(() => {
+    setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
+  }, [])
+
+  useEffect(() => {
+    if (typeof pagination.defaultPageSize == 'undefined') {
+      setPagination({ ...pagination, defaultPageSize: height ? Math.floor((height-100) / 70) : 6, pageSize: height ? Math.floor((height-100) / 70) : 6 })
+    }
+  }, [pagination])
+
   return (
-    <div>
+    <div ref={div} className='wrapper'>
       <div>
         <Table
           columns={columns}

@@ -1,7 +1,7 @@
 import { Button, Modal, notification, Space, Table } from 'antd';
 import type { ColumnsType, TablePaginationConfig, TableProps } from 'antd/es/table';
 import { PlusOutlined, UploadOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Checkbox, Input, Select, TimePicker } from '@/components';
 import dayjs from 'dayjs';
@@ -36,11 +36,13 @@ const Shifts: React.FC<Props> = ({
   setUpdated
 }
 ) => {
+  const [height, setHeight] = useState<number | undefined>(0)
+  const div = useRef<HTMLDivElement | null>(null);
   const { t } = useTranslation();
   const [data, setData] = useState<DataType[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<TablePaginationConfig>({
-    defaultPageSize: 5, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default'
+    hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default'
   });
   const handleAdd = () => {
     const newData: DataType = {
@@ -61,10 +63,7 @@ const Shifts: React.FC<Props> = ({
     };
     rulesCheck([...data, newData]);
     setData([...data, newData]);
-    setPagination({
-      total: data.length + 1,
-      defaultPageSize: 5, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default'
-    });
+    setPagination({ ...pagination, total: data.length + 1 });
   };
 
   const handleSave = (row: DataType) => {
@@ -82,10 +81,7 @@ const Shifts: React.FC<Props> = ({
   const handleDelete = (key: React.Key) => {
     const newData = data.filter(item => item.key !== key);
     setData(newData);
-    setPagination({
-      total: data.length - 1,
-      defaultPageSize: 5, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default'
-    });
+    setPagination({ ...pagination, total: data.length - 1 });
     rulesCheck(newData);
   };
   const handleSubmit = async () => {
@@ -191,9 +187,17 @@ const Shifts: React.FC<Props> = ({
   };
 
   useEffect(() => {
+    setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
     setActiveInput({ ...activeInput, form: '', id: '' });
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (typeof pagination.defaultPageSize == 'undefined') {
+      setPagination({ ...pagination, defaultPageSize: height ? Math.floor((height-100) / 73) : 5, pageSize: height ? Math.floor((height-100) / 73) : 5})
+    }
+  }, [pagination])
+
 
   const columns: ColumnsType<DataType> = [
     {
@@ -272,10 +276,7 @@ const Shifts: React.FC<Props> = ({
       const response = await fetch('http://localhost:3000/shifts');
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
-      setPagination({
-        total: json.length,
-        defaultPageSize: 5, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default'
-      });
+      setPagination({ ...pagination, total: json.length });
       let count = 1;
       json.map((row: any) => {
         row.key = count

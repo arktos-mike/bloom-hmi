@@ -3,7 +3,7 @@ import type { ColumnsType, TablePaginationConfig, TableProps } from 'antd/es/tab
 import { ToolOutlined, QuestionCircleOutlined, SyncOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "../components/Icons"
 import { FilterValue, SorterResult } from 'antd/es/table/interface';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
@@ -24,15 +24,18 @@ const ModeLog: React.FC<Props> = ({
   token
 }
 ) => {
+  const [height, setHeight] = useState<number | undefined>(0)
+  const div = useRef<HTMLDivElement | null>(null);
   const { t, i18n } = useTranslation();
   const [data, setData] = useState();
   const [period, setPeriod] = useState([null, null]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<TablePaginationConfig>({
-    defaultPageSize: 8, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default', showSizeChanger: false
+    hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default', showSizeChanger: false
   });
   const [filteredInfo, setFilteredInfo] = useState<Record<string, FilterValue | null>>({});
   const [sortedInfo, setSortedInfo] = useState<SorterResult<DataType>>({});
+
 
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
     if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
@@ -83,10 +86,7 @@ const ModeLog: React.FC<Props> = ({
         if (!response.ok) { throw Error(response.statusText); }
         const json = await response.json();
         openNotificationWithIcon('success', t('notifications.logupdate'), 3);
-        setPagination({
-          total: json.length,
-          defaultPageSize: 8, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default', showSizeChanger: false
-        });
+        setPagination({ ...pagination, total: json.length });
         setData(json);
         setLoading(false);
       }
@@ -189,10 +189,7 @@ const ModeLog: React.FC<Props> = ({
       });
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
-      setPagination({
-        total: json.length,
-        defaultPageSize: 8, hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default', showSizeChanger: false
-      });
+      setPagination({ ...pagination, total: json.length });
       setData(json);
       setLoading(false);
     }
@@ -200,12 +197,22 @@ const ModeLog: React.FC<Props> = ({
   };
 
   useEffect(() => {
+    setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
+  }, [])
+
+  useEffect(() => {
+    if (typeof pagination.defaultPageSize == 'undefined') {
+      setPagination({ ...pagination, defaultPageSize: height ? Math.floor((height - 165) / 45) : 8, pageSize: height ? Math.floor((height - 165) / 45) : 8 })
+    }
+  }, [pagination])
+
+  useEffect(() => {
     dayjs.locale(i18n.language)
     fetchData();
   }, [period]);
 
   return (
-    <div>
+    <div ref={div} className='wrapper'>
       <div>
         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}><h1 style={{ margin: 10 }}>{t('log.select')}</h1>
           <RangePicker style={{ flexGrow: 1 }} defaultValue={[dayjs().subtract(7, 'days'), dayjs()]} onChange={(e: any) => { setPeriod([e ? e[0]?.startOf('minute') : dayjs().startOf('day'), e ? e[1]?.endOf('minute') : dayjs()]) }} />

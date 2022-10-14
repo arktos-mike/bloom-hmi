@@ -418,7 +418,7 @@ const App: React.FC = () => {
               </div>
               <div className="site-layout-content">
                 <Routes>
-                  <Route index element={<Overview />} />
+                  <Route index element={<Overview token={token} modeCode={modeCode}/>} />
                   <Route path={'/machineInfo'} element={<MachineInfo />} />
                   <Route path={'/reports'} element={<MonthReport token={token} />} />
                   <Route path={'/reports/monthReport'} element={<MonthReport token={token} />} />
