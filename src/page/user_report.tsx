@@ -264,7 +264,7 @@ const UserReport: React.FC<Props> = ({
         columns={columns}
         dataSource={data}
         pagination={false}
-        scroll={{ x: '100%', y: height ? height - 175 : 0 }}
+        scroll={{ x: '100%', y: height ? height - 228 : 0 }}
         expandable={{
           expandedRowRender: record => <Space direction="horizontal" style={{ width: '100%', justifyContent: 'space-evenly' }}>
             {record?.stops.map((stop: any) => (
