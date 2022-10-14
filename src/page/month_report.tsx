@@ -405,7 +405,6 @@ const MonthReport: React.FC<Props> = ({
         if (!response.ok) { throw Error(response.statusText); }
         const json = await response.json();
         setData(json);
-        setLoading(false);
       }
     }
     catch (error) { console.log(error); }
@@ -423,7 +422,6 @@ const MonthReport: React.FC<Props> = ({
         if (!response.ok) { throw Error(response.statusText); }
         const json = await response.json();
         setUserData(json);
-        setLoading(false);
       }
     }
     catch (error) { console.log(error); }

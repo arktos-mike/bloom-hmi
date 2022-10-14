@@ -9,7 +9,8 @@ const router = PromiseRouter();
 
 router.post('/monthreport', async (req, res) => {
   const { start, end } = req.body;
-  const { rows } = await db.query(`SELECT data.* FROM monthreport($1,$2) as data, jsonb_path_query_array(stops, '$[*] ? (@.*.total > 0)') as res where starts>0 or jsonb_array_length(res)>0`, [start, end]);
+  //const { rows } = await db.query(`SELECT data.* FROM monthreport($1,$2) as data, jsonb_path_query_array(stops, '$[*] ? (@.*.total > 0)') as res where starts>0 or jsonb_array_length(res)>0`, [start, end]);
+  const { rows } = await db.query(`SELECT * FROM monthreport($1,$2)`, [start, end]);
   rows.map((row: any) => {
     row['stops'].map((part: any) => {
       part[Object.keys(part)[0]].dur = parseInterval(part[Object.keys(part)[0]].dur)
