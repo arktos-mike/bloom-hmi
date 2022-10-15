@@ -9,7 +9,7 @@ type Props = {
     setIsModalVisible: (val: boolean) => void;
     token: any;
     activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string };
-    setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string }) => void;
+    setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: any, showKeyboard: boolean, descr: string, pattern: string }) => void;
 };
 const UserRegister: React.FC<Props> = ({
     isModalVisible,

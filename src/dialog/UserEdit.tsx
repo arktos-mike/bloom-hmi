@@ -10,7 +10,7 @@ type Props = {
   setToken: (val: any) => void;
   setIsModalVisible: (val: boolean) => void;
   activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string };
-  setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string }) => void;
+  setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: any, showKeyboard: boolean, descr: string, pattern: string }) => void;
 };
 const UserEdit: React.FC<Props> = ({
   isModalVisible,
