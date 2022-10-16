@@ -33,7 +33,8 @@ CREATE TABLE IF NOT EXISTS modelog (
     modecode NUMERIC not null,
     picks NUMERIC,
     planspeed NUMERIC default NULL,
-    plandensity NUMERIC default NULL
+    plandensity NUMERIC default NULL,
+    warpshrinkage NUMERIC default NULL
   );
 CREATE INDEX IF NOT EXISTS modelog_tstzrange_idx ON modelog USING GIST (timestamp);
 CREATE INDEX IF NOT EXISTS modelog_modecode ON modelog (modecode);
@@ -183,7 +184,13 @@ where
 from
 	tags
 where
-	(tag->>'name' = 'planClothDensity'))
+	(tag->>'name' = 'planClothDensity')),
+  (select
+    val
+  from
+    tags
+  where
+    (tag->>'name' = 'warpShrinkage'))
  );
  end if;
   return null;
@@ -265,7 +272,7 @@ update
 	lifetime
 set
 	picks = picks + picksLastRun,
-	cloth = cloth + (picksLastRun / (100 * density)),
+	cloth = cloth + (picksLastRun / (100 * density * (1 - 0.01 * warpShrinkage)),
 	motor = motor + clock
 where
 	serialno is not null;
@@ -337,9 +344,9 @@ when durqs > exdurs then
 ppicks * 6000 /(planspeed * (durqs-exdurs))
 end ) as eff,
 	sum(case when upper_inf(timestamp) then
-cpicks /(100 * plandensity)
+cpicks /(100 * plandensity * (1 - 0.01 * warpShrinkage))
 else
-ppicks /(100 * plandensity)
+ppicks /(100 * plandensity * (1 - 0.01 * warpShrinkage))
 end) as meter
 from
 		modelog,
@@ -606,9 +613,9 @@ from
         end
         ) as spicks,
 		sum(case when upper_inf(timestamp) then
-        cpicks /(100 * plandensity)
+        cpicks /(100 * plandensity * (1 - 0.01 * warpShrinkage))
         else
-        ppicks /(100 * plandensity)
+        ppicks /(100 * plandensity * (1 - 0.01 * warpShrinkage))
         end ) as meter,
 		sum(case when upper_inf(timestamp) then
         cpicks * 6000 /(planspeed * durqs)
