@@ -186,11 +186,11 @@ from
 where
 	(tag->>'name' = 'planClothDensity')),
   (select
-    val
-  from
-    tags
-  where
-    (tag->>'name' = 'warpShrinkage'))
+  val
+from
+  tags
+where
+  (tag->>'name' = 'warpShrinkage'))
  );
  end if;
   return null;
@@ -272,7 +272,7 @@ update
 	lifetime
 set
 	picks = picks + picksLastRun,
-	cloth = cloth + (picksLastRun / (100 * density * (1 - 0.01 * warpShrinkage)),
+	cloth = cloth + (picksLastRun / (100 * density * (1 - 0.01 * warpShrinkage))),
 	motor = motor + clock
 where
 	serialno is not null;
@@ -344,9 +344,9 @@ when durqs > exdurs then
 ppicks * 6000 /(planspeed * (durqs-exdurs))
 end ) as eff,
 	sum(case when upper_inf(timestamp) then
-cpicks /(100 * plandensity * (1 - 0.01 * warpShrinkage))
+cpicks /(100 * plandensity * (1 - 0.01 * warpshrinkage))
 else
-ppicks /(100 * plandensity * (1 - 0.01 * warpShrinkage))
+ppicks /(100 * plandensity * (1 - 0.01 * warpshrinkage))
 end) as meter
 from
 		modelog,
@@ -613,9 +613,9 @@ from
         end
         ) as spicks,
 		sum(case when upper_inf(timestamp) then
-        cpicks /(100 * plandensity * (1 - 0.01 * warpShrinkage))
+        cpicks /(100 * plandensity * (1 - 0.01 * warpshrinkage))
         else
-        ppicks /(100 * plandensity * (1 - 0.01 * warpShrinkage))
+        ppicks /(100 * plandensity * (1 - 0.01 * warpshrinkage))
         end ) as meter,
 		sum(case when upper_inf(timestamp) then
         cpicks * 6000 /(planspeed * durqs)
