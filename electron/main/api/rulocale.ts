@@ -39,12 +39,20 @@ const locale = {
     "picks": {
       "descr": "Прокидки"
     },
+    "picksLastRun": {
+      "descr": "Прокидки с момента  последнего пуска",
+      "eng": "ут"
+    },
     "comTime": {
       "eng": "мс"
     },
     "speedMainDrive": {
       "descr": "Скорость",
       "eng": "об/мин"
+    },
+    "stopAngle": {
+      "descr": "Угол останова",
+      "eng": "°"
     },
     "planSpeedMainDrive": {
       "descr": "Плановая скорость",

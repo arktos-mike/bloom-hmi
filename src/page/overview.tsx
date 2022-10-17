@@ -1,11 +1,13 @@
 import { Display } from '@/components';
 import { Card, Carousel, Col, Row } from 'antd';
+import { DashboardOutlined, AimOutlined } from '@ant-design/icons';
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next';
+import dayjs from 'dayjs';
 
 const cardStyle = { background: "whitesmoke", width: '100%', display: 'flex', flexDirection: 'column' as 'column' }
 const cardHeadStyle = { background: "#1890ff", color: "white" }
-const cardBodyStyle = { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'start', flexDirection: 'column' as 'column' }
+const cardBodyStyle = { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' as 'column' }
 
 
 type Props = {
@@ -85,16 +87,22 @@ const Overview: React.FC<Props> = ({
               <Row gutter={[8, 8]} style={{ flex: '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
                 <Col span={12} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
                   <Row style={{ marginBottom: '8px', flex: '1 1 50%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
-                    <Card title={t('panel.equipment')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
-                      <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center', marginTop: '15px' }}>
-                        <Display value={getTagVal('warpBeamLength')} tag={getTag('warpBeamLength')} />
+                    <Card title={t('panel.main')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
+                      <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                        <Display value={getTagVal('planClothDensity')} tag={getTag('planClothDensity')} />
+                        <Display value={getTagVal('planSpeedMainDrive')} tag={getTag('planSpeedMainDrive')} />
+                        <Display value={getTagVal('warpShrinkage')} tag={getTag('warpShrinkage')} />
+                      </div>
+                      <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                        <Display value={getTagVal(modeCode.val == 1 ? 'speedMainDrive' : 'stopAngle')} tag={getTag(modeCode.val == 1 ? 'speedMainDrive' : 'stopAngle')} icon={modeCode.val == 1 ? <DashboardOutlined style={{ color: '#1890ff' }} /> : <AimOutlined style={{ color: '#1890ff' }} />} />
                       </div>
                     </Card>
                   </Row>
                   <Row style={{ flex: '1 1 50%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
-                    <Card title={t('tags.modeControl.descr')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
+                    <Card title={t('panel.warpbeam')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
                       <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center', marginTop: '15px' }}>
-                        <Display value={getTagVal('orderLength')} tag={getTag('orderLength')} />
+                        <Display value={getTagVal('warpBeamLength')} suffix={getTagVal('fullWarpBeamLength')}  tag={getTag('warpBeamLength')} />
+                        <Display value={getTagVal('orderLength')} suffix={getTagVal('planOrderLength')}  tag={getTag('orderLength')} />
                       </div>
                     </Card>
                   </Row>
@@ -113,11 +121,7 @@ const Overview: React.FC<Props> = ({
                 {
                   (tags.data || []).map((tag: any) => (
                     <li key={tag['tag']['name']} style={{ textAlign: 'start' }}>
-                      <code>{tag['tag']['name']}</code>&emsp;<b>{getTagVal(tag['tag']['name'])}</b>&emsp;{new Date(tag['updated']).toLocaleDateString(i18n.language, {
-                        year: 'numeric', month: 'numeric', day: 'numeric',
-                        hour: 'numeric', minute: 'numeric', second: 'numeric', fractionalSecondDigits: 3,
-                        hour12: false
-                      })}
+                      <code>{['modeCode', 'modeControl'].includes(tag['tag']['name']) ? t('tags.modeControl.descr') : t('tags.' + tag['tag']['name'] + '.descr')}</code>&emsp;<b>{getTagVal(tag['tag']['name']) + ' ' + (['modeCode', 'modeControl'].includes(tag['tag']['name']) ? '' : t('tags.' + tag['tag']['name'] + '.eng'))}</b>&emsp;{dayjs(tag['updated']).locale(i18n.language).format('L LTS.SSS')}
                     </li>
                   ))
                 }

@@ -39,12 +39,20 @@ const locale = {
     "picks": {
       "descr": "Atkılar"
     },
+    "picksLastRun": {
+      "descr": "Atkılar, son başlat",
+      "eng": "atkı"
+    },
     "comTime": {
       "eng": "ms"
     },
     "speedMainDrive": {
       "descr": "Hız",
       "eng": "rpm"
+    },
+    "stopAngle": {
+      "descr": "Durma açısı",
+      "eng": "°"
     },
     "clothMeters": {
       "descr": "Kumaş",

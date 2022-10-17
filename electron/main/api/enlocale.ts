@@ -39,12 +39,20 @@ const locale = {
     "picks": {
       "descr": "Picks"
     },
+    "picksLastRun": {
+      "descr": "Picks last run",
+      "eng": "picks"
+    },
     "comTime": {
       "eng": "ms"
     },
     "speedMainDrive": {
       "descr": "Speed",
       "eng": "rpm"
+    },
+    "stopAngle": {
+      "descr": "Stop angle",
+      "eng": "°"
     },
     "clothMeters": {
       "descr": "Cloth",
