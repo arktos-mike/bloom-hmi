@@ -76,7 +76,12 @@ const Overview: React.FC<Props> = ({
 
   useEffect(() => {
     setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
+
   }, [])
+
+  useEffect(()=>{
+    dayjs.locale(i18n.language)
+  }, [i18n.language])
 
   return (
     <div ref={div} className='wrapper'>
@@ -121,7 +126,7 @@ const Overview: React.FC<Props> = ({
                 {
                   (tags.data || []).map((tag: any) => (
                     <li key={tag['tag']['name']} style={{ textAlign: 'start' }}>
-                      <code>{['modeCode', 'modeControl'].includes(tag['tag']['name']) ? t('tags.modeControl.descr') : t('tags.' + tag['tag']['name'] + '.descr')}</code>&emsp;<b>{getTagVal(tag['tag']['name']) + ' ' + (['modeCode', 'modeControl'].includes(tag['tag']['name']) ? '' : t('tags.' + tag['tag']['name'] + '.eng'))}</b>&emsp;{dayjs(tag['updated']).locale(i18n.language).format('L LTS.SSS')}
+                      <code>{['modeCode', 'modeControl'].includes(tag['tag']['name']) ? t('tags.modeControl.descr') : t('tags.' + tag['tag']['name'] + '.descr')}</code>&emsp;<b>{getTagVal(tag['tag']['name']) + ' ' + (['modeCode', 'modeControl'].includes(tag['tag']['name']) ? '' : t('tags.' + tag['tag']['name'] + '.eng'))}</b>&emsp;{dayjs(tag['updated']).format('L LTS.SSS')}
                     </li>
                   ))
                 }

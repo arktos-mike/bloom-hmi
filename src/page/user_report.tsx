@@ -228,8 +228,11 @@ const UserReport: React.FC<Props> = ({
 
   useEffect(() => {
     setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
-    dayjs.locale(i18n.language)
   }, []);
+
+  useEffect(()=>{
+    dayjs.locale(i18n.language)
+  }, [i18n.language])
 
   useEffect(() => {
     fetchUsers();
@@ -292,7 +295,7 @@ const UserReport: React.FC<Props> = ({
           return (
             <Table.Summary fixed>
               <Table.Summary.Row>
-                <Table.Summary.Cell index={0}><b>{period[0] && dayjs(period[0]).locale(i18n.language).format('MMMM YYYY')}
+                <Table.Summary.Cell index={0}><b>{period[0] && dayjs(period[0]).format('MMMM YYYY')}
                   <br />{total && total[0] && duration2text(dayjs.duration(total[0]['workdur']))}</b></Table.Summary.Cell>
                 <Table.Summary.Cell index={1}>
                   {total && total[0] && total[0]['picks']}

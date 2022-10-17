@@ -223,7 +223,7 @@ const MonthReport: React.FC<Props> = ({
       key: 'userid',
       ellipsis: true,
       width: '16%',
-      render: (_, record) => <><b>{(users?.filter((item: any) => item.id == record.userid))[0]['name']}</b><br />{period[0] && dayjs(period[0]).locale(i18n.language).format('MMMM YYYY')}<br />{duration2text(dayjs.duration(record.workdur))}</>
+      render: (_, record) => <><b>{(users?.filter((item: any) => item.id == record.userid))[0]['name']}</b><br />{period[0] && dayjs(period[0]).format('MMMM YYYY')}<br />{duration2text(dayjs.duration(record.workdur))}</>
     },
     {
       title: t('tags.picks.descr'),
@@ -449,9 +449,12 @@ const MonthReport: React.FC<Props> = ({
 
   useEffect(() => {
     setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
-    dayjs.locale(i18n.language);
     fetchUsers();
   }, []);
+
+  useEffect(()=>{
+    dayjs.locale(i18n.language)
+  }, [i18n.language])
 
   useEffect(() => {
     fetchStatInfo();
@@ -495,7 +498,7 @@ const MonthReport: React.FC<Props> = ({
             return (
               <Table.Summary fixed>
                 <Table.Summary.Row>
-                  <Table.Summary.Cell index={0}><b>{period[0] && dayjs(period[0]).locale(i18n.language).format('MMMM YYYY')}</b></Table.Summary.Cell>
+                  <Table.Summary.Cell index={0}><b>{period[0] && dayjs(period[0]).format('MMMM YYYY')}</b></Table.Summary.Cell>
                   <Table.Summary.Cell index={1}>
                     {total && total[0] && total[0]['picks']}
                   </Table.Summary.Cell>
