@@ -144,7 +144,7 @@ const Overview: React.FC<Props> = ({
                       <Skeleton loading={loading} round active>
                         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
                           <Display value={getTagVal('orderLength')} suffix={getTagVal('planOrderLength')} tag={getTag('orderLength')} icon={<FabricPieceLengthIcon style={{ color: '#1890ff' }} />} />
-                          <Display value={Math.floor((localeParseFloat(getTagVal('fullWarpBeamLength')) - localeParseFloat(getTagVal('warpBeamLength'))) * (1 - 0.01 * localeParseFloat(getTagVal('warpShrinkage'))) / localeParseFloat(getTagVal('planOrderLength')))} tag={{ name: 'rollsCount' }} suffix={Math.floor(localeParseFloat(getTagVal('fullWarpBeamLength')) * (1 - 0.01 * localeParseFloat(getTagVal('warpShrinkage'))) / localeParseFloat(getTagVal('planOrderLength')))} icon={<FabricPieceIcon style={{ color: '#1890ff' }} />} />
+                          <Display value={getTagVal('planOrderLength')!='0' ? Math.floor((localeParseFloat(getTagVal('fullWarpBeamLength')) - localeParseFloat(getTagVal('warpBeamLength'))) * (1 - 0.01 * localeParseFloat(getTagVal('warpShrinkage'))) / localeParseFloat(getTagVal('planOrderLength'))):0} tag={{ name: 'rollsCount' }} suffix={getTagVal('planOrderLength')!='0' ? Math.floor(localeParseFloat(getTagVal('fullWarpBeamLength')) * (1 - 0.01 * localeParseFloat(getTagVal('warpShrinkage'))) / localeParseFloat(getTagVal('planOrderLength'))):0} icon={<FabricPieceIcon style={{ color: '#1890ff' }} />} />
                         </div>
                       </Skeleton>
                     </Card>
@@ -179,7 +179,7 @@ const Overview: React.FC<Props> = ({
                             <span style={{ fontSize: '16px', color:'#8c8c8c' }}>{Number(Number(shift['rpm']).toFixed(1)).toLocaleString(i18n.language) + ' ' + t('tags.speedMainDrive.eng') + ', ' + Number(Number(shift['mph']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.speedCloth.eng')}</span>
                           </Form.Item>
                           <Form.Item label={<PieChartOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                            <Space direction="horizontal" style={{ width: '100%', justifyContent: 'space-evenly' }} wrap>
+                            <Space direction="horizontal" style={{ width: '100%', justifyContent: 'start', alignItems: 'start' }} wrap>
                               {shift['starts'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
                                 count={shift['starts']} overflowCount={999}
                                 style={{ backgroundColor: '#52c41aff' }}
@@ -209,7 +209,7 @@ const Overview: React.FC<Props> = ({
                           colon={false}
                         >
                           <Form.Item label={<IdcardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                            <span style={{ fontSize: '16px' }}><b>{token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : Number(shadowUser)}</b></span>
+                            <span style={{ fontSize: '16px' }}><b>{token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : shadowUser}</b></span>
                           </Form.Item>
                           <Form.Item label={<LoginOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
                             <span style={{ fontSize: '16px' }}></span>
