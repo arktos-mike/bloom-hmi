@@ -76,11 +76,15 @@ const locale = {
     },
     "planOrderLength": {
       "descr": "Длина рулона",
-      "eng": "м"
+      "eng": "пог.м"
     },
     "orderLength": {
       "descr": "Текущая длина рулона",
-      "eng": "м"
+      "eng": "пог.м"
+    },
+    "rollsCount": {
+      "descr": "Количество рулонов",
+      "eng": "рул"
     },
     "fullWarpBeamLength": {
       "descr": "Полный навой",

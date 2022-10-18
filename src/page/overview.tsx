@@ -1,9 +1,10 @@
 import { Display } from '@/components';
-import { Card, Carousel, Col, Row, Skeleton } from 'antd';
-import { DashboardOutlined, AimOutlined } from '@ant-design/icons';
+import { Badge, Card, Carousel, Col, Form, Row, Skeleton, Space } from 'antd';
+import { ToolOutlined, QuestionCircleOutlined, LoginOutlined, IdcardOutlined, RiseOutlined, PieChartOutlined, SyncOutlined, ClockCircleOutlined, ScheduleOutlined, DashboardOutlined, AimOutlined } from '@ant-design/icons';
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
+import { FabricFullIcon, ButtonIcon, WeftIcon, FabricPieceIcon, FabricPieceLengthIcon, WarpBeamIcon, WarpBeamsIcon } from '@/components/Icons';
 
 const cardStyle = { background: "whitesmoke", width: '100%', display: 'flex', flexDirection: 'column' as 'column' }
 const cardHeadStyle = { background: "#1890ff", color: "white" }
@@ -11,14 +12,20 @@ const cardBodyStyle = { flex: 1, display: 'flex', alignItems: 'center', justifyC
 
 
 type Props = {
+  shadowUser: any;
+  shift: any;
   token: any;
   modeCode: { val: Number, updated: any };
 };
 
 const Overview: React.FC<Props> = ({
+  shadowUser,
+  shift,
   token,
   modeCode,
 }) => {
+  const [formShift] = Form.useForm();
+  const [formWeaver] = Form.useForm();
   const { t, i18n } = useTranslation();
   const [height, setHeight] = useState<number | undefined>(0)
   const [tags, setTags] = useState({ data: [] as any })
@@ -27,6 +34,23 @@ const Overview: React.FC<Props> = ({
   const contentStyle = { height: height, margin: '1px' };
   const dotsClass = { marginTop: '-15px' };
   let isSubscribed = true;
+
+  const duration2text = (diff: any) => {
+    if (diff == null) return null
+    return (diff.days() > 0 ? diff.days() + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + t('shift.secs') : "")
+  }
+
+  const stopObj = (reason: string) => {
+    let obj;
+    if (reason == 'other') { obj = { color: '#000000FF', text: t('tags.mode.init'), icon: <QuestionCircleOutlined style={{ fontSize: '130%', color: '#000000FF', paddingInline: 5 }} /> } }
+    else if (reason == 'button') { obj = { color: '#7339ABFF', text: t('tags.mode.stop'), icon: <ButtonIcon style={{ fontSize: '130%', color: '#7339ABFF', paddingInline: 5 }} /> } }
+    else if (reason == 'warp') { obj = { color: '#FF7F27FF', text: t('tags.mode.stop'), icon: <WarpBeamIcon style={{ fontSize: '130%', color: '#FF7F27FF', paddingInline: 5 }} /> } }
+    else if (reason == 'weft') { obj = { color: '#FFB300FF', text: t('tags.mode.stop'), icon: <WeftIcon style={{ fontSize: '130%', color: '#FFB300FF', paddingInline: 5 }} /> } }
+    else if (reason == 'tool') { obj = { color: '#E53935FF', text: t('tags.mode.stop'), icon: <ToolOutlined style={{ fontSize: '130%', color: '#E53935FF', paddingInline: 5 }} /> } }
+    else if (reason == 'fabric') { obj = { color: '#005498FF', text: t('tags.mode.stop'), icon: <FabricFullIcon style={{ fontSize: '130%', color: '#005498FF', paddingInline: 5 }} /> } }
+    else { obj = { color: '#00000000', text: t('tags.mode.unknown'), icon: <QuestionCircleOutlined style={{ fontSize: '130%', color: '#00000000', paddingInline: 5 }} /> } }
+    return obj;
+  }
 
   function localeParseFloat(str: String) {
     let out: String[] = [];
@@ -92,7 +116,7 @@ const Overview: React.FC<Props> = ({
             <div className='wrapper'>
               <Row gutter={[8, 8]} style={{ flex: '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
                 <Col span={12} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
-                  <Row style={{ marginBottom: '8px', flex: '1 1 50%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
+                  <Row style={{ marginBottom: '8px', flex: '1 1 40%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
                     <Card title={t('panel.main')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
                       <Skeleton loading={loading} round active>
                         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
@@ -106,23 +130,106 @@ const Overview: React.FC<Props> = ({
                       </Skeleton>
                     </Card>
                   </Row>
-                  <Row style={{ flex: '1 1 50%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
+                  <Row style={{ marginBottom: '8px', flex: '1 1 30%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
                     <Card title={t('panel.warpbeam')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
                       <Skeleton loading={loading} round active>
-                        <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center', marginTop: '15px' }}>
-                          <Display value={getTagVal('warpBeamLength')} suffix={getTagVal('fullWarpBeamLength')} tag={getTag('warpBeamLength')} />
-                          <Display value={getTagVal('orderLength')} suffix={getTagVal('planOrderLength')} tag={getTag('orderLength')} />
+                        <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                          <Display value={getTagVal('warpBeamLength')} suffix={getTagVal('fullWarpBeamLength')} tag={getTag('warpBeamLength')} icon={<WarpBeamsIcon style={{ color: '#1890ff', fontSize: '140%' }} />} />
+                        </div>
+                      </Skeleton>
+                    </Card>
+                  </Row>
+                  <Row style={{ flex: '1 1 30%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
+                    <Card title={t('panel.roll')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
+                      <Skeleton loading={loading} round active>
+                        <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                          <Display value={getTagVal('orderLength')} suffix={getTagVal('planOrderLength')} tag={getTag('orderLength')} icon={<FabricPieceLengthIcon style={{ color: '#1890ff' }} />} />
+                          <Display value={Math.floor((localeParseFloat(getTagVal('fullWarpBeamLength')) - localeParseFloat(getTagVal('warpBeamLength'))) * (1 - 0.01 * localeParseFloat(getTagVal('warpShrinkage'))) / localeParseFloat(getTagVal('planOrderLength')))} tag={{ name: 'rollsCount' }} suffix={Math.floor(localeParseFloat(getTagVal('fullWarpBeamLength')) * (1 - 0.01 * localeParseFloat(getTagVal('warpShrinkage'))) / localeParseFloat(getTagVal('planOrderLength')))} icon={<FabricPieceIcon style={{ color: '#1890ff' }} />} />
                         </div>
                       </Skeleton>
                     </Card>
                   </Row>
                 </Col>
-                <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
-                  <Card title={t('panel.setpoints')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} >
-                    <Skeleton loading={loading} round active>
+                <Col span={12} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
+                  <Row style={{ marginBottom: '8px', flex: '1 1 50%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
+                    <Card title={t('shift.shift')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
+                      <Skeleton loading={loading} round active>
+                        <Form
+                          labelCol={{ span: 2 }}
+                          wrapperCol={{ span: 22 }}
+                          size='small'
+                          form={formShift}
+                          style={{ width: '100%' }}
+                          preserve={false}
+                          colon={false}
+                        >
+                          <Form.Item label={<ScheduleOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
+                            <span style={{ fontSize: '16px' }}><b>{t('shift.shift') + ' ' + shift['name']}</b></span>
+                          </Form.Item>
+                          <Form.Item label={<ClockCircleOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
+                            <span style={{ fontSize: '16px', color:'#8c8c8c' }}>{dayjs(shift['start']).format('LL LT') + ' - ' + dayjs(shift['end']).format('LL LT') + ', ' + duration2text(dayjs.duration(shift['duration'])) + ''}</span>
+                          </Form.Item>
+                          <Form.Item label={<RiseOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
+                            <span style={{ fontSize: '18px', fontWeight:600 }}>{Number(Number(shift['efficiency']).toFixed(shift['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + ' ' + t('tags.efficiency.eng')}</span>
+                          </Form.Item>
+                          <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
+                            <span style={{ fontSize: '16px' }}>{shift['picks'] + ' ' + t('tags.picksLastRun.eng') + ', ' + Number(Number(shift['meters']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.clothMeters.eng')}</span>
+                          </Form.Item>
+                          <Form.Item label={<DashboardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
+                            <span style={{ fontSize: '16px', color:'#8c8c8c' }}>{Number(Number(shift['rpm']).toFixed(1)).toLocaleString(i18n.language) + ' ' + t('tags.speedMainDrive.eng') + ', ' + Number(Number(shift['mph']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.speedCloth.eng')}</span>
+                          </Form.Item>
+                          <Form.Item label={<PieChartOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
+                            <Space direction="horizontal" style={{ width: '100%', justifyContent: 'space-evenly' }} wrap>
+                              {shift['starts'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
+                                count={shift['starts']} overflowCount={999}
+                                style={{ backgroundColor: '#52c41aff' }}
+                              /><SyncOutlined style={{ fontSize: '130%', color: '#52c41aFF', paddingInline: 5 }}/>{duration2text(dayjs.duration(shift['runtime']))}</div>}
+                              {Array.isArray(shift['stops']) && shift['stops'].map((stop: any) => (
+                                stop[Object.keys(stop)[0]]['total'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
+                                  count={stop[Object.keys(stop)[0]]['total']} overflowCount={999}
+                                  style={{ backgroundColor: stopObj(Object.keys(stop)[0]).color }}
+                                />{stopObj(Object.keys(stop)[0]).icon}{duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
+                              }
+                            </Space>
+                          </Form.Item>
+                        </Form>
+                      </Skeleton>
+                    </Card>
+                  </Row>
+                  <Row style={{ flex: '1 1 50%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
+                    <Card title={t('user.weaver')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
+                      <Skeleton loading={loading} round active>
+                        <Form
+                          labelCol={{ span: 2 }}
+                          wrapperCol={{ span: 22 }}
+                          size='small'
+                          form={formWeaver}
+                          style={{ width: '100%' }}
+                          preserve={false}
+                          colon={false}
+                        >
+                          <Form.Item label={<IdcardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
+                            <span style={{ fontSize: '16px' }}><b>{token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : Number(shadowUser)}</b></span>
+                          </Form.Item>
+                          <Form.Item label={<LoginOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
+                            <span style={{ fontSize: '16px' }}></span>
+                          </Form.Item>
+                          <Form.Item label={<RiseOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
+                            <span style={{ fontSize: '16px' }}></span>
+                          </Form.Item>
+                          <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
+                            <span style={{ fontSize: '16px' }}></span>
+                          </Form.Item>
+                          <Form.Item label={<DashboardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
+                            <span style={{ fontSize: '16px' }}></span>
+                          </Form.Item>
+                          <Form.Item label={<PieChartOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
 
-                    </Skeleton>
-                  </Card>
+                          </Form.Item>
+                        </Form>
+                      </Skeleton>
+                    </Card>
+                  </Row>
                 </Col>
               </Row>
             </div></div></div>

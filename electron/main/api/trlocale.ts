@@ -76,11 +76,15 @@ const locale = {
     },
     "planOrderLength": {
       "descr": "Sipariş uzunluğu",
-      "eng": "m"
+      "eng": "doğ.m"
     },
     "orderLength": {
       "descr": "Rulo uzunluğu",
-      "eng": "m"
+      "eng": "doğ.m"
+    },
+    "rollsCount": {
+      "descr": "Rulo sayısı",
+      "eng": "rulolar"
     },
     "fullWarpBeamLength": {
       "descr": "Dolu levent",

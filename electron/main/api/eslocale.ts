@@ -76,11 +76,15 @@ const locale = {
     },
     "planOrderLength": {
       "descr": "Longitud del pedido",
-      "eng": "m"
+      "eng": "ml"
     },
     "orderLength": {
       "descr": "Longitud de rollo",
-      "eng": "m"
+      "eng": "ml"
+    },
+    "rollsCount": {
+      "descr": "Número de rollos",
+      "eng": "rollos"
     },
     "fullWarpBeamLength": {
       "descr": "Pleno plegador",

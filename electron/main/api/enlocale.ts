@@ -76,11 +76,15 @@ const locale = {
     },
     "planOrderLength": {
       "descr": "Order length",
-      "eng": "m"
+      "eng": "lin.m"
     },
     "orderLength": {
       "descr": "Roll length",
-      "eng": "m"
+      "eng": "lin.m"
+    },
+    "rollsCount": {
+      "descr": "Number of rolls",
+      "eng": "rolls"
     },
     "fullWarpBeamLength": {
       "descr": "Full warp beam",
