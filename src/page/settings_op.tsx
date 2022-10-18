@@ -1,4 +1,4 @@
-import { Card, Col, Form, notification, Row, Select, } from 'antd';
+import { Card, Col, Form, notification, Row, Select, Skeleton, } from 'antd';
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import { DesktopOutlined, WifiOutlined, GlobalOutlined, CalendarOutlined, ClockCircleOutlined, ReloadOutlined } from '@ant-design/icons';
@@ -41,6 +41,7 @@ const SettingsOp: React.FC<Props> = ({
   const [opIP, setOpIP] = useState({ name: '', type: '', ip_address: '', netmask: '', gateway_ip: '', mac_address: '' })
   const [lngs, setLngs] = useState({ data: [] })
   const [today, setDate] = useState(new Date())
+  const [loading, setLoading] = useState(true)
 
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
     if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
@@ -58,7 +59,7 @@ const SettingsOp: React.FC<Props> = ({
       const response = await fetch('http://localhost:3000/locales');
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
-      if (isSubscribed) setLngs({ data: json });
+      if (isSubscribed) { setLngs({ data: json }); setLoading(false); };
     }
     catch (error) { console.log(error); }
   }
@@ -164,104 +165,112 @@ const SettingsOp: React.FC<Props> = ({
       <Row gutter={[8, 8]} style={{ flex: '1 1 30%', marginBottom: 8 }}>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('panel.language')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
-            <Form labelCol={{ span: 4 }} wrapperCol={{ span: 20 }} size='large' style={{ width: '50%' }} colon={false}>
-              <Form.Item label={<GlobalOutlined style={{ fontSize: '130%' }} />} >
-                <Select value={i18n.language} onChange={lngChange} >
-                  {(lngs.data || []).map(lng => (
-                    <Option key={lng['locale']} value={lng['locale']} >
-                      <div>{String(lng['locale']).toUpperCase()} - {t('self', { lng: lng['locale'] })}</div></Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Form>
+            <Skeleton loading={loading} round active>
+              <Form labelCol={{ span: 4 }} wrapperCol={{ span: 20 }} size='large' style={{ width: '50%' }} colon={false}>
+                <Form.Item label={<GlobalOutlined style={{ fontSize: '130%' }} />} >
+                  <Select value={i18n.language} onChange={lngChange} >
+                    {(lngs.data || []).map(lng => (
+                      <Option key={lng['locale']} value={lng['locale']} >
+                        <div>{String(lng['locale']).toUpperCase()} - {t('self', { lng: lng['locale'] })}</div></Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Form>
+            </Skeleton>
           </Card>
         </Col>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('panel.actions')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
-            <Button confirm userRights={['fixer', 'admin', 'manager']} token={token} onClick={onReboot} icon={<ReloadOutlined style={{ fontSize: '200%' }} />} text="system.reboot" />
+            <Skeleton loading={loading} round active>
+              <Button confirm userRights={['fixer', 'admin', 'manager']} token={token} onClick={onReboot} icon={<ReloadOutlined style={{ fontSize: '200%' }} />} text="system.reboot" />
+            </Skeleton>
           </Card>
         </Col>
       </Row>
       <Row gutter={[8, 8]} style={{ flex: '1 1 70%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('panel.network')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
-            <Form
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 16 }}
-              size='large'
-              form={formIP}
-              style={{ width: '100%' }}
-              onFinish={onIPChange}
-              preserve={false}
-              colon={false}
-            >
-              <Form.Item label={opIP.type == "Wireless" ? <WifiOutlined style={{ fontSize: '130%' }} /> : <DesktopOutlined style={{ fontSize: '130%' }} />} >
-                <span style={{ fontSize: '16px' }}>{opIP.mac_address + " " + opIP.name + " " + opIP.ip_address + " " + opIP.netmask + " " + opIP.gateway_ip}</span>
-              </Form.Item>
-              <Form.Item
-                name="ip"
-                label={t('ip.ip')}
-                rules={[{ required: true, message: t('user.fill') }]}
+            <Skeleton loading={loading} round active>
+              <Form
+                labelCol={{ span: 8 }}
+                wrapperCol={{ span: 16 }}
+                size='large'
+                form={formIP}
+                style={{ width: '100%' }}
+                onFinish={onIPChange}
+                preserve={false}
+                colon={false}
               >
-                <InputNumber userRights={['admin', 'manager']} token={token} placeholder='ip.ip' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'ip', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
-              </Form.Item>
-              <Form.Item
-                name="mask"
-                label={t('ip.mask')}
-                rules={[{ required: true, message: t('user.fill') }]}
-              >
-                <InputNumber userRights={['admin', 'manager']} token={token} placeholder='ip.mask' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'mask', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
-              </Form.Item>
-              <Form.Item
-                name="gw"
-                label={t('ip.gw')}
-                rules={[{ required: true, message: t('user.fill') }]}
-              >
-                <InputNumber userRights={['admin', 'manager']} token={token} placeholder='ip.gw' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'gw', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
-              </Form.Item>
-              <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
-              </Form.Item>
-            </Form>
+                <Form.Item label={opIP.type == "Wireless" ? <WifiOutlined style={{ fontSize: '130%' }} /> : <DesktopOutlined style={{ fontSize: '130%' }} />} >
+                  <span style={{ fontSize: '16px' }}>{opIP.mac_address + " " + opIP.name + " " + opIP.ip_address + " " + opIP.netmask + " " + opIP.gateway_ip}</span>
+                </Form.Item>
+                <Form.Item
+                  name="ip"
+                  label={t('ip.ip')}
+                  rules={[{ required: true, message: t('user.fill') }]}
+                >
+                  <InputNumber userRights={['admin', 'manager']} token={token} placeholder='ip.ip' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'ip', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                </Form.Item>
+                <Form.Item
+                  name="mask"
+                  label={t('ip.mask')}
+                  rules={[{ required: true, message: t('user.fill') }]}
+                >
+                  <InputNumber userRights={['admin', 'manager']} token={token} placeholder='ip.mask' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'mask', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                </Form.Item>
+                <Form.Item
+                  name="gw"
+                  label={t('ip.gw')}
+                  rules={[{ required: true, message: t('user.fill') }]}
+                >
+                  <InputNumber userRights={['admin', 'manager']} token={token} placeholder='ip.gw' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'gw', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                </Form.Item>
+                <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                  <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
+                </Form.Item>
+              </Form>
+            </Skeleton>
           </Card>
         </Col>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('time.title')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} >
-            <Form
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 16 }}
-              size='large'
-              style={{ width: '100%' }}
-              form={form}
-              onFinish={onFinish}
-              preserve={false}
-              colon={false}
-            >
-              <Form.Item label={<CalendarOutlined style={{ fontSize: '130%' }} />} >
-                <span style={{ fontSize: '16px' }}>{curDate}</span>
-              </Form.Item>
-              <Form.Item label={<ClockCircleOutlined style={{ fontSize: '130%' }} />} >
-                <span style={{ fontSize: '16px' }}>{curTime}</span>
-              </Form.Item>
-              <Form.Item
-                name="date"
-                label={t('time.date')}
-                rules={[{ required: true, message: t('user.fill') }]}
+            <Skeleton loading={loading} round active>
+              <Form
+                labelCol={{ span: 8 }}
+                wrapperCol={{ span: 16 }}
+                size='large'
+                style={{ width: '100%' }}
+                form={form}
+                onFinish={onFinish}
+                preserve={false}
+                colon={false}
               >
-                <DatePicker userRights={['admin', 'manager']} token={token} />
-              </Form.Item>
+                <Form.Item label={<CalendarOutlined style={{ fontSize: '130%' }} />} >
+                  <span style={{ fontSize: '16px' }}>{curDate}</span>
+                </Form.Item>
+                <Form.Item label={<ClockCircleOutlined style={{ fontSize: '130%' }} />} >
+                  <span style={{ fontSize: '16px' }}>{curTime}</span>
+                </Form.Item>
+                <Form.Item
+                  name="date"
+                  label={t('time.date')}
+                  rules={[{ required: true, message: t('user.fill') }]}
+                >
+                  <DatePicker userRights={['admin', 'manager']} token={token} />
+                </Form.Item>
 
-              <Form.Item
-                name="time"
-                label={t('time.time')}
-                rules={[{ required: true, message: t('user.fill') }]}
-              >
-                <TimePicker userRights={['admin', 'manager']} token={token} />
-              </Form.Item>
-              <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="time.submit" />
-              </Form.Item>
-            </Form>
+                <Form.Item
+                  name="time"
+                  label={t('time.time')}
+                  rules={[{ required: true, message: t('user.fill') }]}
+                >
+                  <TimePicker userRights={['admin', 'manager']} token={token} />
+                </Form.Item>
+                <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                  <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="time.submit" />
+                </Form.Item>
+              </Form>
+            </Skeleton>
           </Card>
         </Col>
       </Row>
