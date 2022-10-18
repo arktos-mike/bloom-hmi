@@ -30,6 +30,7 @@ const Overview: React.FC<Props> = ({
   const [height, setHeight] = useState<number | undefined>(0)
   const [tags, setTags] = useState({ data: [] as any })
   const [loading, setLoading] = useState(true)
+  const [userInfo, setUserInfo] = useState()
   const div = useRef<HTMLDivElement | null>(null);
   const contentStyle = { height: height, margin: '1px' };
   const dotsClass = { marginTop: '-15px' };
@@ -62,6 +63,21 @@ const Overview: React.FC<Props> = ({
     return parseFloat(out.join("."));
   }
 
+  const fetchUserStatInfo = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/shifts/getuserstatinfo', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json;charset=UTF-8', },
+        body: JSON.stringify({ id: ((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id : shadowUser.id), start: shadowUser.logintime, end: dayjs() }),
+      });
+      if (!response.ok) { throw Error(response.statusText); }
+      const json = await response.json();
+      setUserInfo(json[0]);
+      setLoading(false)
+    }
+    catch (error) { console.log(error); }
+  };
+
   const fetchTags = async () => {
     try {
       const response = await fetch('http://localhost:3000/tags');
@@ -72,7 +88,6 @@ const Overview: React.FC<Props> = ({
       )
       );
       setTags({ data: json });
-      setLoading(false)
     }
     catch (error) { console.log(error); }
   }
@@ -95,13 +110,14 @@ const Overview: React.FC<Props> = ({
   }
 
   useEffect(() => {
-    fetchTags()
+    fetchTags();
+    fetchUserStatInfo();
     return () => { isSubscribed = false }
   }, [tags])
 
   useEffect(() => {
     setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
-
+    fetchUserStatInfo();
   }, [])
 
   useEffect(() => {
@@ -115,7 +131,7 @@ const Overview: React.FC<Props> = ({
           <div style={contentStyle}>
             <div className='wrapper'>
               <Row gutter={[8, 8]} style={{ flex: '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
-                <Col span={((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) || shift.name ? 12:24} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
+                <Col span={((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) || shift.name ? 12 : 24} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
                   <Row style={{ marginBottom: '8px', flex: '1 1 40%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
                     <Card title={t('panel.main')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
                       <Skeleton loading={loading} round active>
@@ -150,8 +166,8 @@ const Overview: React.FC<Props> = ({
                     </Card>
                   </Row>
                 </Col>
-                <Col span={((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) || shift.name ? 12:0} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
-                  {shift['name'] && <Row style={{ marginBottom: '8px', flex: ((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) ? '1 1 50%':'1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
+                <Col span={((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) || shift.name ? 12 : 0} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
+                  {shift['name'] && <Row style={{ marginBottom: '8px', flex: ((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
                     <Card title={t('shift.shift')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
                       <Skeleton loading={loading} round active>
                         <Form
@@ -196,7 +212,7 @@ const Overview: React.FC<Props> = ({
                       </Skeleton>
                     </Card>
                   </Row>}
-                  {((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) && <Row style={{ flex: shift['name'] ? '1 1 50%':'1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
+                  {((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) && <Row style={{ flex: shift['name'] ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
                     <Card title={t('user.weaver')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
                       <Skeleton loading={loading} round active>
                         <Form
@@ -209,22 +225,33 @@ const Overview: React.FC<Props> = ({
                           colon={false}
                         >
                           <Form.Item label={<IdcardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                            <span style={{ fontSize: '16px' }}><b>{token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : shadowUser}</b></span>
+                            <span style={{ fontSize: '16px' }}><b>{token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : shadowUser.name}</b></span>
                           </Form.Item>
                           <Form.Item label={<LoginOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                            <span style={{ fontSize: '16px' }}>{dayjs(shadowUser.logintime).format('LL LTS')}</span>
+                            <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{dayjs(shadowUser.logintime).format('LL LTS') + ', ' + (userInfo && duration2text(dayjs.duration(userInfo['workdur'])))}</span>
                           </Form.Item>
                           <Form.Item label={<RiseOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                            <span style={{ fontSize: '16px' }}></span>
+                            <span style={{ fontSize: '18px', fontWeight: 600 }}>{userInfo && (Number(Number(userInfo['efficiency']).toFixed(userInfo['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + ' ' + t('tags.efficiency.eng'))}</span>
                           </Form.Item>
                           <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                            <span style={{ fontSize: '16px' }}></span>
+                            <span style={{ fontSize: '16px' }}>{userInfo && (userInfo['picks'] + ' ' + t('tags.picksLastRun.eng') + ', ' + Number(Number(userInfo['meters']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.clothMeters.eng'))}</span>
                           </Form.Item>
                           <Form.Item label={<DashboardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                            <span style={{ fontSize: '16px' }}></span>
+                            <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{userInfo && (Number(Number(userInfo['rpm']).toFixed(1)).toLocaleString(i18n.language) + ' ' + t('tags.speedMainDrive.eng') + ', ' + Number(Number(userInfo['mph']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.speedCloth.eng'))}</span>
                           </Form.Item>
                           <Form.Item label={<PieChartOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-
+                            {userInfo && <Space direction="horizontal" style={{ width: '100%', justifyContent: 'start', alignItems: 'start' }} wrap>
+                              {userInfo['starts'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
+                                count={userInfo['starts']} overflowCount={999}
+                                style={{ backgroundColor: '#52c41aff' }}
+                              /><SyncOutlined style={{ fontSize: '130%', color: '#52c41aFF', paddingInline: 5 }} />{duration2text(dayjs.duration(userInfo['runtime']))}</div>}
+                              {Array.isArray(userInfo['stops']) && (userInfo['stops'] as []).map((stop: any) => (
+                                stop[Object.keys(stop)[0]]['total'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
+                                  count={stop[Object.keys(stop)[0]]['total']} overflowCount={999}
+                                  style={{ backgroundColor: stopObj(Object.keys(stop)[0]).color }}
+                                />{stopObj(Object.keys(stop)[0]).icon}{duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
+                              }
+                            </Space>}
                           </Form.Item>
                         </Form>
                       </Skeleton>

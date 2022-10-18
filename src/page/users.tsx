@@ -169,7 +169,7 @@ const Users: React.FC<Props> = ({
   useEffect(() => {
     setActiveInput({ ...activeInput, form: '', id: '' });
     fetchData();
-  }, [editVisible]);
+  }, [editVisible,regVisible]);
 
   useEffect(() => {
     setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
