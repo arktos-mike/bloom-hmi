@@ -25,19 +25,19 @@ interface DataType {
 
 type Props = {
   token: any;
-  shadowUserId: any;
+  shadowUser: any;
 };
 
 const UserReport: React.FC<Props> = ({
   token,
-  shadowUserId
+  shadowUser
 }
 ) => {
   const { t, i18n } = useTranslation();
   const [data, setData] = useState();
   const [users, setUsers] = useState();
   const [total, setTotal] = useState();
-  const [user, setUser] = useState(token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id : Number(shadowUserId));
+  const [user, setUser] = useState(token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id : Number(shadowUser.id));
   const [period, setPeriod] = useState([dayjs().startOf('month'), dayjs()]);
   const [loading, setLoading] = useState(false);
   const [filteredInfo, setFilteredInfo] = useState<Record<string, FilterValue | null>>({});
@@ -239,8 +239,8 @@ const UserReport: React.FC<Props> = ({
   }, [token]);
 
   useEffect(() => {
-    shadowUserId && setUser(Number(shadowUserId));
-  }, [shadowUserId]);
+    shadowUser.id && setUser(Number(shadowUser.id));
+  }, [shadowUser]);
 
   useEffect(() => {
     fetchStatInfo();

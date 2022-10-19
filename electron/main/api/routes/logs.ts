@@ -9,7 +9,7 @@ const router = PromiseRouter();
 // export our router to be mounted by the parent application
 
 router.get('/user', async (req, res) => {
-  const { rows } = await db.query(`SELECT id, name FROM userlog WHERE upper_inf(timestamp) AND role=$1`,['weaver']);
+  const { rows } = await db.query(`SELECT id, name, lower(timestamp) as logintime FROM userlog WHERE upper_inf(timestamp) AND role=$1`,['weaver']);
   res.status(200).send(rows)
 })
 

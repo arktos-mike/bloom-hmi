@@ -65,10 +65,9 @@ const App: React.FC = () => {
       const json = await ans.json();
       if (!ans.ok) { throw Error(ans.statusText); }
       if (json.length && (token && (json[0].id != JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id))) {
-        setShadowUser(json[0].name);
-        setShadowUserId(json[0].id);
+        setShadowUser(json[0]);
       }
-      else { setShadowUser(null); setShadowUserId(null); }
+      else { setShadowUser({ id: null, name: null, logintime: json[0].logintime }) }
     }
     catch (error) { console.log(error); }
   }
@@ -151,8 +150,7 @@ const App: React.FC = () => {
   const [bufferTemp, setBufferTemp] = useState('')
   const [lngs, setLngs] = useState({ data: [] })
   const [token, setToken] = useState<string | null>(null)
-  const [shadowUser, setShadowUser] = useState<string | null>(null)
-  const [shadowUserId, setShadowUserId] = useState(null)
+  const [shadowUser, setShadowUser] = useState({id:null,name:null,logintime:null})
   const [remember, setRemember] = useState(true)
   const [today, setDate] = useState(new Date())
   const [visible, setVisible] = useState(false)
@@ -399,7 +397,7 @@ const App: React.FC = () => {
             <div className="user">
               <div className="user" onClick={showUserDialog}>
                 <Avatar.Group size='large'>
-                  {shadowUser && <Tooltip title={shadowUser} placement="bottom">
+                  {shadowUser['name'] && <Tooltip title={shadowUser['name']} placement="bottom">
                     <Avatar style={{ backgroundColor: "#87d068" }} icon={<UserOutlined />} />
                   </Tooltip>}
                   <Avatar size={50} style={{ backgroundColor: avatarColor() }} icon={<UserOutlined />} />
@@ -422,7 +420,7 @@ const App: React.FC = () => {
                   <Route path={'/machineInfo'} element={<MachineInfo />} />
                   <Route path={'/reports'} element={<MonthReport token={token} />} />
                   <Route path={'/reports/monthReport'} element={<MonthReport token={token} />} />
-                  <Route path={'/reports/userReport'} element={<UserReport token={token} shadowUserId={shadowUserId} />} />
+                  <Route path={'/reports/userReport'} element={<UserReport token={token} shadowUser={shadowUser} />} />
                   <Route path={'/logs'} element={<ModeLog token={token} />} />
                   <Route path={'/logs/modelog'} element={<ModeLog token={token} />} />
                   <Route path={'/logs/userlog'} element={<UserLog token={token} />} />
