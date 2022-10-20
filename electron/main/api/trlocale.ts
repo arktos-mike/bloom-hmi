@@ -212,6 +212,9 @@ const locale = {
     "gw": "Ağ geçidi"
   },
   "panel": {
+    "main": "Çalışma parametreleri",
+    "warpbeam": "Çözgü levendi",
+    "roll": "Kumaş rulo",
     "loom": "tezgah tarafından",
     "weavers": "dokumacılar tarafından",
     "shifts": "vardiyalara göre",

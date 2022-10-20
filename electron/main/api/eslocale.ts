@@ -212,6 +212,9 @@ const locale = {
     "gw": "Puerta de enlace"
   },
   "panel": {
+    "main": "Parámetros de funcionamiento",
+    "warpbeam": "Plegador de urdimbre",
+    "roll": "Rollo de tela",
     "loom": "por telar",
     "weavers": "por tejedores",
     "shifts": "por turnos",

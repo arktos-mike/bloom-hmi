@@ -212,6 +212,9 @@ const locale = {
     "gw": "Gateway"
   },
   "panel": {
+    "main": "Operating parameters",
+    "warpbeam": "Warp beam",
+    "roll": "Cloth roll",
     "loom": "by loom",
     "weavers": "by weavers",
     "shifts": "by shifts",
