@@ -182,7 +182,7 @@ const UserLogin: React.FC<Props> = ({
           <Form.Item name="remember" valuePropName="checked" wrapperCol={{ offset: 8, span: 16 }}>
             <Checkbox>{t('user.remember')}</Checkbox>
           </Form.Item>
-          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+          <Form.Item wrapperCol={{ offset: 8, span: 16 }} style={{ marginTop: 15 }}>
             <Button size="large" type="primary" htmlType="submit" >
               {t('user.login')}
             </Button>

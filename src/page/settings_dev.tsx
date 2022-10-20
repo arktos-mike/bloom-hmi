@@ -247,7 +247,7 @@ const SettingsDev: React.FC<Props> = ({
                 preserve={false}
                 colon={false}
               >
-                <Form.Item label=" " style={{ marginBottom: '0 !important' }}>
+                <Form.Item label=" " >
                   <Form.Item
                     name="com"
                     label={t('rtu.com')}
@@ -265,7 +265,7 @@ const SettingsDev: React.FC<Props> = ({
                     <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} placeholder='rtu.sId' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'rtu', id: 'sId', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
                   </Form.Item>
                 </Form.Item>
-                <Form.Item label=" " >
+                <Form.Item label=" " style={{ marginTop: 10 }} wrapperCol={{ offset: 4, span: 20 }}>
                   <Form.Item name="swapBytes" style={{ display: 'inline-block', width: 'calc(50% - 8px)' }} valuePropName="checked" >
                     <Checkbox userRights={['admin', 'manager']} token={token} text='rtu.swapBytes' ></Checkbox>
                   </Form.Item>
@@ -273,7 +273,7 @@ const SettingsDev: React.FC<Props> = ({
                     <Checkbox userRights={['admin', 'manager']} token={token} text='rtu.swapWords'></Checkbox>
                   </Form.Item>
                 </Form.Item>
-                <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                <Form.Item wrapperCol={{ offset: 8, span: 16 }} style={{ marginTop: 20 }}>
                   <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
                 </Form.Item>
               </Form>
@@ -307,10 +307,10 @@ const SettingsDev: React.FC<Props> = ({
                   name="sId"
                   label={t('rtu.sId')}
                   rules={[{ required: true, message: t('user.fill') }]}
-                >
+                  >
                   <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} placeholder='rtu.sId' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'sId', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
                 </Form.Item>
-                <Form.Item label=" ">
+                <Form.Item label=" " style={{ marginTop: 10 }}>
                   <Form.Item name="swapBytes" style={{ display: 'inline-block', width: 'calc(50% - 8px)' }} valuePropName="checked" >
                     <Checkbox userRights={['admin', 'manager']} token={token} text='rtu.swapBytes' ></Checkbox>
                   </Form.Item>
@@ -318,7 +318,7 @@ const SettingsDev: React.FC<Props> = ({
                     <Checkbox userRights={['admin', 'manager']} token={token} text='rtu.swapWords'></Checkbox>
                   </Form.Item>
                 </Form.Item>
-                <Form.Item wrapperCol={{ offset: 8, span: 16 }} >
+                <Form.Item wrapperCol={{ offset: 8, span: 16 }} style={{ marginTop: 20 }}>
                   <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
                 </Form.Item>
               </Form>
