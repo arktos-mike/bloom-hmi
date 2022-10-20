@@ -189,7 +189,7 @@ const Overview: React.FC<Props> = ({
                             <span style={{ fontSize: '18px', fontWeight: 600 }}>{Number(Number(shift['efficiency']).toFixed(shift['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + ' ' + t('tags.efficiency.eng')}</span>
                           </Form.Item>
                           <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                            <span style={{ fontSize: '16px' }}>{shift['picks'] + ' ' + t('tags.picksLastRun.eng') + ', ' + Number(Number(shift['meters']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.clothMeters.eng')}</span>
+                            <span style={{ fontSize: '16px' }}>{Number(shift['picks']) + ' ' + t('tags.picksLastRun.eng') + ', ' + Number(Number(shift['meters']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.clothMeters.eng')}</span>
                           </Form.Item>
                           <Form.Item label={<DashboardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
                             <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{Number(Number(shift['rpm']).toFixed(1)).toLocaleString(i18n.language) + ' ' + t('tags.speedMainDrive.eng') + ', ' + Number(Number(shift['mph']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.speedCloth.eng')}</span>
@@ -234,7 +234,7 @@ const Overview: React.FC<Props> = ({
                             <span style={{ fontSize: '18px', fontWeight: 600 }}>{userInfo && (Number(Number(userInfo['efficiency']).toFixed(userInfo['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + ' ' + t('tags.efficiency.eng'))}</span>
                           </Form.Item>
                           <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                            <span style={{ fontSize: '16px' }}>{userInfo && (userInfo['picks'] + ' ' + t('tags.picksLastRun.eng') + ', ' + Number(Number(userInfo['meters']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.clothMeters.eng'))}</span>
+                            <span style={{ fontSize: '16px' }}>{userInfo && (Number(userInfo['picks']) + ' ' + t('tags.picksLastRun.eng') + ', ' + Number(Number(userInfo['meters']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.clothMeters.eng'))}</span>
                           </Form.Item>
                           <Form.Item label={<DashboardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
                             <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{userInfo && (Number(Number(userInfo['rpm']).toFixed(1)).toLocaleString(i18n.language) + ' ' + t('tags.speedMainDrive.eng') + ', ' + Number(Number(userInfo['mph']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.speedCloth.eng'))}</span>
