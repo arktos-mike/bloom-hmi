@@ -165,3 +165,115 @@ const CompareChartsDemo = () => {
 };
 export default CompareChartsDemo ;
 */
+
+
+
+/*
+import React, { useState, useEffect } from 'react';
+	import { Column } from '@ant-design/charts';
+
+	const DemoColumn: React.FC = () => {
+
+
+	var data = [
+	    {
+	        name: 'London',
+	         Month: 'Jan.',
+	         Month rainfall: 18.9
+	    },
+	    {
+	        name: 'London',
+	         Month: 'Feb.',
+	         Month rainfall: 28.8
+	    },
+	    {
+	        name: 'London',
+	         Month: 'Mar.',
+	         Month rainfall: 39.3
+	    },
+	    {
+	        name: 'London',
+	         Month: 'Apr.',
+	         Month rainfall: 81.4
+	    },
+	    {
+	        name: 'London',
+	         Month: 'May',
+	         Month rainfall: 47
+	    },
+	    {
+	        name: 'London',
+	         Month: 'Jun.',
+	         Month rainfall: 20.3
+	    },
+	    {
+	        name: 'London',
+	         Month: 'Jul.',
+	         Month rainfall: 24
+	    },
+	    {
+	        name: 'London',
+	         Month: 'Aug.',
+	         Month rainfall: 35.6
+	    },
+	    {
+	        name: 'Berlin',
+	         Month: 'Jan.',
+	         Month rainfall: 12.4
+	    },
+	    {
+	        name: 'Berlin',
+	         Month: 'Feb.',
+	         Month rainfall: 23.2
+	    },
+	    {
+	        name: 'Berlin',
+	         Month: 'Mar.',
+	         Month rainfall: 34.5
+	    },
+	    {
+	        name: 'Berlin',
+	         Month: 'Apr.',
+	         Month rainfall: 99.7
+	    },
+	    {
+	        name: 'Berlin',
+	         Month: 'May',
+	         Month rainfall: 52.6
+	    },
+	    {
+	        name: 'Berlin',
+	         Month: 'Jun.',
+	         Month rainfall: 35.5
+	    },
+	    {
+	        name: 'Berlin',
+	         Month: 'Jul.',
+	         Month rainfall: 37.4
+	    },
+	    {
+	        name: 'Berlin',
+	         Month: 'Aug.',
+	         Month rainfall: 42.4
+	    }
+	];
+	var config = {
+	    data: data,
+	    isGroup: true,
+	    xField: 'month',
+	    yField: 'Month Rainfall',
+	    seriesField: 'name',
+	    label: {
+	        position: 'middle',
+	        layout: [
+	            { type: 'interval-adjust-position' },
+	            { type: 'interval-hide-overlap' },
+	            { type: 'adjust-color' }
+	        ]
+	    }
+	};
+	  return <Column {...config} />;
+	};
+
+	export default DemoColumn;
+*/
