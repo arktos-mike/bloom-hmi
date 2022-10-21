@@ -1,15 +1,15 @@
-import { Display } from '@/components';
+import { Display, Donut } from '@/components';
 import { Badge, Card, Carousel, Col, Form, Row, Skeleton, Space } from 'antd';
 import { ToolOutlined, QuestionCircleOutlined, LoginOutlined, IdcardOutlined, RiseOutlined, PieChartOutlined, SyncOutlined, ClockCircleOutlined, ScheduleOutlined, DashboardOutlined, AimOutlined } from '@ant-design/icons';
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
+
 import { FabricFullIcon, ButtonIcon, WeftIcon, FabricPieceIcon, FabricPieceLengthIcon, WarpBeamIcon, WarpBeamsIcon } from '@/components/Icons';
 
 const cardStyle = { background: "whitesmoke", width: '100%', display: 'flex', flexDirection: 'column' as 'column' }
 const cardHeadStyle = { background: "#1890ff", color: "white" }
 const cardBodyStyle = { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' as 'column' }
-
 
 type Props = {
   shadowUser: any;
@@ -33,7 +33,6 @@ const Overview: React.FC<Props> = ({
   const [userInfo, setUserInfo] = useState()
   const div = useRef<HTMLDivElement | null>(null);
   const contentStyle = { height: height, margin: '1px' };
-  const dotsClass = { marginTop: '-15px' };
   let isSubscribed = true;
 
   const duration2text = (diff: any) => {
@@ -124,6 +123,7 @@ const Overview: React.FC<Props> = ({
     dayjs.locale(i18n.language)
   }, [i18n.language])
 
+
   return (
     <div ref={div} className='wrapper'>
       <Carousel dotPosition='top'>
@@ -170,49 +170,53 @@ const Overview: React.FC<Props> = ({
                   {shift['name'] && <Row style={{ marginBottom: '8px', flex: ((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
                     <Card title={t('shift.shift')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
                       <Skeleton loading={loading} round active>
-                        <Form
-                          labelCol={{ span: 2 }}
-                          wrapperCol={{ span: 22 }}
-                          size='small'
-                          form={formShift}
-                          style={{ width: '100%' }}
-                          preserve={false}
-                          colon={false}
-                        >
-                          <Form.Item label={<ScheduleOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                            <Form.Item style={{ display: 'inline-block' }} >
-                              <span style={{ fontSize: '24px' }}>{t('shift.shift') + ' ' + shift['name']}</span>
+                        <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                          <Form
+                            labelCol={{ span: 2 }}
+                            wrapperCol={{ span: 22 }}
+                            size='small'
+                            form={formShift}
+                            style={{ width: '80%' }}
+                            preserve={false}
+                            colon={false}
+                          >
+                            <Form.Item label={<ScheduleOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
+                              <Form.Item style={{ display: 'inline-block' }} >
+                                <span style={{ fontSize: '24px' }}>{t('shift.shift') + ' ' + shift['name']}</span>
+                              </Form.Item>
+                              <Form.Item label={<RiseOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }}>
+                                <span style={{ fontSize: '24px' }}>{Number(Number(shift['efficiency']).toFixed(shift['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + ' ' + t('tags.efficiency.eng')}</span>
+                              </Form.Item>
                             </Form.Item>
-                            <Form.Item label={<RiseOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }}>
-                              <span style={{ fontSize: '24px' }}>{Number(Number(shift['efficiency']).toFixed(shift['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + ' ' + t('tags.efficiency.eng')}</span>
+                            <Form.Item label={<ClockCircleOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
+                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{dayjs(shift['start']).format('LL LT') + ' - ' + dayjs(shift['end']).format('LL LT') + ', ' + duration2text(dayjs.duration(shift['duration'])) + ''}</span>
                             </Form.Item>
-                          </Form.Item>
-                          <Form.Item label={<ClockCircleOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                            <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{dayjs(shift['start']).format('LL LT') + ' - ' + dayjs(shift['end']).format('LL LT') + ', ' + duration2text(dayjs.duration(shift['duration'])) + ''}</span>
-                          </Form.Item>
-                          <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ marginBottom: 0 }} >
-                            <Form.Item style={{ display: 'inline-block' }} >
-                              <span style={{ fontSize: '16px' }}>{Number(shift['picks']) + ' ' + t('tags.picksLastRun.eng') + ', ' + Number(Number(shift['meters']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.clothMeters.eng')}</span>
+                            <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ marginBottom: 0 }} >
+                              <Form.Item style={{ display: 'inline-block' }} >
+                                <span style={{ fontSize: '16px' }}>{Number(shift['picks']) + ' ' + t('tags.picksLastRun.eng') + ', ' + Number(Number(shift['meters']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.clothMeters.eng')}</span>
+                              </Form.Item>
+                              <Form.Item label={<DashboardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }} >
+                                <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{Number(Number(shift['rpm']).toFixed(1)).toLocaleString(i18n.language) + ' ' + t('tags.speedMainDrive.eng') + ', ' + Number(Number(shift['mph']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.speedCloth.eng')}</span>
+                              </Form.Item>
                             </Form.Item>
-                            <Form.Item label={<DashboardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }} >
-                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{Number(Number(shift['rpm']).toFixed(1)).toLocaleString(i18n.language) + ' ' + t('tags.speedMainDrive.eng') + ', ' + Number(Number(shift['mph']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.speedCloth.eng')}</span>
+                            <Form.Item label={<PieChartOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
+                              <Space direction="horizontal" style={{ width: '100%', justifyContent: 'start', alignItems: 'start' }} wrap>
+                                {shift['starts'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
+                                  count={shift['starts']} overflowCount={999}
+                                  style={{ backgroundColor: '#52c41aff' }}
+                                /><SyncOutlined style={{ fontSize: '130%', color: '#52c41aFF', paddingInline: 5 }} />{duration2text(dayjs.duration(shift['runtime']))}</div>}
+                                {Array.isArray(shift['stops']) && shift['stops'].map((stop: any) => (
+                                  stop[Object.keys(stop)[0]]['total'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
+                                    count={stop[Object.keys(stop)[0]]['total']} overflowCount={999}
+                                    style={{ backgroundColor: stopObj(Object.keys(stop)[0]).color }}
+                                  />{stopObj(Object.keys(stop)[0]).icon}{duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
+                                }
+                              </Space>
                             </Form.Item>
-                          </Form.Item>
-                          <Form.Item label={<PieChartOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                            <Space direction="horizontal" style={{ width: '100%', justifyContent: 'start', alignItems: 'start' }} wrap>
-                              {shift['starts'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
-                                count={shift['starts']} overflowCount={999}
-                                style={{ backgroundColor: '#52c41aff' }}
-                              /><SyncOutlined style={{ fontSize: '130%', color: '#52c41aFF', paddingInline: 5 }} />{duration2text(dayjs.duration(shift['runtime']))}</div>}
-                              {Array.isArray(shift['stops']) && shift['stops'].map((stop: any) => (
-                                stop[Object.keys(stop)[0]]['total'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
-                                  count={stop[Object.keys(stop)[0]]['total']} overflowCount={999}
-                                  style={{ backgroundColor: stopObj(Object.keys(stop)[0]).color }}
-                                />{stopObj(Object.keys(stop)[0]).icon}{duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
-                              }
-                            </Space>
-                          </Form.Item>
-                        </Form>
+                          </Form>
+                          <div style={{ width: '20%', height: height && height / 3 }}>
+                            <Donut />
+                          </div></div>
                       </Skeleton>
                     </Card>
                   </Row>}
