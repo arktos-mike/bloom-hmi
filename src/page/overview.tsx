@@ -238,7 +238,7 @@ const Overview: React.FC<Props> = ({
                             </Form.Item>
                           </Form>
                           <div style={{ width: '20%', height: height && height / 4 }}>
-                            <Donut data={shiftDonut} selected={shiftDonutSel} text={t('shift.shift') + ' ' + shift['name'] + '\n'} colors={['#52c41aFF', '#7339ABFF', '#005498FF', '#E53935FF', '#FFB300FF', '#FF7F27FF', '#000000FF']} />
+                            <Donut data={shiftDonut} selected={shiftDonutSel} text={t('shift.shift') + ' ' + shift['name'] + '\n' + (Number(Number(shift['efficiency']).toFixed(shift['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng'))} colors={['#52c41aFF', '#7339ABFF', '#005498FF', '#E53935FF', '#FFB300FF', '#FF7F27FF', '#000000FF']} />
                           </div></div>
                       </Skeleton>
                     </Card>
@@ -291,7 +291,7 @@ const Overview: React.FC<Props> = ({
                             </Form.Item>
                           </Form>
                           <div style={{ width: '20%', height: height && height / 4 }}>
-                            <Donut data={userDonut} selected={userDonutSel} text={t('user.weaver') + '\n'} colors={['#52c41aFF', '#7339ABFF', '#005498FF', '#E53935FF', '#FFB300FF', '#FF7F27FF', '#000000FF']} />
+                            <Donut data={userDonut} selected={userDonutSel} text={t('user.weaver') + '\n' + (userInfo && (Number(Number(userInfo['efficiency']).toFixed(userInfo['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng')))} colors={['#52c41aFF', '#7339ABFF', '#005498FF', '#E53935FF', '#FFB300FF', '#FF7F27FF', '#000000FF']} />
                           </div></div>
                       </Skeleton>
                     </Card>
