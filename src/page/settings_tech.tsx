@@ -94,7 +94,7 @@ const SettingsTech: React.FC<Props> = ({
 
   const getTag = (tagName: string) => {
     let obj = tags.data.find((o: any) => o['tag']['name'] == tagName)
-    if (obj) { return obj['tag']; }
+    if (obj) { return { ...obj['tag'], link: obj['link'] }; }
     else { return null };
   }
   const getTagVal = (tagName: string): string => {
@@ -113,7 +113,7 @@ const SettingsTech: React.FC<Props> = ({
     try {
       const newData = tags.data;
       const index = newData.findIndex((o: any) => o['tag']['name'] == tagName);
-      if (newData[index] && (newData[index]['val'] != tagValue) && (newData[index]['tag']['min'] <= tagValue) && (newData[index]['tag']['max'] >= tagValue)) {
+      if (newData[index] && (newData[index]['link'] == null || newData[index]['link'] == true) && (newData[index]['val'] != tagValue) && (newData[index]['tag']['min'] <= tagValue) && (newData[index]['tag']['max'] >= tagValue)) {
         const response = await fetch((newData[index]['tag']['dev'].includes('rtu')) ? 'http://localhost:3000/tags/writeTagRTU' : 'http://localhost:3000/tags/writeTag', {
           method: 'POST',
           headers: { 'content-type': 'application/json;charset=UTF-8', },
@@ -160,7 +160,9 @@ const SettingsTech: React.FC<Props> = ({
                   <Display value={getTagVal('warpBeamLength')} tag={getTag('warpBeamLength')} />
                   <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<RedoOutlined style={{ fontSize: '150%' }} />} size="large" type="primary" style={{ margin: 10 }} onClick={confirmFullWarpBeam} ></Button>
                 </div>
-                <InputNumber className="narrow" eng descr value={activeInput.id == ('warpLength') ? activeInput.input : getTagVal('fullWarpBeamLength')} tag={getTag('fullWarpBeamLength')} userRights={['admin', 'manager']} token={token} placeholder='tags.fullWarpBeamLength.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('fullWarpBeamLength', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'warp', id: 'warpLength', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
+                <div style={{ marginTop: '15px', width: '75%' }}>
+                  <InputNumber className="narrow" eng descr value={activeInput.id == ('warpLength') ? activeInput.input : getTagVal('fullWarpBeamLength')} tag={getTag('fullWarpBeamLength')} userRights={['admin', 'manager']} token={token} placeholder='tags.fullWarpBeamLength.descr' controls={false} onUpdate={(value: any) => { setTagVal('fullWarpBeamLength', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'warp', id: 'warpLength', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
+                </div>
               </Skeleton>
             </Card>
           </Row>
@@ -172,7 +174,9 @@ const SettingsTech: React.FC<Props> = ({
                   <Display value={getTagVal('orderLength')} tag={getTag('orderLength')} />
                   <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<RedoOutlined style={{ fontSize: '150%' }} />} size="large" type="primary" style={{ margin: 10 }} onClick={confirmNullOrder} ></Button>
                 </div>
-                <InputNumber className="narrow" eng descr value={activeInput.id == ('orderLength') ? activeInput.input : getTagVal('planOrderLength')} tag={getTag('planOrderLength')} userRights={['admin', 'manager']} token={token} placeholder='tags.planOrderLength.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('planOrderLength', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'orderLength', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
+                <div style={{ marginTop: '15px', width: '75%' }}>
+                  <InputNumber className="narrow" eng descr value={activeInput.id == ('orderLength') ? activeInput.input : getTagVal('planOrderLength')} tag={getTag('planOrderLength')} userRights={['admin', 'manager']} token={token} placeholder='tags.planOrderLength.descr' controls={false} onUpdate={(value: any) => { setTagVal('planOrderLength', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'orderLength', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
+                </div>
               </Skeleton>
             </Card>
           </Row>
@@ -180,9 +184,15 @@ const SettingsTech: React.FC<Props> = ({
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('panel.setpoints')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} >
             <Skeleton loading={loading} round active>
-              <InputNumber className="narrow" eng descr value={activeInput.id == ('speed') ? activeInput.input : getTagVal('planSpeedMainDrive')} tag={getTag('planSpeedMainDrive')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.planSpeedMainDrive.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('planSpeedMainDrive', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'speed', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
-              <InputNumber className="narrow" eng descr value={activeInput.id == ('density') ? activeInput.input : getTagVal('planClothDensity')} tag={getTag('planClothDensity')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.planClothDensity.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('planClothDensity', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'density', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
-              <InputNumber className="narrow" eng descr value={activeInput.id == ('shrink') ? activeInput.input : getTagVal('warpShrinkage')} tag={getTag('warpShrinkage')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.warpShrinkage.descr' style={{ marginTop: '15px', width: '75%' }} controls={false} onUpdate={(value: any) => { setTagVal('warpShrinkage', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'shrink', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
+              <div style={{ marginTop: '15px', width: '75%' }}>
+                <InputNumber className="narrow" eng descr value={activeInput.id == ('speed') ? activeInput.input : getTagVal('planSpeedMainDrive')} tag={getTag('planSpeedMainDrive')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.planSpeedMainDrive.descr' controls={false} onUpdate={(value: any) => { setTagVal('planSpeedMainDrive', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'speed', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
+              </div>
+              <div style={{ marginTop: '15px', width: '75%' }}>
+                <InputNumber className="narrow" eng descr value={activeInput.id == ('density') ? activeInput.input : getTagVal('planClothDensity')} tag={getTag('planClothDensity')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.planClothDensity.descr' controls={false} onUpdate={(value: any) => { setTagVal('planClothDensity', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'density', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
+              </div>
+              <div style={{ marginTop: '15px', width: '75%' }}>
+                <InputNumber className="narrow" eng descr value={activeInput.id == ('shrink') ? activeInput.input : getTagVal('warpShrinkage')} tag={getTag('warpShrinkage')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.warpShrinkage.descr' controls={false} onUpdate={(value: any) => { setTagVal('warpShrinkage', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'shrink', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
+              </div>
             </Skeleton>
           </Card>
         </Col>

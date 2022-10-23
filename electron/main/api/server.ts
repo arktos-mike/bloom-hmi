@@ -80,15 +80,15 @@ const dbInit = async () => {
     const comConf = { opCOM1: { path: com1.path, conf: { baudRate: 230400, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 500 }, opCOM2: { path: com2.path, conf: { baudRate: 115200, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 0 } }
     const rtuConf = { rtu1: { com: 'opCOM1', sId: 1, swapBytes: true, swapWords: true } }
     const tags = [
-      { tag: { name: "stopAngle", group: "monitoring", dev: "rtu1", addr: "6", type: "word", reg: "r", min: 0, max: 359, dec: 0 } },
-      { tag: { name: "orderLength", group: "monitoring", dev: "rtu1", addr: "4", type: "float", reg: "r", min: 0, max: 1000, dec: 2 } },
-      { tag: { name: "speedMainDrive", group: "monitoring", dev: "rtu1", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 } },
-      { tag: { name: "modeCode", group: "monitoring", dev: "rtu1", addr: "8", type: "word", reg: "r", min: 0, max: 3, dec: 0 } },
-      { tag: { name: "picksLastRun", group: "monitoring", dev: "rtu1", addr: "0", type: "dword", reg: "r", min: 0, max: 4294967295, dec: 0 } },
-      { tag: { name: "modeControl", group: "setting", dev: "rtu1", addr: "12", type: "word", reg: "rw", min: 0, max: 65535, dec: 0 } },
+      { tag: { name: "stopAngle", group: "monitoring", dev: "rtu1", addr: "6", type: "word", reg: "r", min: 0, max: 359, dec: 0 }, link: false },
+      { tag: { name: "orderLength", group: "monitoring", dev: "rtu1", addr: "4", type: "float", reg: "r", min: 0, max: 1000, dec: 2 }, link: false },
+      { tag: { name: "speedMainDrive", group: "monitoring", dev: "rtu1", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, link: false },
+      { tag: { name: "modeCode", group: "monitoring", dev: "rtu1", addr: "8", type: "word", reg: "r", min: 0, max: 3, dec: 0 }, link: false },
+      { tag: { name: "picksLastRun", group: "monitoring", dev: "rtu1", addr: "0", type: "dword", reg: "r", min: 0, max: 4294967295, dec: 0 }, link: false },
+      { tag: { name: "modeControl", group: "setting", dev: "rtu1", addr: "12", type: "word", reg: "rw", min: 0, max: 65535, dec: 0 }, link: false },
       { tag: { name: "planSpeedMainDrive", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 600, dec: 1 }, val: 200.0 },
-      { tag: { name: "planClothDensity", group: "setting", dev: "rtu1", type: "float", addr: "10", reg: "rw", min: 0.5, max: 1000, dec: 2 } },
-      { tag: { name: "planOrderLength", group: "setting", dev: "rtu1", type: "float", addr: "14", reg: "rw", min: 0, max: 1000, dec: 2 } },
+      { tag: { name: "planClothDensity", group: "setting", dev: "rtu1", type: "float", addr: "10", reg: "rw", min: 0.5, max: 1000, dec: 2 }, link: false },
+      { tag: { name: "planOrderLength", group: "setting", dev: "rtu1", type: "float", addr: "14", reg: "rw", min: 0, max: 1000, dec: 2 }, link: false },
       { tag: { name: "warpShrinkage", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 100, dec: 1 }, val: 1.0 },
       { tag: { name: "fullWarpBeamLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
       { tag: { name: "warpBeamLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
@@ -96,7 +96,7 @@ const dbInit = async () => {
 
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['rtuConf', rtuConf])
-    await db.query('INSERT INTO tags(tag,val) SELECT * FROM jsonb_to_recordset($1) as x(tag jsonb, val numeric) ON CONFLICT (tag) DO NOTHING;', [JSON.stringify(tags)])
+    await db.query('INSERT INTO tags(tag,val,link) SELECT * FROM jsonb_to_recordset($1) as x(tag jsonb, val numeric, link boolean) ON CONFLICT (tag) DO NOTHING;', [JSON.stringify(tags)])
     bcrypt.hash('123456', 10, async (err, hash) => {
       await db.query(`INSERT INTO users (id, name, password, role) VALUES(1,'Admin',$1,'admin') ON CONFLICT (id) DO NOTHING;`, [hash])
     });
@@ -141,7 +141,7 @@ dbInit();
 //==============================================================
 const connectClient = async function (client, port) {
   // set requests parameters
-  await client.setTimeout(port.timeout ? port.timeout : 1000);
+  await client.setTimeout(port.timeout ? port.timeout : 50);
   // try to connect
   try {
     await client.connectRTUBuffered(port.path, port.conf)
@@ -252,13 +252,14 @@ const readModbusData = async function (client, port, slave) {
               port.mbsState = MBS_STATE_GOOD_READ;
               mbsStatus = "success";
               let val = data.buffer[0];
-              db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 and tag->>$4=$5 AND val IS DISTINCT FROM $1;', [val, 'dev', slave.name, 'name', tag.name]);
+              db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false);', [val, 'dev', slave.name, 'name', tag.name]);
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             } catch (e) {
               port.mbsState = MBS_STATE_FAIL_READ;
-              mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
-              console.log(mbsStatus);
+              //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
+              //console.log(mbsStatus);
+              db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true', ['dev', slave.name, 'name', tag.name]);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             }
             break;
@@ -282,13 +283,14 @@ const readModbusData = async function (client, port, slave) {
                 default:
                   break;
               }
-              db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 and tag->>$4=$5 AND val IS DISTINCT FROM $1;', [val, 'dev', slave.name, 'name', tag.name]);
+              db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false);', [val, 'dev', slave.name, 'name', tag.name]);
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             } catch (e) {
               port.mbsState = MBS_STATE_FAIL_READ;
-              mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
-              console.log(mbsStatus);
+              //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
+              //console.log(mbsStatus);
+              db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true;', ['dev', slave.name, 'name', tag.name]);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             }
             break;
@@ -302,13 +304,14 @@ const readModbusData = async function (client, port, slave) {
               port.mbsState = MBS_STATE_GOOD_READ;
               mbsStatus = "success";
               let val = data.buffer[0];
-              db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 and tag->>$4=$5 AND val IS DISTINCT FROM $1;', [val, 'dev', slave.name, 'name', tag.name]);
+              db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false);', [val, 'dev', slave.name, 'name', tag.name]);
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             } catch (e) {
               port.mbsState = MBS_STATE_FAIL_READ;
-              mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
-              console.log(mbsStatus);
+              //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
+              //console.log(mbsStatus);
+              db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true;', ['dev', slave.name, 'name', tag.name]);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             }
             break;
@@ -332,13 +335,14 @@ const readModbusData = async function (client, port, slave) {
                 default:
                   break;
               }
-              db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 and tag->>$4=$5 AND val IS DISTINCT FROM $1;', [val, 'dev', slave.name, 'name', tag.name]);
+              db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false);', [val, 'dev', slave.name, 'name', tag.name]);
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             } catch (e) {
               port.mbsState = MBS_STATE_FAIL_READ;
-              mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
-              console.log(mbsStatus);
+              //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
+              //console.log(mbsStatus);
+              db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true;', ['dev', slave.name, 'name', tag.name]);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             }
             break;

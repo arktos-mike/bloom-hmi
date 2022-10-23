@@ -111,7 +111,7 @@ const locale = {
       "descr": "Take up gear ratio",
     },
     "mode": {
-      "init": "Init",
+      "init": "Standby",
       "stop": "Stop",
       "ready": "Tuning",
       "run": "Run",

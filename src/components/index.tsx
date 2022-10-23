@@ -11,3 +11,4 @@ export { default as Options } from './Options';
 export { default as Display } from './Display';
 export { default as Select } from './Select';
 export { default as Donut } from './Donut';
+export { default as Breadcrumb } from './Breadcrumb';

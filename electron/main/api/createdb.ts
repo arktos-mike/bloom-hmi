@@ -7,7 +7,8 @@ DROP TABLE IF EXISTS tags;
 CREATE TABLE tags (
   tag JSONB PRIMARY KEY NOT NULL,
   val NUMERIC,
-  updated TIMESTAMPTZ not null default current_timestamp
+  updated TIMESTAMPTZ not null default current_timestamp,
+  link BOOLEAN
 );
 CREATE INDEX IF NOT EXISTS idxgingroup ON tags USING gin ((tag -> 'group'));
 CREATE INDEX IF NOT EXISTS idxginname ON tags USING gin ((tag -> 'name'));

@@ -6,7 +6,7 @@ import db from '../../db'
 const router = PromiseRouter();
 // export our router to be mounted by the parent application
 router.get('/', async (req, res) => {
-  const { rows } = await db.query('SELECT tag, val, updated FROM tags ORDER BY tag->>$1', ['name']);
+  const { rows } = await db.query('SELECT tag, val, updated, link FROM tags ORDER BY tag->>$1', ['name']);
   res.status(200).send(rows)
 })
 
@@ -14,14 +14,14 @@ router.post('/writeTag', async (req, res) => {
   const { name, value } = req.body;
   try {
     if (value!=null){
-    await db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 AND val IS DISTINCT FROM $1;', [value, 'name', name]);
+    await db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 AND val IS DISTINCT FROM $1 AND link=true ;', [value, 'name', name]);
     res.status(200).send({
       message: "Writing data to tag",
       body: { name, value },
     })
   } else {
     res.status(500).send({
-      error: "Null value",
+      error: "Null value or no link",
       body: { name, value },
     })
   }
@@ -37,7 +37,7 @@ router.post('/writeTag', async (req, res) => {
 router.post('/filter', async (req, res) => {
   const filter = req.body;
   try {
-    const data = await db.query(`SELECT tag, val, updated FROM tags WHERE tag->>$1 = ANY ('{${filter[Object.keys(filter)[0]]}}') ORDER BY tag->>$1`, [Object.keys(filter)[0]]);
+    const data = await db.query(`SELECT tag, val, updated, link FROM tags WHERE tag->>$1 = ANY ('{${filter[Object.keys(filter)[0]]}}') ORDER BY tag->>$1`, [Object.keys(filter)[0]]);
     const arr = data.rows;
     if (arr.length == 0) {
       return res.status(400).json({

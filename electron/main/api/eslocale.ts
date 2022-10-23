@@ -111,7 +111,7 @@ const locale = {
       "descr": "Transmisión de rodillo de recogida",
     },
     "mode": {
-      "init": "Init",
+      "init": "Espera",
       "stop": "Detener",
       "ready": "Afinación",
       "run": "Correr",

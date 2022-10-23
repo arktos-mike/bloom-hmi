@@ -111,7 +111,7 @@ const locale = {
       "descr": "Dişli oranını al",
     },
     "mode": {
-      "init": "Giriş",
+      "init": "Hazırol",
       "stop": "Dur",
       "ready": "Ayarlama",
       "run": "Koş",

@@ -1,5 +1,5 @@
 import { Display, Donut } from '@/components';
-import { Badge, Card, Carousel, Col, Form, Row, Skeleton, Space } from 'antd';
+import { Badge, Card, Carousel, Col, Descriptions, Form, Row, Skeleton, Space } from 'antd';
 import { ToolOutlined, QuestionCircleOutlined, LoginOutlined, IdcardOutlined, RiseOutlined, PieChartOutlined, SyncOutlined, ClockCircleOutlined, ScheduleOutlined, DashboardOutlined, AimOutlined } from '@ant-design/icons';
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next';
@@ -31,10 +31,11 @@ const Overview: React.FC<Props> = ({
   const [tags, setTags] = useState({ data: [] as any })
   const [loading, setLoading] = useState(true)
   const [userInfo, setUserInfo] = useState()
+  const [userDonut, setUserDonut] = useState([] as any)
   const div = useRef<HTMLDivElement | null>(null);
   const contentStyle = { height: height, margin: '1px' };
   let isSubscribed = true;
-  const data = [{ value: 10, reason: 'button', color: '#7339ABFF' }, { value: 50, reason: 'run', color: '#52c41aff' }, { value: dayjs().second(), reason: 'other', color: '#000000FF' }];
+
   const duration2text = (diff: any) => {
     if (diff == null) return null
     return (diff.days() > 0 ? diff.days() + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + t('shift.secs') : "")
@@ -72,6 +73,12 @@ const Overview: React.FC<Props> = ({
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
       setUserInfo(json[0]);
+      let obj=[]
+      obj.push({ reason: 'run', value: dayjs.duration(json[0]['runtime']).asMilliseconds(), count: Number(json[0]['starts']) })
+      for (let stop of json[0]['stops']) {
+        obj.push({ reason: Object.keys(stop)[0], value: dayjs.duration(stop[Object.keys(stop)[0]]['dur']).asMilliseconds(), count: stop[Object.keys(stop)[0]]['total'] })
+      }
+      setUserDonut(obj);
       setLoading(false)
     }
     catch (error) { console.log(error); }
@@ -92,7 +99,7 @@ const Overview: React.FC<Props> = ({
   }
   const getTag = (tagName: string) => {
     let obj = tags.data.find((o: any) => o['tag']['name'] == tagName)
-    if (obj) { return obj['tag']; }
+    if (obj) { return { ...obj['tag'], link: obj['link'] }; }
     else { return null };
   }
   const getTagVal = (tagName: string): string => {
@@ -215,7 +222,7 @@ const Overview: React.FC<Props> = ({
                             </Form.Item>
                           </Form>
                           <div style={{ width: '20%', height: height && height / 4 }}>
-                            <Donut data={data} />
+                            <Donut data={userDonut} />
                           </div></div>
                       </Skeleton>
                     </Card>
@@ -223,36 +230,36 @@ const Overview: React.FC<Props> = ({
                   {((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) && <Row style={{ flex: shift['name'] ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex', marginBottom: '2px', }}>
                     <Card title={t('user.weaver')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
                       <Skeleton loading={loading} round active>
-                        <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-                          <Form
-                            labelCol={{ span: 2 }}
-                            wrapperCol={{ span: 22 }}
-                            size='small'
-                            form={formWeaver}
-                            style={{ width: '80%' }}
-                            preserve={false}
-                            colon={false}
-                          >
-                            <Form.Item label={<IdcardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                              <Form.Item style={{ display: 'inline-block' }} >
-                                <span style={{ fontSize: '24px' }}>{token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : shadowUser.name}</span>
-                              </Form.Item>
-                              <Form.Item label={<RiseOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }}>
-                                <span style={{ fontSize: '24px' }}>{userInfo && (Number(Number(userInfo['efficiency']).toFixed(userInfo['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + ' ' + t('tags.efficiency.eng'))}</span>
-                              </Form.Item>
+                        <Form
+                          labelCol={{ span: 2 }}
+                          wrapperCol={{ span: 22 }}
+                          size='small'
+                          form={formWeaver}
+                          style={{ width: '100%' }}
+                          preserve={false}
+                          colon={false}
+                        >
+                          <Form.Item label={<IdcardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
+                            <Form.Item style={{ display: 'inline-block' }} >
+                              <span style={{ fontSize: '24px' }}>{token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : shadowUser.name}</span>
                             </Form.Item>
-                            <Form.Item label={<LoginOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{dayjs(shadowUser.logintime).format('LL LTS') + ', ' + (userInfo && duration2text(dayjs.duration(userInfo['workdur'])))}</span>
+                            <Form.Item label={<RiseOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }}>
+                              <span style={{ fontSize: '24px' }}>{userInfo && (Number(Number(userInfo['efficiency']).toFixed(userInfo['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + ' ' + t('tags.efficiency.eng'))}</span>
                             </Form.Item>
-                            <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ marginBottom: 0 }} >
-                              <Form.Item style={{ display: 'inline-block' }} >
-                                <span style={{ fontSize: '16px' }}>{userInfo && (Number(userInfo['picks']) + ' ' + t('tags.picksLastRun.eng') + ', ' + Number(Number(userInfo['meters']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.clothMeters.eng'))}</span>
-                              </Form.Item>
-                              <Form.Item label={<DashboardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }} >
-                                <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{userInfo && (Number(Number(userInfo['rpm']).toFixed(1)).toLocaleString(i18n.language) + ' ' + t('tags.speedMainDrive.eng') + ', ' + Number(Number(userInfo['mph']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.speedCloth.eng'))}</span>
-                              </Form.Item>
+                          </Form.Item>
+                          <Form.Item label={<LoginOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
+                            <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{dayjs(shadowUser.logintime).format('LL LTS') + ', ' + (userInfo && duration2text(dayjs.duration(userInfo['workdur'])))}</span>
+                          </Form.Item>
+                          <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ marginBottom: 0 }} >
+                            <Form.Item style={{ display: 'inline-block' }} >
+                              <span style={{ fontSize: '16px' }}>{userInfo && (Number(userInfo['picks']) + ' ' + t('tags.picksLastRun.eng') + ', ' + Number(Number(userInfo['meters']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.clothMeters.eng'))}</span>
                             </Form.Item>
-                            <Form.Item label={<PieChartOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
+                            <Form.Item label={<DashboardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }} >
+                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{userInfo && (Number(Number(userInfo['rpm']).toFixed(1)).toLocaleString(i18n.language) + ' ' + t('tags.speedMainDrive.eng') + ', ' + Number(Number(userInfo['mph']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.speedCloth.eng'))}</span>
+                            </Form.Item>
+                          </Form.Item>
+                          <Form.Item label={<PieChartOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
+                            <Form.Item style={{ display: 'inline-block', width: '80%' }} >
                               {userInfo && <Space direction="horizontal" style={{ width: '100%', justifyContent: 'start', alignItems: 'start' }} wrap>
                                 {userInfo['starts'] > 0 && <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
                                   count={userInfo['starts']} overflowCount={999}
@@ -266,10 +273,11 @@ const Overview: React.FC<Props> = ({
                                 }
                               </Space>}
                             </Form.Item>
-                          </Form>
-                          <div style={{ width: '20%', height: height && height / 4 }}>
-                            <Donut data={data} />
-                          </div></div>
+                            <Form.Item style={{ display: 'inline-block', width: '20%', height: height && height / 10 }} >
+                              <Donut data={userDonut} />
+                            </Form.Item>
+                          </Form.Item>
+                        </Form>
                       </Skeleton>
                     </Card>
                   </Row>}
@@ -277,25 +285,24 @@ const Overview: React.FC<Props> = ({
               </Row>
             </div></div></div>
         <div>
-          <div style={contentStyle}>
-            <h1>{t('menu.overview')}</h1>
+          <div style={{ ...contentStyle, maxHeight: '100', overflowY: 'auto' }}>
             <div >
               <Skeleton loading={loading} round active>
-                <ol>
+                <Descriptions column={24} size='small' >
                   {
                     (tags.data || []).map((tag: any) => (
-                      <li key={tag['tag']['name']} style={{ textAlign: 'start' }}>
-                        <code>{['modeCode', 'modeControl'].includes(tag['tag']['name']) ? t('tags.modeControl.descr') : t('tags.' + tag['tag']['name'] + '.descr')}</code>&emsp;<b>{getTagVal(tag['tag']['name']) + ' ' + (['modeCode', 'modeControl'].includes(tag['tag']['name']) ? '' : t('tags.' + tag['tag']['name'] + '.eng'))}</b>&emsp;{dayjs(tag['updated']).format('L LTS.SSS')}
-                      </li>
+                      <React.Fragment key={tag['tag']['name']}>
+                        <Descriptions.Item span={1} contentStyle={{ justifyContent: 'center' }}><Badge status={tag['link'] == null ? 'default' : tag['link'] == true ? 'success' : 'error'} /></Descriptions.Item><Descriptions.Item span={8}>{['modeCode', 'modeControl'].includes(tag['tag']['name']) ? t('tags.modeControl.descr') : t('tags.' + tag['tag']['name'] + '.descr')}</Descriptions.Item><Descriptions.Item span={9}><b>{getTagVal(tag['tag']['name'])}</b>&nbsp;{(['modeCode', 'modeControl'].includes(tag['tag']['name']) ? '' : t('tags.' + tag['tag']['name'] + '.eng'))}</Descriptions.Item><Descriptions.Item span={6}>{dayjs(tag['updated']).format('LL LTS.SSS')}</Descriptions.Item>
+                      </React.Fragment>
                     ))
                   }
-                </ol>
+                </Descriptions>
               </Skeleton>
             </div>
           </div>
         </div>
       </Carousel >
-    </div>
+    </div >
   )
 }
 

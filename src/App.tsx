@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import logo from '/icon.svg'
 import 'styles/app.less'
 import { Route, Link, Routes, useLocation, Navigate } from 'react-router-dom';
-import { Layout, Menu, Select, Drawer, Button, Input, notification, ConfigProvider, Breadcrumb, Space, Progress, Avatar, Tooltip } from 'antd';
+import { Layout, Menu, Select, Drawer, Button, Input, notification, ConfigProvider, Space, Progress, Avatar, Tooltip, Spin } from 'antd';
 import { ReconciliationOutlined, TagsOutlined, ReadOutlined, ScheduleOutlined, ToolOutlined, QuestionCircleOutlined, SyncOutlined, LoadingOutlined, AimOutlined, DashboardOutlined, CloseCircleTwoTone, EyeTwoTone, EyeInvisibleOutlined, GlobalOutlined, CloseOutlined, ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "./components/Icons"
 import { useIdleTimer } from 'react-idle-timer'
@@ -38,6 +38,7 @@ import duration from 'dayjs/plugin/duration';
 dayjs.extend(duration);
 import isBetween from 'dayjs/plugin/isBetween';
 import SettingsTech from './page/settings_tech';
+import { Breadcrumb } from './components';
 dayjs.extend(isBetween);
 
 const { Header, Content, Footer } = Layout;
@@ -105,41 +106,6 @@ const App: React.FC = () => {
 
   const { t, i18n } = useTranslation();
 
-  const i18name = (name: string) => {
-    switch (name) {
-      default:
-        return 'menu.' + name;
-    }
-  }
-
-  const BreadCrumb = () => {
-    const location = useLocation();
-    const { pathname } = location;
-    const pathnames = pathname.split("/").filter((item) => item);
-    return (
-      <Breadcrumb separator=">" style={{ margin: '3px 0' }}>
-        {(pathnames || []).length > 0 ? (
-          <Breadcrumb.Item key="overview">
-            <Link to="/"><EyeOutlined /></Link>
-          </Breadcrumb.Item>
-        ) : (
-          <Breadcrumb.Item key="overview"><EyeOutlined /> {t('menu.overview')}</Breadcrumb.Item>
-        )}
-        {(pathnames || []).map((name, index) => {
-          const routeTo = `/${(pathnames || []).slice(0, index + 1).join("/")}`;
-          const isLast = index === (pathnames || []).length - 1;
-          return isLast ? (
-            <Breadcrumb.Item key={name}>{t(i18name(name))}</Breadcrumb.Item>
-          ) : (
-            <Breadcrumb.Item key={name}>
-              <Link to={`${routeTo}`}>{t(i18name(name))}</Link>
-            </Breadcrumb.Item>
-          );
-        })}
-      </Breadcrumb>
-    );
-  }
-
   const [inputWidth, setInputWidth] = useState<number | undefined>(0)
   const [modeCode, setModeCode] = useState({ val: 0, updated: {} });
   const [activeInput, setActiveInput] = useState({ form: '', id: '', num: false, showInput: true, input: '', showKeyboard: false, descr: '', pattern: 'default' })
@@ -150,7 +116,7 @@ const App: React.FC = () => {
   const [bufferTemp, setBufferTemp] = useState('')
   const [lngs, setLngs] = useState({ data: [] })
   const [token, setToken] = useState<string | null>(null)
-  const [shadowUser, setShadowUser] = useState({id:null,name:null,logintime:null})
+  const [shadowUser, setShadowUser] = useState({ id: null, name: null, logintime: null })
   const [remember, setRemember] = useState(true)
   const [today, setDate] = useState(new Date())
   const [visible, setVisible] = useState(false)
@@ -289,6 +255,12 @@ const App: React.FC = () => {
     catch (error) { console.log(error); }
   }
 
+  const getTagLink = (tagName: string) => {
+    let obj = tags.data.find(o => o['tag']['name'] == tagName)
+    if (obj) { return obj['link'] }
+    else { return false };
+  }
+
   const getTagVal = (tagName: string) => {
     let obj = tags.data.find(o => o['tag']['name'] == tagName)
     if (obj) { return Number(obj['val']).toLocaleString(i18n.language); }
@@ -391,8 +363,8 @@ const App: React.FC = () => {
               <img src={logo} className="applogo" alt=""></img>
             </div>
             <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={location.pathname == '/' ? ['overview'] : [location.pathname.split("/").slice(-1)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? smallItemsMan : smallItems : smallItems} />
-            <div className="speed">{modeCode.val == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode.val == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}</div><div className="sub">{modeCode.val == 1 ? t('tags.speedMainDrive.eng') : '°'}</div>
-            <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode.val).color }}>{modeCodeObj(modeCode.val).text + ' '}{modeCodeObj(modeCode.val).icon}<div className='stopwatch'>{stopwatch(modeCode.updated)}</div></div>
+            <div className="speed"><Spin wrapperClassName="speed" spinning={modeCode.val == 1 ? !getTagLink('speedMainDrive'):!getTagLink('stopAngle')}>{modeCode.val == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode.val == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}<div className="sub">{modeCode.val == 1 ? t('tags.speedMainDrive.eng') : '°'}</div></Spin></div>
+            <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode.val).color}}><Spin wrapperClassName="mode" spinning={!getTagLink('modeCode')}>{modeCodeObj(modeCode.val).text + ' '}{modeCodeObj(modeCode.val).icon}<div className='stopwatch'>{stopwatch(modeCode.updated)}</div></Spin></div>
             {shift.name && <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' ' + shift.name}<div className="percent">{Number(Number(shift.efficiency).toFixed(shift.efficiency < 10 ? 2 : 1).toString()).toLocaleString(i18n.language) + '%'}</div></Space></div><div className="progress"><Progress percent={shift.efficiency} showInfo={false} size="small" /></div></div>}
             <div className="user">
               <div className="user" onClick={showUserDialog}>
@@ -412,7 +384,7 @@ const App: React.FC = () => {
           <div className="site-drawer-render-in-current-wrapper">
             <Content className="content">
               <div>
-                <BreadCrumb />
+                <Breadcrumb />
               </div>
               <div className="site-layout-content">
                 <Routes>

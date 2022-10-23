@@ -31,12 +31,10 @@ const Component = (props: any) => {
   if (props.userRights && (props.token ? props.userRights.includes(JSON.parse(Buffer.from(props.token.split('.')[1], 'base64').toString()).role) ? false : true : true)) {
     return (
       <Button shape={props.shape} danger={props.danger} style={props.style} onClick={() => { openNotificationWithIcon('error', t('notifications.rightserror'), 2); }} type="primary" icon={props.icon} size='large' >{t(props.text)}</Button>
-
     );
   }
   return (
     <Button shape={props.shape} danger={props.danger} style={props.style} onMouseDown={props.onPress} onTouchStart={props.onPress} onMouseUp={props.onRelease} onMouseLeave={props.onRelease} onTouchEnd={props.onRelease} onClick={() => { props.confirm ? confirm(props.onClick) : props.onClick && props.onClick() }} type="primary" icon={props.icon} htmlType={props.htmlType} size='large' >{t(props.text)}</Button>
-
   );
 }
 export default Component;
