@@ -83,7 +83,7 @@ const dbInit = async () => {
       { tag: { name: "stopAngle", group: "monitoring", dev: "rtu1", addr: "6", type: "word", reg: "r", min: 0, max: 359, dec: 0 }, link: false },
       { tag: { name: "orderLength", group: "monitoring", dev: "rtu1", addr: "4", type: "float", reg: "r", min: 0, max: 1000, dec: 2 }, link: false },
       { tag: { name: "speedMainDrive", group: "monitoring", dev: "rtu1", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, link: false },
-      { tag: { name: "modeCode", group: "monitoring", dev: "rtu1", addr: "8", type: "word", reg: "r", min: 0, max: 3, dec: 0 }, link: false },
+      { tag: { name: "modeCode", group: "monitoring", dev: "rtu1", addr: "8", type: "word", reg: "r", min: 0, max: 6, dec: 0 }, link: false },
       { tag: { name: "picksLastRun", group: "monitoring", dev: "rtu1", addr: "0", type: "dword", reg: "r", min: 0, max: 4294967295, dec: 0 }, link: false },
       { tag: { name: "modeControl", group: "setting", dev: "rtu1", addr: "12", type: "word", reg: "rw", min: 0, max: 65535, dec: 0 }, link: false },
       { tag: { name: "planSpeedMainDrive", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 600, dec: 1 }, val: 200.0 },
@@ -342,7 +342,12 @@ const readModbusData = async function (client, port, slave) {
               port.mbsState = MBS_STATE_FAIL_READ;
               //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
               //console.log(mbsStatus);
-              db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true;', ['dev', slave.name, 'name', tag.name]);
+              if (tag.name == 'modeCode') {
+                db.query('UPDATE tags SET updated=current_timestamp, link=false, val=0 where tag->>$1=$2 and tag->>$3=$4 AND link=true;', ['dev', slave.name, 'name', tag.name]);
+              }
+              else {
+                db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true;', ['dev', slave.name, 'name', tag.name]);
+              }
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             }
             break;

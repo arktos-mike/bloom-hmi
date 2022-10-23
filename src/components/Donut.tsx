@@ -3,33 +3,41 @@ import { Pie } from '@ant-design/plots';
 const Component = (props: any) => {
   const config = {
     data: props.data,
-    height:200,
     renderer: 'svg',
-    appendPadding: 10,
+    padding: 0,
+    appendPadding: 5,
     angleField: 'value',
-    radius: 1, innerRadius: 0.1,
+    radius: 1, innerRadius: 0.7,
     colorField: 'reason',
-    color: ['#52c41aFF', '#7339ABFF','#FF7F27FF','#FFB300FF','#E53935FF','#005498FF','#000000FF'],
+    color: props.colors,
     label: {
-      type: '',
       offset: '-50%',
       style: {
-        textAlign: 'center',
         fontSize: 0,
-        content: ''
       }
     },
-    statistic: { title: false, content: false },
+    statistic: {
+      title: false,
+      content: {
+        style: {
+          fontSize:14,
+          whiteSpace: 'pre-wrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        },
+        content: props.text,
+      },
+    },
     tooltip: false,
     legend: {
       layout: 'vertical',
-      position: 'right',
+      position: 'bottom-right',
       flipPage: false,
-      label:{
-        style: {
-          fontSize: 0,
-        }
-      }
+      offsetY: -50,
+      offsetX: -50,
+      maxWidth: 1,
+      maxHeight: 1,
+      selected: props.selected
     }
   } as any;
   return (

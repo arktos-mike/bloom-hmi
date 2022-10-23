@@ -405,7 +405,7 @@ from
 		'[)') && ts
 			and
     (modecode = 2
-				or modecode = 0)) normstop,
+				or modecode = 0 or modecode = 6)) normstop,
 	lateral (
 	select
 		coalesce((extract(epoch
@@ -457,18 +457,18 @@ from
 		*
 	from
 		(
-	values (0,
-	'other'),
-	(2,
-	'button'),
-	(3,
-	'warp'),
-	(4,
-	'weft'),
-	(5,
-	'tool'),
-	(6,
-	'fabric') ) as t(num,
+	values (2,
+    'button'),
+    (6,
+      'fabric'),
+    (5,
+      'tool'),
+    (4,
+      'weft'),
+    (3,
+    'warp'),
+    (0,
+      'other') ) as t(num,
 		stop) )
 	select
 		jsonb_agg(json_build_object(t.stop, json_build_object('total', total , 'dur', justify_hours(dur)))) as descrstop
