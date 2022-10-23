@@ -9,6 +9,7 @@ const locale = {
     "settingsOp": "OPERATOR PANEL",
     "users": "USER ADMINISTRATION",
     "shifts": "SHIFT MANAGMENT",
+    "reminders": "MAINTENANCE REMINDERS",
     "logs": "LOGS",
     "modelog": "START-STOP LOG",
     "userlog": "ACCESS LOG",

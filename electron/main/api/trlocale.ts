@@ -9,6 +9,7 @@ const locale = {
     "settingsOp": "OPERATÖR PANELI",
     "users": "KULLANICI YÖNETIMI",
     "shifts": "VARDİYALARI YÖNETME",
+    "reminders": "BAKIM HATIRLATICILARI",
     "logs": "GÜNLÜKLER",
     "modelog": "BAŞLAT-DURDUR GÜNLÜĞÜ",
     "userlog": "ERİŞİM GÜNLÜĞÜ",

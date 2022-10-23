@@ -9,6 +9,7 @@ const locale = {
     "settingsOp": "PANEL DEL OPERADOR",
     "users": "ADMINISTRACIÓN DE USUARIOS",
     "shifts": "GESTIÓN DE TURNOS",
+    "reminders": "RECORDATORIOS DE MANTENIMIENTO",
     "logs": "REGISTROS",
     "modelog": "REGISTRO DE INICIO Y PARADA",
     "userlog": "REGISTRO DE ACCESO",
