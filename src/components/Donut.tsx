@@ -8,6 +8,7 @@ const Component: React.FC<any> = memo(
       data: data,
       renderer: 'svg',
       padding: 0,
+      autofit: true,
       appendPadding: 5,
       angleField: 'value',
       radius: 1, innerRadius: 0.7,
@@ -41,10 +42,11 @@ const Component: React.FC<any> = memo(
         maxWidth: 1,
         maxHeight: 1,
         selected: selected
-      }
+      },
+      animation: false
     } as any;
     return (
-      <Pie {...config} ></Pie>
+      <Pie {...config}/>
     );
   },
   (pre, next) => {
