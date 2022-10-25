@@ -104,6 +104,9 @@ const locale = {
       "0": "continuous",
       "1": "сut custom order"
     },
+    "modeCode": {
+      "descr": "Mode"
+    },
     "takeupDiam": {
       "descr": "Take up diameter",
       "eng": "cm"

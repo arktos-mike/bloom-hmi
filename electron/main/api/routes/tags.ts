@@ -14,7 +14,7 @@ router.post('/writeTag', async (req, res) => {
   const { name, value } = req.body;
   try {
     if (value!=null){
-    await db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 AND val IS DISTINCT FROM $1 AND link=true ;', [value, 'name', name]);
+    await db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 AND val IS DISTINCT FROM $1;', [value, 'name', name]);
     res.status(200).send({
       message: "Writing data to tag",
       body: { name, value },

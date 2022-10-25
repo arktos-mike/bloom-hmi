@@ -104,6 +104,9 @@ const locale = {
       "0": "sürekli",
       "1": "özel siparişi kes"
     },
+    "modeCode": {
+      "descr": "Modu"
+    },
     "takeupDiam": {
       "descr": "Silindir çapını al",
       "eng": "cm"

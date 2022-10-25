@@ -3,8 +3,7 @@ CREATE TABLE IF NOT EXISTS hwconfig (
   name text PRIMARY KEY NOT NULL,
   data JSONB
 );
-DROP TABLE IF EXISTS tags;
-CREATE TABLE tags (
+CREATE TABLE IF NOT EXISTS tags (
   tag JSONB PRIMARY KEY NOT NULL,
   val NUMERIC,
   updated TIMESTAMPTZ not null default current_timestamp,
@@ -208,8 +207,6 @@ density numeric;
 code numeric;
 
 clock interval;
-
-warpLength numeric;
 
 warpShrinkage numeric;
 
@@ -944,5 +941,18 @@ end;
 
 $function$
 ;
+CREATE TABLE IF NOT EXISTS reminders (
+  id serial PRIMARY KEY,
+  active boolean,
+  title text,
+  descr text,
+  type boolean,
+  starttime timestamp with time zone default current_timestamp,
+  nexttime timestamp with time zone,
+  nextrun numeric,
+  runcondition numeric,
+  timecondition interval,
+  acknowledged boolean
+);
 `
 export default createTableText

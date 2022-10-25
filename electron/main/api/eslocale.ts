@@ -104,6 +104,9 @@ const locale = {
       "0": "continuo",
       "1": "cortar pedido personalizado"
     },
+    "modeCode": {
+      "descr": "Modo"
+    },
     "takeupDiam": {
       "descr": "Diámetro de rodillo de recogida",
       "eng": "cm"

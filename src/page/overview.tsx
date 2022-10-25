@@ -44,27 +44,6 @@ const Overview: React.FC<Props> = ({
     return (diff.days() > 0 ? diff.days() + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + t('shift.secs') : "")
   }
 
-  const colors = (data: any) => {
-    switch (data['reason']) {
-      case 'run':
-        return '#52c41aFF';
-      case 'button':
-        return '#7339ABFF';
-      case 'fabric':
-        return '#005498FF';
-      case 'tool':
-        return '#E53935FF';
-      case 'weft':
-        return '#FFB300FF';
-      case 'warp':
-        return '#FF7F27FF';
-      case 'other':
-        return '#000000FF';
-      default:
-        return '#00000000';
-    }
-  }
-
   const stopObj = (reason: string, enable: boolean) => {
     let obj;
     if (reason == 'other') { obj = { color: enable ? '#000000FF' : '#8c8c8c', text: t('tags.mode.init'), icon: <QuestionCircleOutlined style={{ fontSize: '130%', color: enable ? '#000000FF' : '#8c8c8c', paddingInline: 5 }} /> } }
@@ -328,7 +307,7 @@ const Overview: React.FC<Props> = ({
                   {
                     (tags.data || []).map((tag: any) => (
                       <React.Fragment key={tag['tag']['name']}>
-                        <Descriptions.Item span={1} contentStyle={{ justifyContent: 'center' }}><Badge status={tag['link'] == null ? 'default' : tag['link'] == true ? 'success' : 'error'} /></Descriptions.Item><Descriptions.Item span={8}>{['modeCode', 'modeControl'].includes(tag['tag']['name']) ? t('tags.modeControl.descr') : t('tags.' + tag['tag']['name'] + '.descr')}</Descriptions.Item><Descriptions.Item span={9}><b>{getTagVal(tag['tag']['name'])}</b>&nbsp;{(['modeCode', 'modeControl'].includes(tag['tag']['name']) ? '' : t('tags.' + tag['tag']['name'] + '.eng'))}</Descriptions.Item><Descriptions.Item span={6}>{dayjs(tag['updated']).format('LL LTS.SSS')}</Descriptions.Item>
+                        <Descriptions.Item span={1} contentStyle={{ justifyContent: 'center' }}><Badge status={tag['link'] == null ? 'default' : tag['link'] == true ? 'success' : 'error'} /></Descriptions.Item><Descriptions.Item span={8}>{t('tags.' + tag['tag']['name'] + '.descr')}</Descriptions.Item><Descriptions.Item span={9}><b>{getTagVal(tag['tag']['name'])}</b>&nbsp;{(['modeCode', 'modeControl'].includes(tag['tag']['name']) ? '' : t('tags.' + tag['tag']['name'] + '.eng'))}</Descriptions.Item><Descriptions.Item span={6}>{dayjs(tag['updated']).format('LL LTS.SSS')}</Descriptions.Item>
                       </React.Fragment>
                     ))
                   }
