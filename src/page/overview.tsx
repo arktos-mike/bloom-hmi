@@ -44,6 +44,27 @@ const Overview: React.FC<Props> = ({
     return (diff.days() > 0 ? diff.days() + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + t('shift.secs') : "")
   }
 
+  const colors = (data: any) => {
+    switch (data['reason']) {
+      case 'run':
+        return '#52c41aFF';
+      case 'button':
+        return '#7339ABFF';
+      case 'fabric':
+        return '#005498FF';
+      case 'tool':
+        return '#E53935FF';
+      case 'weft':
+        return '#FFB300FF';
+      case 'warp':
+        return '#FF7F27FF';
+      case 'other':
+        return '#000000FF';
+      default:
+        return '#00000000';
+    }
+  }
+
   const stopObj = (reason: string, enable: boolean) => {
     let obj;
     if (reason == 'other') { obj = { color: enable ? '#000000FF' : '#8c8c8c', text: t('tags.mode.init'), icon: <QuestionCircleOutlined style={{ fontSize: '130%', color: enable ? '#000000FF' : '#8c8c8c', paddingInline: 5 }} /> } }
@@ -238,7 +259,7 @@ const Overview: React.FC<Props> = ({
                             </Form.Item>
                           </Form>
                           <div style={{ width: '20%', height: height && height / 4 }}>
-                            <Donut data={shiftDonut} selected={shiftDonutSel} text={t('shift.shift') + ' ' + shift['name'] + '\n' + (Number(Number(shift['efficiency']).toFixed(shift['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng'))} colors={['#52c41aFF', '#7339ABFF', '#005498FF', '#E53935FF', '#FFB300FF', '#FF7F27FF', '#000000FF']} />
+                            <Donut data={shiftDonut} selected={shiftDonutSel} text={t('shift.shift') + ' ' + shift['name'] + '\n' + (Number(Number(shift['efficiency']).toFixed(shift['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng'))} />
                           </div></div>
                       </Skeleton>
                     </Card>
@@ -291,7 +312,7 @@ const Overview: React.FC<Props> = ({
                             </Form.Item>
                           </Form>
                           <div style={{ width: '20%', height: height && height / 4 }}>
-                            <Donut data={userDonut} selected={userDonutSel} text={t('user.weaver') + '\n' + (userInfo && (Number(Number(userInfo['efficiency']).toFixed(userInfo['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng')))} colors={['#52c41aFF', '#7339ABFF', '#005498FF', '#E53935FF', '#FFB300FF', '#FF7F27FF', '#000000FF']} />
+                            <Donut data={userDonut} selected={userDonutSel} text={t('user.weaver') + '\n' + (userInfo && (Number(Number(userInfo['efficiency']).toFixed(userInfo['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng')))} />
                           </div></div>
                       </Skeleton>
                     </Card>
