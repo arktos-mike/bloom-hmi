@@ -322,7 +322,7 @@ const App: React.FC = () => {
   }, [remember])
 
   useEffect(() => {
-    setInputWidth(span.current?.offsetWidth ? span.current?.offsetWidth + 5 : 5)
+    setInputWidth(span.current?.offsetWidth ? span.current?.offsetWidth < 700 ? span.current?.offsetWidth + 5: 700 : 5)
     keyboardRef.current?.setInput(bufferKeyboard)
   }, [bufferKeyboard])
 

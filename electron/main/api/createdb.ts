@@ -946,13 +946,43 @@ CREATE TABLE IF NOT EXISTS reminders (
   active boolean,
   title text,
   descr text,
-  type boolean,
+  type smallint default 0,
   starttime timestamp with time zone default current_timestamp,
+  runcondition numeric default 0.0,
   nexttime timestamp with time zone,
   nextrun numeric,
-  runcondition numeric,
-  timecondition interval,
-  acknowledged boolean
+  acknowledged boolean default false
 );
+DROP TRIGGER IF EXISTS remupdate
+  ON reminders;
+DROP FUNCTION IF EXISTS remupdate;
+create or replace function remupdate()
+ returns trigger
+ language plpgsql
+as $function$
+begin
+
+if (TG_OP = 'UPDATE') then
+  if (current_timestamp > (old.starttime + (interval '1' hour * old.runcondition))) then
+    new.starttime := old.starttime + (interval '1' hour * old.runcondition);
+  end if;
+end if;
+
+if (new.type=0) then
+  new.nexttime := new.starttime + (interval '1' hour * new.runcondition);
+end if;
+if (new.type=1) then
+  new.nextrun := new.runcondition*(floor((SELECT cloth from lifetime)/new.runcondition)+1);
+end if;
+if (new.type=2) then
+  new.nextrun := (SELECT motor from lifetime) + (interval '1' hour * new.runcondition);
+end if;
+
+return new;
+end;
+
+$function$
+;
+create trigger remupdate before insert or update on reminders for row execute function remupdate();
 `
 export default createTableText

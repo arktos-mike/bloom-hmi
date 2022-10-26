@@ -36,6 +36,26 @@ const locale = {
     "saturday": "Sat",
     "sunday": "Sun"
   },
+  "reminders": {
+    "active": "Act",
+    "title": {
+      "self": "Notification",
+      "placeholder": "Title"
+    },
+    "type": "Type",
+    "onPeriod": "by time",
+    "onRunMeters": "by cloth",
+    "onRunTime": "by motor hours",
+    "runcondition": {
+      "self": "Repetition",
+      "placeholder": "Interval"
+    },
+    "acknowledged": "Ack",
+    "descr": {
+      "self": "Description",
+      "placeholder": "Notification details"
+    }
+  },
   "tags": {
     "picks": {
       "descr": "Picks"

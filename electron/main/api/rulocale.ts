@@ -36,6 +36,26 @@ const locale = {
     "saturday": "Сб",
     "sunday": "Вс"
   },
+  "reminders": {
+    "active": "Акт.",
+    "title": {
+      "self": "Уведомление",
+      "placeholder": "Заголовок"
+    },
+    "type": "Тип",
+    "onPeriod": "по времени",
+    "onRunMeters": "по наработке",
+    "onRunTime": "по моточасам",
+    "runcondition": {
+      "self": "Повтор",
+      "placeholder": "Интервал"
+    },
+    "acknowledged": "Подтв.",
+    "descr": {
+      "self": "Описание",
+      "placeholder": "Подробности уведомления"
+    }
+  },
   "tags": {
     "picks": {
       "descr": "Прокидки"

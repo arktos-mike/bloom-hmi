@@ -1,27 +1,23 @@
 import { Button, Modal, notification, Space, Table } from 'antd';
 import type { ColumnsType, TablePaginationConfig, TableProps } from 'antd/es/table';
-import { PlusOutlined, UploadOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
+import { PlusOutlined, UploadOutlined, ExclamationCircleOutlined, DeleteOutlined, MinusCircleTwoTone, PlusCircleTwoTone } from '@ant-design/icons';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Checkbox, Input, Select, TimePicker } from '@/components';
+import { Checkbox, DatePicker, Input, InputNumber, Select, TextArea } from '@/components';
 import dayjs from 'dayjs';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
 dayjs.extend(advancedFormat);
 interface DataType {
-  key: React.Key;
-  shiftname: string;
-  starttime: string;
-  duration: string;
-  monday: boolean;
-  tuesday: boolean;
-  wednesday: boolean;
-  thursday: boolean;
-  friday: boolean;
-  saturday: boolean;
-  sunday: boolean;
-  problemName: boolean;
-  problemTime: boolean;
-  problemDur: boolean;
+  id: React.Key;
+  active: boolean;
+  title: string;
+  descr: string;
+  type: number;
+  starttime: any;
+  runcondition: string;
+  nexttime: any | null;
+  nextrun: number | null;
+  acknowledged: boolean;
 }
 
 type Props = {
@@ -44,29 +40,24 @@ const Reminders: React.FC<Props> = ({
   });
   const handleAdd = () => {
     const newData: DataType = {
-      key: data.length ? Number(data.slice(-1)[0].key) + 1 : 1,
-      shiftname: `${data.length ? Number(data.slice(-1)[0].key) + 1 : 1}`,
-      starttime: data.length ? dayjs(data.slice(-1)[0].starttime, 'HH:mm').add(parseInt(data.length ? data.slice(-1)[0].duration : '8H'), 'h').format('HH:mm') : '00:00',
-      duration: data.length ? data.slice(-1)[0].duration : '8H',
-      monday: data.length ? data.slice(-1)[0].monday : true,
-      tuesday: data.length ? data.slice(-1)[0].tuesday : true,
-      wednesday: data.length ? data.slice(-1)[0].wednesday : true,
-      thursday: data.length ? data.slice(-1)[0].thursday : true,
-      friday: data.length ? data.slice(-1)[0].friday : true,
-      saturday: data.length ? data.slice(-1)[0].saturday : false,
-      sunday: data.length ? data.slice(-1)[0].sunday : false,
-      problemName: false,
-      problemTime: false,
-      problemDur: false,
+      id: data.length ? Number(data.slice(-1)[0].id) + 1 : 1,
+      active: true,
+      title: '',
+      descr: '',
+      type: 0,
+      starttime: dayjs(),
+      runcondition: '0.0',
+      nexttime: null,
+      nextrun: null,
+      acknowledged: false
     };
-    rulesCheck([...data, newData]);
     setData([...data, newData]);
     setPagination({ ...pagination, total: data.length + 1 });
   };
 
   const handleSave = (row: DataType) => {
     const newData = [...data];
-    const index = newData.findIndex(item => row.key === item.key);
+    const index = newData.findIndex(item => row.id === item.id);
     const item = newData[index];
 
     newData.splice(index, 1, {
@@ -74,33 +65,22 @@ const Reminders: React.FC<Props> = ({
       ...row,
     });
     setData(newData);
-    rulesCheck(newData);
   };
-  const handleDelete = (key: React.Key) => {
-    const newData = data.filter(item => item.key !== key);
+  const handleDelete = (id: React.Key) => {
+    const newData = data.filter(item => item.id !== id);
     setData(newData);
     setPagination({ ...pagination, total: data.length - 1 });
-    rulesCheck(newData);
   };
   const handleSubmit = async () => {
-    const table = data.map(({ key, problemName, problemTime, problemDur, ...rest }) => {
-      rest.starttime=dayjs(rest.starttime, 'HH:mm').format('HH:mmZ');
-      return rest;
-    });
     try {
-      if (rulesCheck(data)) {
-        openNotificationWithIcon('warning', t('notifications.dataerror'), 3);
-      }
-      else {
-        const response = await fetch('http://localhost:3000/shifts/', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json;charset=UTF-8', },
-          body: JSON.stringify(table),
-        });
-        const json = await response.json();
-        openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
-        if (!response.ok) { throw Error(response.statusText); }
-      }
+      const response = await fetch('http://localhost:3000/reminders/', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json;charset=UTF-8', },
+        body: JSON.stringify(data),
+      });
+      const json = await response.json();
+      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
+      if (!response.ok) { throw Error(response.statusText); }
     }
     catch (error) { console.log(error) }
     fetchData();
@@ -120,42 +100,7 @@ const Reminders: React.FC<Props> = ({
         style: style,
       });
   };
-  const isNextDay = (data: DataType) => {
-    return (dayjs(data.starttime, "HH:mm").add(parseInt(data.duration), 'hour').date() != dayjs(data.starttime, "HH:mm").date() ? true : false)
-  }
-  const hasSameDay = (prevData: DataType, nextData: DataType) => {
-    return ((prevData.monday || isNextDay(prevData) && prevData.sunday) && nextData.monday) || ((prevData.tuesday || isNextDay(prevData) && prevData.monday) && nextData.tuesday) || ((prevData.wednesday || isNextDay(prevData) && prevData.tuesday) && nextData.wednesday) || ((prevData.thursday || isNextDay(prevData) && prevData.wednesday) && nextData.thursday) || ((prevData.friday || isNextDay(prevData) && prevData.thursday) && nextData.friday) || ((prevData.saturday || isNextDay(prevData) && prevData.friday) && nextData.saturday) || ((prevData.sunday || isNextDay(prevData) && prevData.saturday) && nextData.sunday)
-  }
-  const rulesCheck = (data: DataType[]) => {
-    let result = false;
-    data.filter((obj, index, array) => {
-      obj.problemName = false;
-      obj.problemTime = false;
-      obj.problemDur = false;
-      for (let i = 0; i < array.length; i++) {
-        if (i != index && array[i].shiftname == obj.shiftname) {
-          obj.problemName = true;
-          result = true;
-        }
-        if (i < index && hasSameDay(array[i], obj) && dayjs(obj.starttime, "HH:mm").add(isNextDay(array[i]) ? 1 : 0, 'day').isBefore(dayjs(array[i].starttime, "HH:mm"))) {
-          obj.problemTime = true;
-          result = true;
-        }
-        if (i < index && hasSameDay(array[i], obj) && dayjs(obj.starttime, "HH:mm").add(isNextDay(array[i]) ? 1 : 0, 'day').isBefore(dayjs(array[i].starttime, "HH:mm").add(parseInt(array[i].duration), 'hour')))  {
-          obj.problemTime = true;
-          array[i].problemDur = true;
-          result = true;
-        }
-        if (i < index && hasSameDay(obj, array[i]) && isNextDay(obj) && dayjs(obj.starttime, "HH:mm").add(parseInt(obj.duration), 'hour').isAfter(dayjs(array[i].starttime, "HH:mm").add( 1 , 'day')))  {
-          obj.problemDur = true;
-          array[i].problemTime = true;
-          result = true;
-        }
-      }
-    });
-    setData(data);
-    return result;
-  };
+
   const confirmSave = () => {
     Modal.confirm({
       title: t('confirm.title'),
@@ -191,102 +136,71 @@ const Reminders: React.FC<Props> = ({
 
   useEffect(() => {
     if (typeof pagination.defaultPageSize == 'undefined') {
-      setPagination({ ...pagination, defaultPageSize: height ? Math.floor((height-100) / 73) : 5, pageSize: height ? Math.floor((height-100) / 73) : 5})
+      setPagination({ ...pagination, defaultPageSize: height ? Math.floor((height - 100) / 73) : 5, pageSize: height ? Math.floor((height - 100) / 73) : 5 })
     }
   }, [pagination])
 
 
   const columns: ColumnsType<DataType> = [
     {
-      title: t('shift.shift'),
-      dataIndex: 'shiftname',
-      width: '10%',
-      render: (_, record) => (<Input size="large" placeholder={t('shift.shift')} value={activeInput.id == ('shiftname' + record.key) ? activeInput.input : record.shiftname} onUpdate={(value: any) => { record.shiftname = value; handleSave(record); }} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'shift', id: 'shiftname' + record.key, num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'shift' }); }} status={record.problemName ? 'error' : null} />),
+      title: t('reminders.active'),
+      dataIndex: 'active',
+      width: '2%',
+      render: (_, record) => (<Checkbox checked={record.active} onChange={() => { record.active = !record.active; handleSave(record); }}></Checkbox>),
+    },
+    Table.EXPAND_COLUMN,
+    {
+      title: t('reminders.title.self'),
+      dataIndex: 'title',
+      render: (_, record) => (<Input size="large" placeholder={t('reminders.title.placeholder')} value={activeInput.id == ('title' + record.id) ? activeInput.input : record.title} onUpdate={(value: any) => { record.title = value; handleSave(record); }} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'reminders', id: 'title' + record.id, num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'default' }); }} />),
     },
     {
       title: t('shift.starttime'),
       dataIndex: 'starttime',
-      width: '15%',
-      render: (_, record) => (<TimePicker showNow={false} minuteStep={15} defaultValue={dayjs(record.starttime, 'HH:mm')} format={'HH:mm'} onChange={(value: any) => { record.starttime = dayjs(value).format('HH:mm'); handleSave(record); }} status={record.problemTime ? 'error' : null} />),
+      width: '23%',
+      render: (_, record) => (<DatePicker showTime defaultValue={dayjs(record.starttime, 'L HH:mm')} format={'L HH:mm'} onChange={(value: any) => { record.starttime = dayjs(value).format('L HH:mm'); handleSave(record); }} />),
     },
     {
-      title: t('shift.duration'),
-      dataIndex: 'duration',
+      title: t('reminders.type'),
+      dataIndex: 'type',
       width: '10%',
-      render: (_, record) => (<Select defaultValue={record.duration} onChange={(value: any) => { record.duration = value; handleSave(record); }} options={[{ label: 6 + ' ' + t('shift.hours'), value: '6H' }, { label: 7 + ' ' + t('shift.hours'), value: '7H' }, { label: 8 + ' ' + t('shift.hours'), value: '8H' }, { label: 9 + ' ' + t('shift.hours'), value: '9H' }, { label: 10 + ' ' + t('shift.hours'), value: '10H' }, { label: 11 + ' ' + t('shift.hours'), value: '11H' }, { label: 12 + ' ' + t('shift.hours'), value: '12H' }]} status={record.problemDur ? 'error' : null} />),
+      render: (_, record) => (<Select defaultValue={record.type} onChange={(value: any) => { record.type = value; handleSave(record); }} options={[{ label: t('reminders.onPeriod'), value: 0 }, { label: t('reminders.onRunMeters'), value: 1 }, { label: t('reminders.onRunTime'), value: 2 }]} />),
     },
     {
-      title: t('shift.monday'),
-      dataIndex: 'monday',
-      width: '8%',
-      render: (_, record) => (<Checkbox checked={record.monday} onChange={() => { record.monday = !record.monday; handleSave(record); }}></Checkbox>),
+      title: t('reminders.runcondition.self'),
+      dataIndex: 'runcondition',
+      width: '14%',
+      render: (_, record) => (<InputNumber tag={null} eng={record.type == 1 ? t('tags.planOrderLength.eng') : t('shift.hours')} value={activeInput.id == ('runcondition' + record.id) ? activeInput.input : record.runcondition} placeholder={t('reminders.runcondition.placeholder')} controls={false} onUpdate={(value: any) => { record.runcondition = value.toString(); handleSave(record); }} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'reminders', id: 'runcondition' + record.id, num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }); }} />),
     },
     {
-      title: t('shift.tuesday'),
-      dataIndex: 'tuesday',
-      width: '8%',
-      render: (_, record) => (<Checkbox checked={record.tuesday} onChange={() => { record.tuesday = !record.tuesday; handleSave(record); }}></Checkbox>),
-    },
-    {
-      title: t('shift.wednesday'),
-      dataIndex: 'wednesday',
-      width: '8%',
-      render: (_, record) => (<Checkbox checked={record.wednesday} onChange={() => { record.wednesday = !record.wednesday; handleSave(record); }}></Checkbox>),
-    },
-    {
-      title: t('shift.thursday'),
-      dataIndex: 'thursday',
-      width: '8%',
-      render: (_, record) => (<Checkbox checked={record.thursday} onChange={() => { record.thursday = !record.thursday; handleSave(record); }}></Checkbox>),
-    },
-    {
-      title: t('shift.friday'),
-      dataIndex: 'friday',
-      width: '8%',
-      render: (_, record) => (<Checkbox checked={record.friday} onChange={() => { record.friday = !record.friday; handleSave(record); }}></Checkbox>),
-    },
-    {
-      title: t('shift.saturday'),
-      dataIndex: 'saturday',
-      width: '8%',
-      render: (_, record) => (<Checkbox checked={record.saturday} onChange={() => { record.saturday = !record.saturday; handleSave(record); }}></Checkbox>),
-    },
-    {
-      title: t('shift.sunday'),
-      dataIndex: 'sunday',
-      width: '8%',
-      render: (_, record) => (<Checkbox checked={record.sunday} onChange={() => { record.sunday = !record.sunday; handleSave(record); }}></Checkbox>),
+      title: t('reminders.acknowledged'),
+      dataIndex: 'acknowledged',
+      width: '2%',
+      render: (_, record) => (<Checkbox checked={record.acknowledged} onChange={() => { record.acknowledged = !record.acknowledged; handleSave(record); }}></Checkbox>),
     },
     {
       title: t('user.action'),
-      render: (_, record: { key: React.Key }) => (
+      render: (_, record: { id: React.Key }) => (
         <Space size="middle">
-          <Button shape="circle" icon={<DeleteOutlined />} size="large" type="primary" danger={true} onClick={() => { confirm(record.key) }}></Button>
+          <Button shape="circle" icon={<DeleteOutlined />} size="large" type="primary" danger={true} onClick={() => { confirm(record.id) }}></Button>
         </Space>
       ),
       width: '5%',
     },
   ];
+
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/shifts');
+      const response = await fetch('http://localhost:3000/reminders');
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
       setPagination({ ...pagination, total: json.length });
-      let count = 1;
       json.map((row: any) => {
-        row.key = count
-        row.starttime = dayjs(row.starttime, 'HH:mmZ').format('HH:mm')
-        row.duration = row.duration.hours + 'H'
-        row.problemName = false
-        row.problemTime = false
-        row.problemDur = false
-        count++
+        row.starttime = dayjs(row.starttime)
       });
       setData(json);
       setLoading(false);
-      rulesCheck(json);
     }
     catch (error) { console.log(error); }
   };
@@ -297,10 +211,21 @@ const Reminders: React.FC<Props> = ({
       <Button shape="circle" icon={< UploadOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={confirmSave}></Button>
       <Table
         columns={columns}
-        rowKey={record => record.key}
+        rowKey={record => record.id}
         dataSource={data}
         pagination={pagination}
         loading={loading}
+        expandable={{
+          expandedRowRender: record =>
+            <TextArea size="large" placeholder={t('reminders.descr.placeholder')} value={activeInput.id == ('descr' + record.id) ? activeInput.input : record.descr} onUpdate={(value: any) => { record.descr = value; handleSave(record); }} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'reminders', id: 'descr' + record.id, num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'default' }); }} />,
+          rowExpandable: record => true,
+          expandIcon: ({ expanded, onExpand, record }) =>
+            expanded ? (
+              <MinusCircleTwoTone style={{ fontSize: '150%' }} onClick={e => onExpand(record, e)} />
+            ) : (
+              <PlusCircleTwoTone style={{ fontSize: '150%' }} onClick={e => onExpand(record, e)} />
+            )
+        }}
         size='small'
         style={{ width: '100%' }}
         onChange={handleChange}

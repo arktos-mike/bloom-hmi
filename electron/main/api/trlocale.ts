@@ -36,6 +36,26 @@ const locale = {
     "saturday": "Cum",
     "sunday": "Pazar"
   },
+  "reminders": {
+    "active": "Akt",
+    "title": {
+      "self": "Bildirim",
+      "placeholder": "Başlık"
+    },
+    "type": "Tür",
+    "onPeriod": "zamana göre",
+    "onRunMeters": "kumaşa göre",
+    "onRunTime": "motor saat. göre",
+    "runcondition": {
+      "self": "Tekrarlama",
+      "placeholder": "Aralık"
+    },
+    "acknowledged": "Kabul",
+    "descr": {
+      "self": "Açıklama",
+      "placeholder": "Bildirim ayrıntıları"
+    }
+  },
   "tags": {
     "picks": {
       "descr": "Atkılar"

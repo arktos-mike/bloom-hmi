@@ -36,6 +36,26 @@ const locale = {
     "saturday": "Sáb",
     "sunday": "Dom"
   },
+  "reminders": {
+    "active": "Act",
+    "title": {
+      "self": "Notificación",
+      "placeholder": "Título"
+    },
+    "type": "Tipo",
+    "onPeriod": "por tiempo",
+    "onRunMeters": "por tela",
+    "onRunTime": "por horas de motor",
+    "runcondition": {
+      "self": "Repetición",
+      "placeholder": "Intervalo"
+    },
+    "acknowledged": "Rec.",
+    "descr": {
+      "self": "Descripción",
+      "placeholder": "Detalles de la notificación"
+    }
+  },
   "tags": {
     "picks": {
       "descr": "Pasadas"

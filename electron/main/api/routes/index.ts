@@ -10,6 +10,7 @@ import shifts from './shifts'
 import logs from './logs'
 import machine from './machine'
 import reports from './reports'
+import reminders from './reminders'
 //api.use('/config', config);
 
 export default (api) => {
@@ -23,4 +24,5 @@ export default (api) => {
     api.use('/logs', logs);
     api.use('/machine', machine);
     api.use('/reports', reports);
+    api.use('/reminders', reminders);
 }
