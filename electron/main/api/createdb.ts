@@ -50,9 +50,9 @@ CREATE TABLE IF NOT EXISTS lifetime (
   type text,
   serialno text PRIMARY KEY,
   mfgdate date,
-  picks NUMERIC,
-  cloth NUMERIC,
-  motor interval
+  picks NUMERIC default 0,
+  cloth NUMERIC default 0,
+  motor interval default interval '0' second
 );
 DROP RULE IF EXISTS lifetime_del_protect ON lifetime;
 CREATE RULE lifetime_del_protect AS ON DELETE TO lifetime DO INSTEAD NOTHING;
@@ -963,21 +963,34 @@ as $function$
 begin
 
 if (TG_OP = 'UPDATE') then
-  if (current_timestamp > (old.starttime + (interval '1' hour * old.runcondition))) then
-    new.starttime := old.starttime + (interval '1' hour * old.runcondition);
+  if old.type = 0 and (current_timestamp > (old.starttime + (interval '1' hour * old.runcondition))) then
+    new.starttime := current_timestamp;
+	  new.nexttime := current_timestamp + (interval '1' hour * new.runcondition);
+    new.acknowledged := false;
+  end if;
+  if old.type = 1 and ((SELECT cloth from lifetime) > old.nextrun) then
+    new.starttime := current_timestamp;
+	  new.nextrun := new.runcondition*(floor((SELECT cloth from lifetime)/new.runcondition)+1);
+    new.acknowledged := false;
+  end if;
+  if old.type = 2 and (extract(epoch from (SELECT motor from lifetime)) > old.nextrun) then
+    new.starttime := current_timestamp;
+	  new.nextrun := extract(epoch from (SELECT motor from lifetime)) + 3600 * new.runcondition;
+    new.acknowledged := false;
   end if;
 end if;
 
-if (new.type=0) then
-  new.nexttime := new.starttime + (interval '1' hour * new.runcondition);
+if (TG_OP = 'INSERT') then
+	if (new.type=0) then
+  		new.nexttime := new.starttime + (interval '1' hour * new.runcondition);
+	end if;
+	if (new.type=1) then
+  		new.nextrun := new.runcondition*(floor((SELECT cloth from lifetime)/new.runcondition)+1);
+	end if;
+	if (new.type=2) then
+  		new.nextrun := extract(epoch from (SELECT motor from lifetime)) + 3600 * new.runcondition;
+	end if;
 end if;
-if (new.type=1) then
-  new.nextrun := new.runcondition*(floor((SELECT cloth from lifetime)/new.runcondition)+1);
-end if;
-if (new.type=2) then
-  new.nextrun := extract(epoch from (SELECT motor from lifetime)) + 3600 * new.runcondition;
-end if;
-
 return new;
 end;
 
@@ -989,7 +1002,14 @@ CREATE OR REPLACE FUNCTION getactualnotifications()
  LANGUAGE plpgsql
 AS $function$
 begin
- RETURN QUERY(SELECT * FROM reminders where active=true and acknowledged=false and current_timestamp > starttime);
+  UPDATE reminders SET acknowledged=acknowledged;
+  RETURN QUERY(SELECT * FROM reminders where active=true and acknowledged=false and current_timestamp > starttime and
+	case
+  when type=0 then current_timestamp <= nexttime
+  when type=1 then (SELECT cloth from lifetime) <= nextrun
+  when type=2 then extract(epoch from (SELECT motor from lifetime)) <= nextrun
+  end
+  );
 end;
 
 $function$

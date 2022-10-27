@@ -7,7 +7,7 @@ import db from '../../db'
 const router = PromiseRouter();
 // export our router to be mounted by the parent application
 router.get('/', async (req, res) => {
-  const { rows } = await db.query('SELECT * FROM reminders');
+  const { rows } = await db.query('SELECT * FROM reminders ORDER BY id');
   res.status(200).send(rows)
 })
 
