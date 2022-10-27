@@ -170,7 +170,7 @@ const Reminders: React.FC<Props> = ({
       title: t('reminders.runcondition.self'),
       dataIndex: 'runcondition',
       width: '14%',
-      render: (_, record) => (<InputNumber tag={null} eng={record.type == 1 ? t('tags.planOrderLength.eng') : t('shift.hours')} value={activeInput.id == ('runcondition' + record.id) ? activeInput.input : record.runcondition} placeholder={t('reminders.runcondition.placeholder')} controls={false} onUpdate={(value: any) => { record.runcondition = value.toString(); handleSave(record); }} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'reminders', id: 'runcondition' + record.id, num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }); }} />),
+      render: (_, record) => (<InputNumber tag={null} eng={record.type == 1 ? t('tags.planOrderLength.eng') : t('shift.hours')} value={activeInput.id == ('runcondition' + record.id) ? activeInput.input : record.runcondition} placeholder={t('reminders.runcondition.placeholder')} controls={false} onUpdate={(value: any) => { record.runcondition = value.toString(); handleSave(record); }} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'reminders', id: 'runcondition' + record.id, num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }); }} />),
     },
     {
       title: t('reminders.acknowledged'),

@@ -975,7 +975,7 @@ if (new.type=1) then
   new.nextrun := new.runcondition*(floor((SELECT cloth from lifetime)/new.runcondition)+1);
 end if;
 if (new.type=2) then
-  new.nextrun := (SELECT motor from lifetime) + (interval '1' hour * new.runcondition);
+  new.nextrun := extract(epoch from (SELECT motor from lifetime)) + 3600 * new.runcondition;
 end if;
 
 return new;
@@ -984,5 +984,15 @@ end;
 $function$
 ;
 create trigger remupdate before insert or update on reminders for row execute function remupdate();
+CREATE OR REPLACE FUNCTION getactualnotifications()
+ RETURNS SETOF reminders
+ LANGUAGE plpgsql
+AS $function$
+begin
+ RETURN QUERY(SELECT * FROM reminders where active=true and acknowledged=false and current_timestamp > starttime);
+end;
+
+$function$
+;
 `
 export default createTableText
