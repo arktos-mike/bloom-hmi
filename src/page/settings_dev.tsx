@@ -82,7 +82,7 @@ const SettingsDev: React.FC<Props> = ({
         body: JSON.stringify({ [com]: { path: values.path, scan: values.scan, timeout: values.timeout, conf: { baudRate: values.baudRate, dataBits: values.dataBits, stopBits: values.stopBits, parity: values.parity } } }),
       });
       const json = await response.json();
-      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
+      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
       if (!response.ok) { throw Error(response.statusText); }
       fetchCOM();
     }
@@ -97,7 +97,7 @@ const SettingsDev: React.FC<Props> = ({
         body: JSON.stringify({ rtu1: { com: values.com, sId: values.sId, swapBytes: values.swapBytes, swapWords: values.swapWords, } }),
       });
       const json = await response.json();
-      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
+      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
       if (!response.ok) { throw Error(response.statusText); }
       fetchRTU();
     }
@@ -112,7 +112,7 @@ const SettingsDev: React.FC<Props> = ({
         body: JSON.stringify({ tcp: { ip: values.ip, port: values.port, sId: values.sId, swapBytes: values.swapBytes, swapWords: values.swapWords, } }),
       });
       const json = await response.json();
-      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
+      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
       if (!response.ok) { throw Error(response.statusText); }
       fetchTCP();
     }
@@ -307,7 +307,7 @@ const SettingsDev: React.FC<Props> = ({
                   name="sId"
                   label={t('rtu.sId')}
                   rules={[{ required: true, message: t('user.fill') }]}
-                  >
+                >
                   <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} placeholder='rtu.sId' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'sId', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
                 </Form.Item>
                 <Form.Item label=" " style={{ marginTop: 10 }}>

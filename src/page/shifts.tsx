@@ -86,12 +86,12 @@ const Shifts: React.FC<Props> = ({
   };
   const handleSubmit = async () => {
     const table = data.map(({ key, problemName, problemTime, problemDur, ...rest }) => {
-      rest.starttime=dayjs(rest.starttime, 'HH:mm').format('HH:mmZ');
+      rest.starttime = dayjs(rest.starttime, 'HH:mm').format('HH:mmZ');
       return rest;
     });
     try {
       if (rulesCheck(data)) {
-        openNotificationWithIcon('warning', t('notifications.dataerror'), 3);
+        openNotificationWithIcon('warning', t('notifications.dataerror'), 3, '', { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' });
       }
       else {
         const response = await fetch('http://localhost:3000/shifts/', {
@@ -100,7 +100,7 @@ const Shifts: React.FC<Props> = ({
           body: JSON.stringify(table),
         });
         const json = await response.json();
-        openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
+        openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
         setUpdated(json.error ? false : true);
         if (!response.ok) { throw Error(response.statusText); }
       }
@@ -144,12 +144,12 @@ const Shifts: React.FC<Props> = ({
           obj.problemTime = true;
           result = true;
         }
-        if (i < index && hasSameDay(array[i], obj) && dayjs(obj.starttime, "HH:mm").add(isNextDay(array[i]) ? 1 : 0, 'day').isBefore(dayjs(array[i].starttime, "HH:mm").add(parseInt(array[i].duration), 'hour')))  {
+        if (i < index && hasSameDay(array[i], obj) && dayjs(obj.starttime, "HH:mm").add(isNextDay(array[i]) ? 1 : 0, 'day').isBefore(dayjs(array[i].starttime, "HH:mm").add(parseInt(array[i].duration), 'hour'))) {
           obj.problemTime = true;
           array[i].problemDur = true;
           result = true;
         }
-        if (i < index && hasSameDay(obj, array[i]) && isNextDay(obj) && dayjs(obj.starttime, "HH:mm").add(parseInt(obj.duration), 'hour').isAfter(dayjs(array[i].starttime, "HH:mm").add( 1 , 'day')))  {
+        if (i < index && hasSameDay(obj, array[i]) && isNextDay(obj) && dayjs(obj.starttime, "HH:mm").add(parseInt(obj.duration), 'hour').isAfter(dayjs(array[i].starttime, "HH:mm").add(1, 'day'))) {
           obj.problemDur = true;
           array[i].problemTime = true;
           result = true;
@@ -194,7 +194,7 @@ const Shifts: React.FC<Props> = ({
 
   useEffect(() => {
     if (typeof pagination.defaultPageSize == 'undefined') {
-      setPagination({ ...pagination, defaultPageSize: height ? Math.floor((height-100) / 73) : 5, pageSize: height ? Math.floor((height-100) / 73) : 5})
+      setPagination({ ...pagination, defaultPageSize: height ? Math.floor((height - 100) / 73) : 5, pageSize: height ? Math.floor((height - 100) / 73) : 5 })
     }
   }, [pagination])
 

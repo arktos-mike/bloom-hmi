@@ -124,7 +124,7 @@ const SettingsTech: React.FC<Props> = ({
         setTags({ data: newData });
       }
       else if ((newData[index]['tag']['min'] > tagValue) || (newData[index]['tag']['max'] < tagValue)) {
-        openNotificationWithIcon('warning', t('notifications.dataerror'), 3);
+        openNotificationWithIcon('warning', t('notifications.dataerror'), 3, '', { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' });
       }
     }
     catch (error) { console.log(error); }

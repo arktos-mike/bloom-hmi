@@ -41,7 +41,7 @@ import SettingsTech from './page/settings_tech';
 import { Breadcrumb } from './components';
 import Reminders from './page/reminders';
 dayjs.extend(isBetween);
-import { isEqual } from 'lodash-es';
+import { differenceWith, isEqual } from 'lodash-es';
 
 const { Header, Content, Footer } = Layout;
 const { Option } = Select;
@@ -98,7 +98,7 @@ const App: React.FC = () => {
   const onIdle = async () => {
     if (!remember && token) {
       await checkLogin();
-      openNotificationWithIcon('warning', t('notifications.idle'), 0);
+      openNotificationWithIcon('warning', t('notifications.idle'), 0, '0', '', { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' });
     }
   }
 
@@ -131,6 +131,8 @@ const App: React.FC = () => {
   const [updated, setUpdated] = useState(false)
   const [openKeys, setOpenKeys] = useState(['']);
   const [reminders, setReminders] = useState()
+  const [remindersFilter, setRemindersFilter] = useState<any[]>()
+  const [carouselIndex, setCarouselIndex] = useState(0)
 
   const handleShift = () => {
     setLayout(layout === "default" ? "shift" : "default")
@@ -304,19 +306,25 @@ const App: React.FC = () => {
       const response = await fetch('http://localhost:3000/reminders/active');
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
-      if (!isEqual(reminders,json)) {setReminders(json)}
+      setRemindersFilter(differenceWith(reminders, json, isEqual))
+      if (!isEqual(reminders, json)) { setReminders(json) }
     }
     catch (error) { console.log(error); }
   };
 
   useEffect(() => {
     fetchReminders();
-  }, [dayjs().second()])
+  }, [dayjs().minute()])
 
   useEffect(() => {
     (reminders || []).map((note: any) => (
-      openNotificationWithIcon('info', note['title'], 0, note['id'], note['descr'])));
-  }, [token, reminders])
+      openNotificationWithIcon('info', note['title'], 5, note['id'], note['descr'], { backgroundColor: '#e6f7ff', border: '2px solid #91d5ff' })));
+  }, [token])
+
+  useEffect(() => {
+    (remindersFilter || []).map((note: any) => (
+      openNotificationWithIcon('info', note['title'], 0, note['id'], note['descr'], { backgroundColor: '#e6f7ff', border: '2px solid #91d5ff' })));
+  }, [remindersFilter])
 
   useEffect(() => {
     clock();
@@ -418,7 +426,7 @@ const App: React.FC = () => {
               </div>
               <div className="site-layout-content">
                 <Routes>
-                  <Route index element={<Overview token={token} modeCode={modeCode} shift={shift} shadowUser={shadowUser} reminders={reminders} />} />
+                  <Route index element={<Overview carouselIndex={carouselIndex} setCarouselIndex={setCarouselIndex} token={token} modeCode={modeCode} shift={shift} shadowUser={shadowUser} reminders={reminders} />} />
                   <Route path={'/machineInfo'} element={<MachineInfo />} />
                   <Route path={'/reminders'} element={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Reminders activeInput={activeInput} setActiveInput={setActiveInput} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                   <Route path={'/reports'} element={<MonthReport token={token} />} />

@@ -17,6 +17,8 @@ type Props = {
   token: any;
   modeCode: { val: Number, updated: any };
   reminders: any;
+  carouselIndex: any;
+  setCarouselIndex: (val: number) => void;
 };
 
 const Overview: React.FC<Props> = ({
@@ -24,7 +26,9 @@ const Overview: React.FC<Props> = ({
   shift,
   token,
   modeCode,
-  reminders
+  reminders,
+  carouselIndex,
+  setCarouselIndex
 }) => {
   const [formShift] = Form.useForm();
   const [formWeaver] = Form.useForm();
@@ -104,7 +108,7 @@ const Overview: React.FC<Props> = ({
       setUserInfo(json[0]);
       if (json[0] && Array.isArray(json[0]['stops'])) {
         let obj = []
-        obj.push({ reason: 'run', value: dayjs.duration(json[0]['runtime']).asMilliseconds(), count: Number(json[0]['starts']) })
+        obj.push({ reason: 'run', value: dayjs.duration(json[0]['runtime']||0).asMilliseconds(), count: Number(json[0]['starts']) })
         for (let stop of json[0]['stops']) {
           obj.push({ reason: Object.keys(stop)[0], value: dayjs.duration(stop[Object.keys(stop)[0]]['dur']).asMilliseconds(), count: stop[Object.keys(stop)[0]]['total'] })
         }
@@ -155,13 +159,12 @@ const Overview: React.FC<Props> = ({
   useEffect(() => {
     setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
     fetchUserStatInfo();
-    console.log(reminders)
   }, [])
 
   useEffect(() => {
     let obj = []
     if (Array.isArray(shift['stops'])) {
-      obj.push({ reason: 'run', value: dayjs.duration(shift['runtime']).asMilliseconds(), count: Number(shift['starts']) })
+      obj.push({ reason: 'run', value: dayjs.duration(shift['runtime']||0).asMilliseconds(), count: Number(shift['starts']) })
       for (let stop of shift['stops']) {
         obj.push({ reason: Object.keys(stop)[0], value: dayjs.duration(stop[Object.keys(stop)[0]]['dur']).asMilliseconds(), count: stop[Object.keys(stop)[0]]['total'] })
       }
@@ -176,7 +179,7 @@ const Overview: React.FC<Props> = ({
 
   return (
     <div ref={div} className='wrapper'>
-      <Carousel dotPosition='top'>
+      <Carousel dotPosition='top' swipe={true} afterChange={index => setCarouselIndex(index)}>
         <div>
           <div style={contentStyle}>
             <div className='wrapper'>
@@ -331,14 +334,15 @@ const Overview: React.FC<Props> = ({
             {
               (reminders || []).map((note: any) => (
                 <React.Fragment key={note['id']}>
-                  <Space direction="horizontal" style={{ justifyContent: 'start', alignItems: 'center' }} wrap>
+                  <div style={{display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center', padding: 5}}>
                     <Alert
+                    style={{flexGrow:'1', marginRight:10}}
                       message={note['title']}
                       description={note['descr']}
                       type="info"
                     />
-                    <Button shape="circle" icon={<CheckOutlined />} size="small" type="primary" style={{ margin: 0, background: "#87d068", borderColor: "#87d068" }} onClick={confirm(note['id'])} />
-                  </Space>
+                    <Button userRights={['admin', 'manager', 'fixer']} token={token} shape="circle" icon={<CheckOutlined />} size="small" type="primary" style={{ margin: 0, background: "#87d068", borderColor: "#87d068" }} onClick={()=>{confirm(note['id'])}} />
+                  </div>
                 </React.Fragment>
               ))
             }

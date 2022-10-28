@@ -21,7 +21,6 @@ router.post('/ack/:id', async (req, res) => {
   res.status(200).json({
     message: "Notification acknowledged",
   });
-  console.log(req.params.id)
 })
 
 router.post('/', async (req, res) => {

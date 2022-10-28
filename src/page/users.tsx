@@ -53,7 +53,7 @@ const Users: React.FC<Props> = ({
         method: 'DELETE',
       });
       const json = await response.json();
-      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
+      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
       if (!response.ok) { throw Error(response.statusText); }
     }
     catch (error) { console.log(error) }
@@ -169,7 +169,7 @@ const Users: React.FC<Props> = ({
   useEffect(() => {
     setActiveInput({ ...activeInput, form: '', id: '' });
     fetchData();
-  }, [editVisible,regVisible]);
+  }, [editVisible, regVisible]);
 
   useEffect(() => {
     setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
@@ -177,7 +177,7 @@ const Users: React.FC<Props> = ({
 
   useEffect(() => {
     if (typeof pagination.defaultPageSize == 'undefined') {
-      setPagination({ ...pagination, defaultPageSize: height ? Math.floor((height-100) / 70) : 6, pageSize: height ? Math.floor((height-100) / 70) : 6 })
+      setPagination({ ...pagination, defaultPageSize: height ? Math.floor((height - 100) / 70) : 6, pageSize: height ? Math.floor((height - 100) / 70) : 6 })
     }
   }, [pagination])
 

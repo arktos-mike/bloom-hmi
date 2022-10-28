@@ -75,7 +75,7 @@ const ModeLog: React.FC<Props> = ({
   const handleDelete = async () => {
     try {
       if (!period) {
-        openNotificationWithIcon('warning', t('notifications.dataerror'), 3);
+        openNotificationWithIcon('warning', t('notifications.dataerror'), 3, '', { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' });
       }
       else {
         const response = await fetch('http://localhost:3000/logs/startstops/delete', {
@@ -85,7 +85,7 @@ const ModeLog: React.FC<Props> = ({
         });
         if (!response.ok) { throw Error(response.statusText); }
         const json = await response.json();
-        openNotificationWithIcon('success', t('notifications.logupdate'), 3);
+        openNotificationWithIcon('success', t('notifications.logupdate'), 3, '', { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
         setPagination({ ...pagination, total: json.length });
         setData(json);
         setLoading(false);

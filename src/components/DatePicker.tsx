@@ -17,12 +17,12 @@ const Component = (props: any) => {
       });
   }
   if (props.userRights && (props.token ? props.userRights.includes(JSON.parse(Buffer.from(props.token.split('.')[1], 'base64').toString()).role) ? false : true : true)) {
-    return (<div style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => { openNotificationWithIcon('error', t('notifications.rightserror'), 2); }}>
-      <DatePicker disabled showTime={props.showTime}  size="large" style={{ width: '100%' }} format={props.format||'L'} defaultValue={props.defaultValue} onChange={props.onChange} />
+    return (<div style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => { openNotificationWithIcon('error', t('notifications.rightserror'), 2, '', { backgroundColor: '#fff2f0', border: '2px solid #ffccc7' }); }}>
+      <DatePicker disabled showTime={props.showTime} size="large" style={{ width: '100%' }} format={props.format || 'L'} defaultValue={props.defaultValue} onChange={props.onChange} />
     </div>);
   }
   return (
-    <DatePicker size="large" showTime={props.showTime} style={{ width: '100%' }} format={props.format||'L'} status={props.status} defaultValue={props.defaultValue} picker={props.picker} onChange={props.onChange} />
+    <DatePicker size="large" showTime={props.showTime} style={{ width: '100%' }} format={props.format || 'L'} status={props.status} defaultValue={props.defaultValue} picker={props.picker} onChange={props.onChange} />
   );
 }
 export default Component;

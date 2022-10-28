@@ -19,7 +19,7 @@ const Component = (props: any) => {
       });
   }
   if (props.userRights && (props.token ? props.userRights.includes(JSON.parse(Buffer.from(props.token.split('.')[1], 'base64').toString()).role) ? false : true : true)) {
-    return (<div style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => { openNotificationWithIcon('error', t('notifications.rightserror'), 2); }}>
+    return (<div style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => { openNotificationWithIcon('error', t('notifications.rightserror'), 2, '', { backgroundColor: '#fff2f0', border: '2px solid #ffccc7' }); }}>
       <RangePicker disabled separator={<SwapRightOutlined style={{ fontSize: '150%', color: '#0000003F' }} />} size="large" style={props.style ? props.style : { width: '100%' }} format='L LT' defaultValue={props.defaultValue} value={props.value} />
     </div>);
   }

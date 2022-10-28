@@ -94,7 +94,7 @@ const SettingsOp: React.FC<Props> = ({
         method: 'POST',
       });
       const json = await response.json();
-      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
+      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
       if (!response.ok) { throw Error(response.statusText); }
     }
     catch (error) { console.log(error) }
@@ -108,7 +108,7 @@ const SettingsOp: React.FC<Props> = ({
         body: JSON.stringify({ opIP: { ip_address: values.ip, netmask: values.mask, gateway_ip: values.gw } }),
       });
       const json = await response.json();
-      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
+      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
       if (!response.ok) { throw Error(response.statusText); }
       fetchIP();
     }
@@ -125,7 +125,7 @@ const SettingsOp: React.FC<Props> = ({
         body: JSON.stringify({ unix: dt.unix(), iso: dt.toISOString() }),
       });
       const json = await response.json();
-      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
+      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
       if (!response.ok) { throw Error(response.statusText); }
       form.resetFields()
     }

@@ -112,7 +112,7 @@ const UserLogin: React.FC<Props> = ({
         });
         const json = await response.json();
         setToken(json.token || token);
-        openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3);
+        openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
         if (!response.ok) { throw Error(response.statusText); }
       }
       setRemember(values.remember);
