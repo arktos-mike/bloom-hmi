@@ -41,6 +41,7 @@ import SettingsTech from './page/settings_tech';
 import { Breadcrumb } from './components';
 import Reminders from './page/reminders';
 dayjs.extend(isBetween);
+import { isEqual } from 'lodash-es';
 
 const { Header, Content, Footer } = Layout;
 const { Option } = Select;
@@ -50,15 +51,17 @@ const App: React.FC = () => {
   const span = useRef<HTMLSpanElement | null>(null);
   const descr = useRef<HTMLSpanElement | null>(null);
   const location = useLocation();
-  const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
-    if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
+  const openNotificationWithIcon = (type: string, message: string, dur: number, key?: string, descr?: string, style?: React.CSSProperties) => {
+    if (type == 'success' || type == 'warning' || type == 'info' || type == 'error') {
       notification[type]({
+        key: key,
         message: message,
         description: descr,
         placement: 'bottomRight',
         duration: dur,
         style: style,
       });
+    }
   };
 
   const checkShadowUser = async () => {
@@ -127,6 +130,7 @@ const App: React.FC = () => {
   const [shift, setShift] = useState({ name: '', start: '', end: '', duration: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: '', stops: {} })
   const [updated, setUpdated] = useState(false)
   const [openKeys, setOpenKeys] = useState(['']);
+  const [reminders, setReminders] = useState()
 
   const handleShift = () => {
     setLayout(layout === "default" ? "shift" : "default")
@@ -295,6 +299,25 @@ const App: React.FC = () => {
     catch (error) { console.log(error); }
   };
 
+  const fetchReminders = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/reminders/active');
+      if (!response.ok) { throw Error(response.statusText); }
+      const json = await response.json();
+      if (!isEqual(reminders,json)) {setReminders(json)}
+    }
+    catch (error) { console.log(error); }
+  };
+
+  useEffect(() => {
+    fetchReminders();
+  }, [dayjs().second()])
+
+  useEffect(() => {
+    (reminders || []).map((note: any) => (
+      openNotificationWithIcon('info', note['title'], 0, note['id'], note['descr'])));
+  }, [token, reminders])
+
   useEffect(() => {
     clock();
     fetchLngs();
@@ -322,7 +345,7 @@ const App: React.FC = () => {
   }, [remember])
 
   useEffect(() => {
-    setInputWidth(span.current?.offsetWidth ? span.current?.offsetWidth < 700 ? span.current?.offsetWidth + 5: 700 : 5)
+    setInputWidth(span.current?.offsetWidth ? span.current?.offsetWidth < 700 ? span.current?.offsetWidth + 5 : 700 : 5)
     keyboardRef.current?.setInput(bufferKeyboard)
   }, [bufferKeyboard])
 
@@ -370,8 +393,8 @@ const App: React.FC = () => {
               <img src={logo} className="applogo" alt=""></img>
             </div>
             <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={location.pathname == '/' ? ['overview'] : [location.pathname.split("/").slice(-1)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? smallItemsMan : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? smallItemsFix : smallItems : smallItems} />
-            <div className="speed"><Spin wrapperClassName="speed" spinning={modeCode.val == 1 ? !getTagLink('speedMainDrive'):!getTagLink('stopAngle')}>{modeCode.val == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode.val == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}<div className="sub">{modeCode.val == 1 ? t('tags.speedMainDrive.eng') : '°'}</div></Spin></div>
-            <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode.val).color}}><Spin wrapperClassName="mode" spinning={!getTagLink('modeCode')}>{modeCodeObj(modeCode.val).text + ' '}{modeCodeObj(modeCode.val).icon}<div className='stopwatch'>{stopwatch(modeCode.updated)}</div></Spin></div>
+            <div className="speed"><Spin wrapperClassName="speed" spinning={modeCode.val == 1 ? !getTagLink('speedMainDrive') : !getTagLink('stopAngle')}>{modeCode.val == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode.val == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}<div className="sub">{modeCode.val == 1 ? t('tags.speedMainDrive.eng') : '°'}</div></Spin></div>
+            <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode.val).color }}><Spin wrapperClassName="mode" spinning={!getTagLink('modeCode')}>{modeCodeObj(modeCode.val).text + ' '}{modeCodeObj(modeCode.val).icon}<div className='stopwatch'>{stopwatch(modeCode.updated)}</div></Spin></div>
             {shift.name && <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' ' + shift.name}<div className="percent">{Number(Number(shift.efficiency).toFixed(shift.efficiency < 10 ? 2 : 1).toString()).toLocaleString(i18n.language) + '%'}</div></Space></div><div className="progress"><Progress percent={shift.efficiency} showInfo={false} size="small" /></div></div>}
             <div className="user">
               <div className="user" onClick={showUserDialog}>
@@ -395,10 +418,9 @@ const App: React.FC = () => {
               </div>
               <div className="site-layout-content">
                 <Routes>
-                  <Route index element={<Overview token={token} modeCode={modeCode} shift={shift} shadowUser={shadowUser} />} />
+                  <Route index element={<Overview token={token} modeCode={modeCode} shift={shift} shadowUser={shadowUser} reminders={reminders} />} />
                   <Route path={'/machineInfo'} element={<MachineInfo />} />
                   <Route path={'/reminders'} element={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Reminders activeInput={activeInput} setActiveInput={setActiveInput} /> : <Navigate to="/" /> : <Navigate to="/" />} />
-
                   <Route path={'/reports'} element={<MonthReport token={token} />} />
                   <Route path={'/reports/monthReport'} element={<MonthReport token={token} />} />
                   <Route path={'/reports/userReport'} element={<UserReport token={token} shadowUser={shadowUser} />} />

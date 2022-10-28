@@ -1,6 +1,6 @@
-import { Display, Donut } from '@/components';
-import { Badge, Card, Carousel, Col, Descriptions, Form, Row, Skeleton, Space } from 'antd';
-import { ToolOutlined, QuestionCircleOutlined, LoginOutlined, IdcardOutlined, RiseOutlined, PieChartOutlined, SyncOutlined, ClockCircleOutlined, ScheduleOutlined, DashboardOutlined, AimOutlined } from '@ant-design/icons';
+import { Button, Display, Donut } from '@/components';
+import { Alert, Badge, Card, Carousel, Col, Descriptions, Form, Modal, Row, Skeleton, Space } from 'antd';
+import { CheckOutlined, ToolOutlined, QuestionCircleOutlined, LoginOutlined, IdcardOutlined, RiseOutlined, PieChartOutlined, SyncOutlined, ClockCircleOutlined, ScheduleOutlined, DashboardOutlined, AimOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
@@ -16,6 +16,7 @@ type Props = {
   shift: any;
   token: any;
   modeCode: { val: Number, updated: any };
+  reminders: any;
 };
 
 const Overview: React.FC<Props> = ({
@@ -23,6 +24,7 @@ const Overview: React.FC<Props> = ({
   shift,
   token,
   modeCode,
+  reminders
 }) => {
   const [formShift] = Form.useForm();
   const [formWeaver] = Form.useForm();
@@ -55,6 +57,30 @@ const Overview: React.FC<Props> = ({
     else { obj = { color: enable ? '#00000000' : '#8c8c8c', text: t('tags.mode.unknown'), icon: <QuestionCircleOutlined style={{ fontSize: '130%', color: enable ? '#00000000' : '#8c8c8c', paddingInline: 5 }} /> } }
     return obj;
   }
+
+  const confirm = (id: any) => {
+    Modal.confirm({
+      title: t('confirm.title'),
+      icon: <ExclamationCircleOutlined style={{ fontSize: "300%" }} />,
+      content: t('confirm.descr'),
+      okText: t('confirm.ok'),
+      cancelText: t('confirm.cancel'),
+      centered: true,
+      okButtonProps: { size: 'large', danger: true },
+      cancelButtonProps: { size: 'large' },
+      onOk: () => { handleAck(id) },
+    });
+  };
+
+  const handleAck = async (id: any) => {
+    try {
+      const response = await fetch('http://localhost:3000/reminders/ack/' + id, {
+        method: 'POST',
+      });
+      if (!response.ok) { throw Error(response.statusText); }
+    }
+    catch (error) { console.log(error); }
+  };
 
   function localeParseFloat(str: String) {
     let out: String[] = [];
@@ -129,6 +155,7 @@ const Overview: React.FC<Props> = ({
   useEffect(() => {
     setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
     fetchUserStatInfo();
+    console.log(reminders)
   }, [])
 
   useEffect(() => {
@@ -299,6 +326,24 @@ const Overview: React.FC<Props> = ({
                 </Col>
               </Row>
             </div></div></div>
+        <div>
+          <div style={{ ...contentStyle, maxHeight: '100', overflowY: 'auto' }}>
+            {
+              (reminders || []).map((note: any) => (
+                <React.Fragment key={note['id']}>
+                  <Space direction="horizontal" style={{ justifyContent: 'start', alignItems: 'center' }} wrap>
+                    <Alert
+                      message={note['title']}
+                      description={note['descr']}
+                      type="info"
+                    />
+                    <Button shape="circle" icon={<CheckOutlined />} size="small" type="primary" style={{ margin: 0, background: "#87d068", borderColor: "#87d068" }} onClick={confirm(note['id'])} />
+                  </Space>
+                </React.Fragment>
+              ))
+            }
+          </div>
+        </div>
         <div>
           <div style={{ ...contentStyle, maxHeight: '100', overflowY: 'auto' }}>
             <div >
