@@ -2,7 +2,7 @@ import { Card, Col, Modal, notification, Row, Skeleton, } from 'antd';
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import { InputNumber, Options, Display, Button } from '../components';
-import { RedoOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { ScissorOutlined, RedoOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import format from 'dayjs';
 import dayjs from 'dayjs';
 
@@ -172,7 +172,7 @@ const SettingsTech: React.FC<Props> = ({
                 <Options userRights={['admin', 'manager']} token={token} value={query(Number(getTagVal('modeControl')), 1)} text='tags.modeControl.descr' options={[{ key: 0, text: 'tags.modeControl.0' }, { key: 1, text: 'tags.modeControl.1' }]} onChange={(value: number) => { setTagVal('modeControl', value == 0 ? turnOFF(Number(getTagVal('modeControl')), 1) : turnON(Number(getTagVal('modeControl')), 1)) }}></Options>
                 <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center', marginTop: '15px' }}>
                   <Display value={getTagVal('orderLength')} tag={getTag('orderLength')} />
-                  <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<RedoOutlined style={{ fontSize: '150%' }} />} size="large" type="primary" style={{ margin: 10 }} onClick={confirmNullOrder} ></Button>
+                  <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<ScissorOutlined style={{ fontSize: '150%' }} />} size="large" type="primary" style={{ margin: 10 }} onClick={confirmNullOrder} ></Button>
                 </div>
                 <div style={{ marginTop: '15px', width: '75%' }}>
                   <InputNumber className="narrow" eng descr value={activeInput.id == ('orderLength') ? activeInput.input : getTagVal('planOrderLength')} tag={getTag('planOrderLength')} userRights={['admin', 'manager']} token={token} placeholder='tags.planOrderLength.descr' controls={false} onUpdate={(value: any) => { setTagVal('planOrderLength', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'orderLength', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />

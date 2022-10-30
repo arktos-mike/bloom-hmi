@@ -132,7 +132,6 @@ const App: React.FC = () => {
   const [openKeys, setOpenKeys] = useState(['']);
   const [reminders, setReminders] = useState()
   const [remindersFilter, setRemindersFilter] = useState<any[]>()
-  const [carouselIndex, setCarouselIndex] = useState(0)
 
   const handleShift = () => {
     setLayout(layout === "default" ? "shift" : "default")
@@ -426,7 +425,7 @@ const App: React.FC = () => {
               </div>
               <div className="site-layout-content">
                 <Routes>
-                  <Route index element={<Overview carouselIndex={carouselIndex} setCarouselIndex={setCarouselIndex} token={token} modeCode={modeCode} shift={shift} shadowUser={shadowUser} reminders={reminders} />} />
+                  <Route index element={<Overview token={token} modeCode={modeCode} shift={shift} shadowUser={shadowUser} reminders={reminders} />} />
                   <Route path={'/machineInfo'} element={<MachineInfo />} />
                   <Route path={'/reminders'} element={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Reminders activeInput={activeInput} setActiveInput={setActiveInput} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                   <Route path={'/reports'} element={<MonthReport token={token} />} />

@@ -17,8 +17,6 @@ type Props = {
   token: any;
   modeCode: { val: Number, updated: any };
   reminders: any;
-  carouselIndex: any;
-  setCarouselIndex: (val: number) => void;
 };
 
 const Overview: React.FC<Props> = ({
@@ -26,9 +24,7 @@ const Overview: React.FC<Props> = ({
   shift,
   token,
   modeCode,
-  reminders,
-  carouselIndex,
-  setCarouselIndex
+  reminders
 }) => {
   const [formShift] = Form.useForm();
   const [formWeaver] = Form.useForm();
@@ -179,7 +175,7 @@ const Overview: React.FC<Props> = ({
 
   return (
     <div ref={div} className='wrapper'>
-      <Carousel dotPosition='top' swipe={true} afterChange={index => setCarouselIndex(index)}>
+      <Carousel dotPosition='top' swipe={true}>
         <div>
           <div style={contentStyle}>
             <div className='wrapper'>
