@@ -23,11 +23,13 @@ interface DataType {
 type Props = {
   activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string };
   setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string }) => void;
+  setUpdatedReminders: (val: boolean) => void;
 };
 
 const Reminders: React.FC<Props> = ({
   activeInput,
-  setActiveInput
+  setActiveInput,
+  setUpdatedReminders
 }
 ) => {
   const [height, setHeight] = useState<number | undefined>(0)
@@ -83,6 +85,7 @@ const Reminders: React.FC<Props> = ({
       if (!response.ok) { throw Error(response.statusText); }
     }
     catch (error) { console.log(error) }
+    setUpdatedReminders(true);
     fetchData();
   };
   const handleChange: TableProps<DataType>['onChange'] = (pagination, currentDataSource) => {

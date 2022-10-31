@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import logo from '/icon.svg'
 import 'styles/app.less'
 import { Route, Link, Routes, useLocation, Navigate } from 'react-router-dom';
-import { Layout, Menu, Select, Drawer, Button, Input, notification, ConfigProvider, Space, Progress, Avatar, Tooltip, Spin } from 'antd';
+import { Layout, Menu, Select, Drawer, Button, Input, notification, ConfigProvider, Space, Progress, Avatar, Tooltip, Spin, Badge } from 'antd';
 import { BellOutlined, ReconciliationOutlined, TagsOutlined, ReadOutlined, ScheduleOutlined, ToolOutlined, QuestionCircleOutlined, SyncOutlined, LoadingOutlined, AimOutlined, DashboardOutlined, CloseCircleTwoTone, EyeTwoTone, EyeInvisibleOutlined, GlobalOutlined, CloseOutlined, ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "./components/Icons"
 import { useIdleTimer } from 'react-idle-timer'
@@ -129,6 +129,7 @@ const App: React.FC = () => {
   const [tags, setTags] = useState({ data: [] })
   const [shift, setShift] = useState({ name: '', start: '', end: '', duration: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: '', stops: {} })
   const [updated, setUpdated] = useState(false)
+  const [updatedReminders, setUpdatedReminders] = useState(false)
   const [openKeys, setOpenKeys] = useState(['']);
   const [reminders, setReminders] = useState()
   const [remindersFilter, setRemindersFilter] = useState<any[]>()
@@ -313,7 +314,8 @@ const App: React.FC = () => {
 
   useEffect(() => {
     fetchReminders();
-  }, [dayjs().minute()])
+    setUpdatedReminders(false);
+  }, [dayjs().minute(), updatedReminders])
 
   useEffect(() => {
     (reminders || []).map((note: any) => (
@@ -330,6 +332,7 @@ const App: React.FC = () => {
     fetchLngs();
     fetchShift();
     checkLogin();
+    fetchReminders();
     setUpdated(true);
   }, [])
 
@@ -366,21 +369,21 @@ const App: React.FC = () => {
   }, [activeInput.num, keyboardLng])
 
   const smallItems = [
-    { label: <Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'overview' },
+    { label: <Badge.Ribbon text={(reminders || []).length} color="purple" style={{ display: (reminders || []).length ? 'block' : 'none' }}><Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link></Badge.Ribbon>, title: '', key: 'overview' },
   ];
   const smallItemsSA = [
-    { label: <Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'overview' },
+    { label: <Badge.Ribbon text={(reminders || []).length} color="purple" style={{ display: (reminders || []).length ? 'block' : 'none' }}><Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link></Badge.Ribbon>, title: '', key: 'overview' },
     { label: <Link to="/users"><TeamOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'users' },
     { label: <Link to="/shifts"><ScheduleOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'shifts' },
     { label: <Link to="/reminders"><BellOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'reminders' },
   ];
   const smallItemsMan = [
-    { label: <Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'overview' },
+    { label: <Badge.Ribbon text={(reminders || []).length} color="purple" style={{ display: (reminders || []).length ? 'block' : 'none' }}><Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link></Badge.Ribbon>, title: '', key: 'overview' },
     { label: <Link to="/shifts"><ScheduleOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'shifts' },
     { label: <Link to="/reminders"><BellOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'reminders' },
   ];
   const smallItemsFix = [
-    { label: <Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'overview' },
+    { label: <Badge.Ribbon text={(reminders || []).length} color="purple" style={{ display: (reminders || []).length ? 'block' : 'none' }}><Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link></Badge.Ribbon>, title: '', key: 'overview' },
     { label: <Link to="/reminders"><BellOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'reminders' },
   ];
   const bigItems = [
@@ -425,9 +428,9 @@ const App: React.FC = () => {
               </div>
               <div className="site-layout-content">
                 <Routes>
-                  <Route index element={<Overview token={token} modeCode={modeCode} shift={shift} shadowUser={shadowUser} reminders={reminders} />} />
+                  <Route index element={<Overview token={token} modeCode={modeCode} shift={shift} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
                   <Route path={'/machineInfo'} element={<MachineInfo />} />
-                  <Route path={'/reminders'} element={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Reminders activeInput={activeInput} setActiveInput={setActiveInput} /> : <Navigate to="/" /> : <Navigate to="/" />} />
+                  <Route path={'/reminders'} element={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Reminders activeInput={activeInput} setActiveInput={setActiveInput} setUpdatedReminders={setUpdatedReminders} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                   <Route path={'/reports'} element={<MonthReport token={token} />} />
                   <Route path={'/reports/monthReport'} element={<MonthReport token={token} />} />
                   <Route path={'/reports/userReport'} element={<UserReport token={token} shadowUser={shadowUser} />} />

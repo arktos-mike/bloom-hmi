@@ -17,6 +17,7 @@ type Props = {
   token: any;
   modeCode: { val: Number, updated: any };
   reminders: any;
+  setUpdatedReminders: (val:boolean)=>void;
 };
 
 const Overview: React.FC<Props> = ({
@@ -24,7 +25,8 @@ const Overview: React.FC<Props> = ({
   shift,
   token,
   modeCode,
-  reminders
+  reminders,
+  setUpdatedReminders
 }) => {
   const [formShift] = Form.useForm();
   const [formWeaver] = Form.useForm();
@@ -78,6 +80,7 @@ const Overview: React.FC<Props> = ({
         method: 'POST',
       });
       if (!response.ok) { throw Error(response.statusText); }
+      setUpdatedReminders(true);
     }
     catch (error) { console.log(error); }
   };
