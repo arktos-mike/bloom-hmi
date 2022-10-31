@@ -68,6 +68,12 @@ CREATE TABLE IF NOT EXISTS shiftconfig (
     saturday BOOLEAN,
     sunday BOOLEAN
   );
+CREATE TABLE IF NOT EXISTS clothlog (
+    timestamp tstzrange PRIMARY KEY not null default tstzrange(current_timestamp,NULL,'[)'),
+    event NUMERIC,
+    meters numeric
+  );
+CREATE INDEX IF NOT EXISTS clothlog_tstzrange_idx ON clothlog USING GIST (timestamp);
 create or replace
   function shiftdetect(stamp timestamp with time zone,
   out shiftname text,
@@ -267,6 +273,26 @@ set
 	motor = motor + clock
 where
 	serialno is not null;
+end if;
+
+if code = 6 then
+UPDATE
+  clothlog
+SET
+	timestamp = tstzrange(
+      lower(timestamp),
+	current_timestamp(3),
+	'[)'
+  ),
+	meters = (select
+    val
+  from
+    tags
+  where
+    tag->>'name' = 'orderLength')
+where
+	event=1 and upper_inf(timestamp);
+INSERT INTO clothlog VALUES(tstzrange(current_timestamp(3),NULL,'[)'),1,NULL);
 end if;
 
 return new;
@@ -1003,7 +1029,7 @@ CREATE OR REPLACE FUNCTION getactualnotifications()
 AS $function$
 begin
   UPDATE reminders SET acknowledged=acknowledged;
-  RETURN QUERY(SELECT * FROM reminders where active=true and acknowledged=false and current_timestamp > starttime and
+  RETURN QUERY(SELECT * FROM reminders where active=true and acknowledged=false and current_timestamp >= starttime and
 	case
   when type=0 then current_timestamp <= nexttime
   when type=1 then (SELECT cloth from lifetime) <= nextrun

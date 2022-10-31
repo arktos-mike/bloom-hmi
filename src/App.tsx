@@ -306,7 +306,7 @@ const App: React.FC = () => {
       const response = await fetch('http://localhost:3000/reminders/active');
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
-      setRemindersFilter(differenceWith(reminders, json, isEqual))
+      setRemindersFilter(differenceWith(json, (reminders || []), isEqual));
       if (!isEqual(reminders, json)) { setReminders(json) }
     }
     catch (error) { console.log(error); }
@@ -369,21 +369,21 @@ const App: React.FC = () => {
   }, [activeInput.num, keyboardLng])
 
   const smallItems = [
-    { label: <Badge.Ribbon text={(reminders || []).length} color="purple" style={{ display: (reminders || []).length ? 'block' : 'none' }}><Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link></Badge.Ribbon>, title: '', key: 'overview' },
+    { label: <Link to="/"><Badge.Ribbon text={(reminders || []).length} color="purple" style={{ display: (reminders || []).length ? 'block' : 'none' }}><EyeOutlined style={{ fontSize: '100%' }} /></Badge.Ribbon></Link>, title: '', key: 'overview' },
   ];
   const smallItemsSA = [
-    { label: <Badge.Ribbon text={(reminders || []).length} color="purple" style={{ display: (reminders || []).length ? 'block' : 'none' }}><Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link></Badge.Ribbon>, title: '', key: 'overview' },
+    { label: <Link to="/"><Badge.Ribbon text={(reminders || []).length} color="purple" style={{ display: (reminders || []).length ? 'block' : 'none' }}><EyeOutlined style={{ fontSize: '100%' }} /></Badge.Ribbon></Link>, title: '', key: 'overview' },
     { label: <Link to="/users"><TeamOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'users' },
     { label: <Link to="/shifts"><ScheduleOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'shifts' },
     { label: <Link to="/reminders"><BellOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'reminders' },
   ];
   const smallItemsMan = [
-    { label: <Badge.Ribbon text={(reminders || []).length} color="purple" style={{ display: (reminders || []).length ? 'block' : 'none' }}><Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link></Badge.Ribbon>, title: '', key: 'overview' },
+    { label: <Link to="/"><Badge.Ribbon text={(reminders || []).length} color="purple" style={{ display: (reminders || []).length ? 'block' : 'none' }}><EyeOutlined style={{ fontSize: '100%' }} /></Badge.Ribbon></Link>, title: '', key: 'overview' },
     { label: <Link to="/shifts"><ScheduleOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'shifts' },
     { label: <Link to="/reminders"><BellOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'reminders' },
   ];
   const smallItemsFix = [
-    { label: <Badge.Ribbon text={(reminders || []).length} color="purple" style={{ display: (reminders || []).length ? 'block' : 'none' }}><Link to="/"><EyeOutlined style={{ fontSize: '100%' }} /></Link></Badge.Ribbon>, title: '', key: 'overview' },
+    { label: <Link to="/"><Badge.Ribbon text={(reminders || []).length} color="purple" style={{ display: (reminders || []).length ? 'block' : 'none' }}><EyeOutlined style={{ fontSize: '100%' }} /></Badge.Ribbon></Link>, title: '', key: 'overview' },
     { label: <Link to="/reminders"><BellOutlined style={{ fontSize: '100%' }} /></Link>, title: '', key: 'reminders' },
   ];
   const bigItems = [

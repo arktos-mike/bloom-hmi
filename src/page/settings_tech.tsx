@@ -54,7 +54,20 @@ const SettingsTech: React.FC<Props> = ({
       centered: true,
       okButtonProps: { size: 'large', danger: true },
       cancelButtonProps: { size: 'large' },
-      onOk: () => { setTagVal('modeControl', turnON(Number(getTagVal('modeControl')), 2)) },
+      onOk: async () => {
+        try {
+          const response = await fetch('http://localhost:3000/logs/clothlogchange', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json;charset=UTF-8', },
+            body: JSON.stringify({ event: 1, meters: localeParseFloat(getTagVal('orderLength')) }),
+          });
+          await setTagVal('modeControl', turnON(Number(getTagVal('modeControl')), 2));
+          const json = await response.json();
+          openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
+          if (!response.ok) { throw Error(response.statusText); }
+        }
+        catch (error) { console.log(error); }
+      },
     });
   };
 
@@ -68,7 +81,20 @@ const SettingsTech: React.FC<Props> = ({
       centered: true,
       okButtonProps: { size: 'large', danger: true },
       cancelButtonProps: { size: 'large' },
-      onOk: () => { getTagVal('fullWarpBeamLength') && setTagVal('warpBeamLength', localeParseFloat(getTagVal('fullWarpBeamLength') || '')) },
+      onOk: async () => {
+        getTagVal('fullWarpBeamLength') && setTagVal('warpBeamLength', localeParseFloat(getTagVal('fullWarpBeamLength') || ''));
+        try {
+          const response = await fetch('http://localhost:3000/logs/clothlogchange', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json;charset=UTF-8', },
+            body: JSON.stringify({ event: 0, meters: localeParseFloat(getTagVal('fullWarpBeamLength')) }),
+          });
+          const json = await response.json();
+          openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
+          if (!response.ok) { throw Error(response.statusText); }
+        }
+        catch (error) { console.log(error); }
+      },
     });
   };
 
@@ -158,7 +184,7 @@ const SettingsTech: React.FC<Props> = ({
               <Skeleton loading={loading} round active>
                 <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center', marginTop: '15px' }}>
                   <Display value={getTagVal('warpBeamLength')} tag={getTag('warpBeamLength')} />
-                  <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<RedoOutlined style={{ fontSize: '150%' }} />} size="large" type="primary" style={{ margin: 10 }} onClick={confirmFullWarpBeam} ></Button>
+                  <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<RedoOutlined style={{ fontSize: '150%' }} />} size="large" type="primary" style={{ margin: 10 }} onClick={()=>{confirmFullWarpBeam()}} ></Button>
                 </div>
                 <div style={{ marginTop: '15px', width: '75%' }}>
                   <InputNumber className="narrow" eng descr value={activeInput.id == ('warpLength') ? activeInput.input : getTagVal('fullWarpBeamLength')} tag={getTag('fullWarpBeamLength')} userRights={['admin', 'manager']} token={token} placeholder='tags.fullWarpBeamLength.descr' controls={false} onUpdate={(value: any) => { setTagVal('fullWarpBeamLength', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'warp', id: 'warpLength', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
@@ -172,7 +198,7 @@ const SettingsTech: React.FC<Props> = ({
                 <Options userRights={['admin', 'manager']} token={token} value={query(Number(getTagVal('modeControl')), 1)} text='tags.modeControl.descr' options={[{ key: 0, text: 'tags.modeControl.0' }, { key: 1, text: 'tags.modeControl.1' }]} onChange={(value: number) => { setTagVal('modeControl', value == 0 ? turnOFF(Number(getTagVal('modeControl')), 1) : turnON(Number(getTagVal('modeControl')), 1)) }}></Options>
                 <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center', marginTop: '15px' }}>
                   <Display value={getTagVal('orderLength')} tag={getTag('orderLength')} />
-                  <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<ScissorOutlined style={{ fontSize: '150%' }} />} size="large" type="primary" style={{ margin: 10 }} onClick={confirmNullOrder} ></Button>
+                  <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<ScissorOutlined style={{ fontSize: '150%' }} />} size="large" type="primary" style={{ margin: 10 }} onClick={()=>{query(Number(getTagVal('modeControl')), 1) && confirmNullOrder()}} ></Button>
                 </div>
                 <div style={{ marginTop: '15px', width: '75%' }}>
                   <InputNumber className="narrow" eng descr value={activeInput.id == ('orderLength') ? activeInput.input : getTagVal('planOrderLength')} tag={getTag('planOrderLength')} userRights={['admin', 'manager']} token={token} placeholder='tags.planOrderLength.descr' controls={false} onUpdate={(value: any) => { setTagVal('planOrderLength', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'orderLength', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />

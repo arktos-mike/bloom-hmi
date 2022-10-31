@@ -101,7 +101,8 @@ const dbInit = async () => {
       await db.query(`INSERT INTO users (id, name, password, role) VALUES(1,'Admin',$1,'admin') ON CONFLICT (id) DO NOTHING;`, [hash])
     });
     await db.query('INSERT INTO locales SELECT UNNEST($1::text[]), UNNEST($2::jsonb[]), UNNEST($3::boolean[]) ON CONFLICT (locale) DO NOTHING;', [['en', 'es', 'ru', 'tr'], [enlocale, eslocale, rulocale, trlocale], [false, false, true, false]])
-
+    const { rows } = await db.query('SELECT COUNT(*) FROM clothlog');
+    if (rows[0].count==0) await db.query(`INSERT INTO clothlog VALUES(tstzrange(current_timestamp(3),NULL,'[)'),$1,(SELECT val from tags WHERE tag->>'name' = 'fullWarpBeamLength'))`, [0])
     const comRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['comConf']);
     com1 = Object.assign(com1, comRows.rows[0].data.opCOM1, { act: 0 });
     com2 = Object.assign(com2, comRows.rows[0].data.opCOM2, { act: 0 });
