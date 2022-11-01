@@ -13,6 +13,7 @@ const locale = {
     "logs": "LOGS",
     "modelog": "START-STOP LOG",
     "userlog": "ACCESS LOG",
+    "clothlog": "CLOTH LOG",
     "machineInfo": "LOOM INFO",
     "reports": "REPORTS",
     "monthReport": "MONTH REPORT",
@@ -186,6 +187,8 @@ const locale = {
     "cancel": "NO"
   },
   "notifications": {
+    "none": "There are no current notifications",
+    "descr": "All active notifications are acknowledged by the user",
     "idle": "Logout due to Inactivity",
     "dtupdate": "Date/time changed successfully",
     "userok": "Successful login",
@@ -256,7 +259,10 @@ const locale = {
     "login": "Login",
     "logout": "Logout",
     "select": "Selected range:",
-    "event": "Event"
+    "event": "Event",
+    "length": "Length",
+    "roll": "Cloth cut",
+    "warpbeamchange": "Warp beam change"
   },
   "report": {
     "date": "Date",

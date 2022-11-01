@@ -13,6 +13,7 @@ const locale = {
     "logs": "REGISTROS",
     "modelog": "REGISTRO DE INICIO Y PARADA",
     "userlog": "REGISTRO DE ACCESO",
+    "clothlog": "REGISTRO DE TELA",
     "machineInfo": "INFORMACIÓN DEL TELAR",
     "reports": "INFORMES",
     "monthReport": "INFORME MENSUAL",
@@ -186,6 +187,8 @@ const locale = {
     "cancel": "NO"
   },
   "notifications": {
+    "none": "No hay notificaciones actuales",
+    "descr": "El usuario reconoce todas las notificaciones activas",
     "idle": "Cierre de sesión debido a inactividad",
     "dtupdate": "La fecha/hora cambió con éxito",
     "userok": "Inicio de sesión exitoso",
@@ -256,7 +259,10 @@ const locale = {
     "login": "Iniciar sesión",
     "logout": "Cerrar sesión",
     "select": "Rango seleccionado:",
-    "event": "Evento"
+    "event": "Evento",
+    "length": "Longitud",
+    "roll": "Corte de tela",
+    "warpbeamchange": "Cambio de plegador"
   },
   "report": {
     "date": "Fecha",

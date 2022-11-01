@@ -1,5 +1,5 @@
 import { Button, Display, Donut } from '@/components';
-import { Alert, Badge, Card, Carousel, Col, Descriptions, Form, Modal, Row, Skeleton, Space } from 'antd';
+import { Alert, Badge, Card, Carousel, Col, Descriptions, Form, Modal, Result, Row, Skeleton, Space } from 'antd';
 import { CheckOutlined, ToolOutlined, QuestionCircleOutlined, LoginOutlined, IdcardOutlined, RiseOutlined, PieChartOutlined, SyncOutlined, ClockCircleOutlined, ScheduleOutlined, DashboardOutlined, AimOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next';
@@ -35,6 +35,7 @@ const Overview: React.FC<Props> = ({
   const [tags, setTags] = useState({ data: [] as any })
   const [loading, setLoading] = useState(true)
   const [userInfo, setUserInfo] = useState()
+  const [pieces, setPieces] = useState()
   const [userDonut, setUserDonut] = useState([] as any)
   const [userDonutSel, setUserDonutSel] = useState({ run: true, other: true, button: true, warp: true, weft: true, tool: true, fabric: true } as any)
   const [shiftDonut, setShiftDonut] = useState([] as any)
@@ -113,10 +114,20 @@ const Overview: React.FC<Props> = ({
         }
         setUserDonut(obj);
       }
-      setLoading(false)
     }
     catch (error) { console.log(error); }
   };
+
+  const fetchPieces = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/logs//getRolls');
+      if (!response.ok) { throw Error(response.statusText); }
+      const json = await response.json();
+      setPieces(json);
+      setLoading(false)
+    }
+    catch (error) { console.log(error); }
+  }
 
   const fetchTags = async () => {
     try {
@@ -152,6 +163,7 @@ const Overview: React.FC<Props> = ({
   useEffect(() => {
     fetchTags();
     fetchUserStatInfo();
+    fetchPieces();
     return () => { isSubscribed = false }
   }, [tags])
 
@@ -212,7 +224,7 @@ const Overview: React.FC<Props> = ({
                       <Skeleton loading={loading} round active>
                         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
                           <Display value={getTagVal('orderLength')} suffix={getTagVal('planOrderLength')} tag={getTag('orderLength')} icon={<FabricPieceLengthIcon style={{ color: '#1890ff' }} />} />
-                          <Display value={getTagVal('planOrderLength') != '0' ? Math.floor((localeParseFloat(getTagVal('fullWarpBeamLength')) - localeParseFloat(getTagVal('warpBeamLength'))) * (1 - 0.01 * localeParseFloat(getTagVal('warpShrinkage'))) / localeParseFloat(getTagVal('planOrderLength'))) : 0} tag={{ name: 'rollsCount' }} suffix={getTagVal('planOrderLength') != '0' ? Math.floor(localeParseFloat(getTagVal('fullWarpBeamLength')) * (1 - 0.01 * localeParseFloat(getTagVal('warpShrinkage'))) / localeParseFloat(getTagVal('planOrderLength'))) : 0} icon={<FabricPieceIcon style={{ color: '#1890ff' }} />} />
+                          <Display value={pieces} tag={{ name: 'rollsCount' }} suffix={getTagVal('planOrderLength') != '0' ? Math.floor(localeParseFloat(getTagVal('warpBeamLength')) * (1 - 0.01 * localeParseFloat(getTagVal('warpShrinkage'))) / localeParseFloat(getTagVal('planOrderLength'))) : 0} icon={<FabricPieceIcon style={{ color: '#1890ff' }} />} />
                         </div>
                       </Skeleton>
                     </Card>
@@ -329,8 +341,8 @@ const Overview: React.FC<Props> = ({
               </Row>
             </div></div></div>
         <div>
-          <div style={{ ...contentStyle, maxHeight: '100', overflowY: 'auto' }}>
-            {
+          <div style={{ ...contentStyle, maxHeight: '100%', overflowY: 'auto' }}>
+            { (reminders || []).length ?
               (reminders || []).map((note: any) => (
                 <React.Fragment key={note['id']}>
                   <div style={{display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center', padding: 5}}>
@@ -343,12 +355,18 @@ const Overview: React.FC<Props> = ({
                     <Button userRights={['admin', 'manager', 'fixer']} token={token} shape="circle" icon={<CheckOutlined />} size="small" type="primary" style={{ margin: 0, background: "#87d068", borderColor: "#87d068" }} onClick={()=>{confirm(note['id'])}} />
                   </div>
                 </React.Fragment>
-              ))
+              )) :
+              <Result
+              status="success"
+              title={t('notifications.none')}
+              subTitle={t('notifications.descr')}
+              style={{ height: '100%', alignItems: 'center' }}
+            />
             }
           </div>
         </div>
         <div>
-          <div style={{ ...contentStyle, maxHeight: '100', overflowY: 'auto' }}>
+          <div style={{ ...contentStyle, maxHeight: '100%', overflowY: 'auto' }}>
             <div >
               <Skeleton loading={loading} round active>
                 <Descriptions column={24} size='small' >

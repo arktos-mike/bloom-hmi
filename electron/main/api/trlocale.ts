@@ -13,6 +13,7 @@ const locale = {
     "logs": "GÜNLÜKLER",
     "modelog": "BAŞLAT-DURDUR GÜNLÜĞÜ",
     "userlog": "ERİŞİM GÜNLÜĞÜ",
+    "clothlog": "KUMAŞ GÜNLÜĞÜ",
     "machineInfo": "TEZGAH BİLGİSİ",
     "reports": "RAPORLAR",
     "monthReport": "AY RAPORU",
@@ -186,6 +187,8 @@ const locale = {
     "cancel": "HAYIR"
   },
   "notifications": {
+    "none": "Güncel bildirim yok",
+    "descr": "Tüm etkin bildirimler kullanıcı tarafından onaylanır",
     "idle": "Etkinlik nedeniyle oturumu kapat",
     "dtupdate": "Tarih/zaman başarıyla değiştirildi",
     "userok": "Başarılı oturum açma",
@@ -256,7 +259,10 @@ const locale = {
     "login": "Giriş",
     "logout": "Çıkış",
     "select": "Seçili aralık:",
-    "event": "Etkinlik"
+    "event": "Etkinlik",
+    "length": "Uzunluk",
+    "roll": "Kumaş kesim",
+    "warpbeamchange": "Levent değişikliği"
   },
   "report": {
     "date": "Tarih",
