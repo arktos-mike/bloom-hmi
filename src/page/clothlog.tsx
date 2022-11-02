@@ -1,7 +1,6 @@
 import { Modal, notification, Table } from 'antd';
 import type { ColumnsType, TablePaginationConfig, TableProps } from 'antd/es/table';
-import { ToolOutlined, QuestionCircleOutlined, SyncOutlined, ExclamationCircleOutlined, DeleteOutlined, ScissorOutlined } from '@ant-design/icons';
-import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "../components/Icons"
+import { QuestionCircleOutlined, RedoOutlined, ExclamationCircleOutlined, DeleteOutlined, ScissorOutlined } from '@ant-design/icons';
 import { FilterValue, SorterResult } from 'antd/es/table/interface';
 import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
@@ -51,7 +50,7 @@ const ClothLog: React.FC<Props> = ({
   const modeCodeObj = (code: Number) => {
     let obj;
     if (code == 1) { obj = { color: '#000000FF', text: t('log.roll'), icon: <ScissorOutlined style={{ fontSize: '175%', color: '#7339ABFF', paddingInline: 5 }} /> } }
-    else if (code == 0) { obj = { color: '#43A047FF', text: t('log.warpbeamchange'), icon: <SyncOutlined style={{ fontSize: '175%', color: '#43A047FF', paddingInline: 5 }} /> } }
+    else if (code == 0) { obj = { color: '#43A047FF', text: t('log.warpbeamchange'), icon: <RedoOutlined style={{ fontSize: '175%', color: '#43A047FF', paddingInline: 5 }} /> } }
      else { obj = { color: '#00000000', text: t('tags.mode.unknown'), icon: <QuestionCircleOutlined style={{ fontSize: '175%', color: '#00000000', paddingInline: 5 }} /> } }
     return obj;
   }
@@ -113,7 +112,7 @@ const ClothLog: React.FC<Props> = ({
       sortOrder: sortedInfo.columnKey === 'timestamp' ? sortedInfo.order : null,
       ellipsis: true,
       width: '20%',
-      render: (_, record) => <>{dayjs(record.timestamp['lower']).format('LL LTS')}<br />{record.timestamp['upper'] ? dayjs(record.timestamp['upper']).format('LL LTS'):''}</>,
+      render: (_, record) => <>{dayjs(record.timestamp['lower']).format('LL LTS')}<br />{record.timestamp['upper'] ? dayjs(record.timestamp['upper']).format('LL LTS'):`‪‪ `}</>,
     },
     {
       title: t('log.event'),
@@ -167,7 +166,7 @@ const ClothLog: React.FC<Props> = ({
 
   useEffect(() => {
     if (typeof pagination.defaultPageSize == 'undefined') {
-      setPagination({ ...pagination, defaultPageSize: height ? Math.floor((height - 165) / 45) : 8, pageSize: height ? Math.floor((height - 165) / 45) : 8 })
+      setPagination({ ...pagination, defaultPageSize: height ? Math.floor((height - 165) / 62) : 6, pageSize: height ? Math.floor((height - 165) / 62) : 6 })
     }
   }, [pagination])
 

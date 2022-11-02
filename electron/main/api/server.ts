@@ -253,14 +253,14 @@ const readModbusData = async function (client, port, slave) {
               port.mbsState = MBS_STATE_GOOD_READ;
               mbsStatus = "success";
               let val = data.buffer[0];
-              db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false);', [val, 'dev', slave.name, 'name', tag.name]);
+              await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false);', [val, 'dev', slave.name, 'name', tag.name]);
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             } catch (e) {
               port.mbsState = MBS_STATE_FAIL_READ;
               //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
               //console.log(mbsStatus);
-              db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true', ['dev', slave.name, 'name', tag.name]);
+              await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true', ['dev', slave.name, 'name', tag.name]);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             }
             break;
@@ -284,14 +284,14 @@ const readModbusData = async function (client, port, slave) {
                 default:
                   break;
               }
-              db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false);', [val, 'dev', slave.name, 'name', tag.name]);
+              await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false);', [val, 'dev', slave.name, 'name', tag.name]);
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             } catch (e) {
               port.mbsState = MBS_STATE_FAIL_READ;
               //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
               //console.log(mbsStatus);
-              db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true;', ['dev', slave.name, 'name', tag.name]);
+              await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true;', ['dev', slave.name, 'name', tag.name]);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             }
             break;
@@ -305,14 +305,14 @@ const readModbusData = async function (client, port, slave) {
               port.mbsState = MBS_STATE_GOOD_READ;
               mbsStatus = "success";
               let val = data.buffer[0];
-              db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false);', [val, 'dev', slave.name, 'name', tag.name]);
+              await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false);', [val, 'dev', slave.name, 'name', tag.name]);
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             } catch (e) {
               port.mbsState = MBS_STATE_FAIL_READ;
               //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
               //console.log(mbsStatus);
-              db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true;', ['dev', slave.name, 'name', tag.name]);
+              await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true;', ['dev', slave.name, 'name', tag.name]);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             }
             break;
@@ -336,7 +336,7 @@ const readModbusData = async function (client, port, slave) {
                 default:
                   break;
               }
-              db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false);', [val, 'dev', slave.name, 'name', tag.name]);
+              await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false);', [val, 'dev', slave.name, 'name', tag.name]);
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             } catch (e) {
@@ -344,10 +344,10 @@ const readModbusData = async function (client, port, slave) {
               //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
               //console.log(mbsStatus);
               if (tag.name == 'modeCode') {
-                db.query('UPDATE tags SET updated=current_timestamp, link=false, val=0 where tag->>$1=$2 and tag->>$3=$4 AND link=true;', ['dev', slave.name, 'name', tag.name]);
+                await db.query('UPDATE tags SET updated=current_timestamp, link=false, val=0 where tag->>$1=$2 and tag->>$3=$4 AND link=true;', ['dev', slave.name, 'name', tag.name]);
               }
               else {
-                db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true;', ['dev', slave.name, 'name', tag.name]);
+                await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true;', ['dev', slave.name, 'name', tag.name]);
               }
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             }

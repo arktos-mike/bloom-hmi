@@ -1,13 +1,13 @@
 import { Modal, notification, Table, Badge, Space, Tabs } from 'antd';
 import type { ColumnsType, TableProps } from 'antd/es/table';
-import { ScheduleOutlined, ReconciliationOutlined, TeamOutlined, MinusCircleTwoTone, PlusCircleTwoTone, ToolOutlined, QuestionCircleOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
+import { ScheduleOutlined, ReconciliationOutlined, TeamOutlined, MinusCircleTwoTone, PlusCircleTwoTone, ToolOutlined, QuestionCircleOutlined, ExclamationCircleOutlined, DeleteOutlined, BarChartOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "../components/Icons"
 import { FilterValue, SorterResult } from 'antd/es/table/interface';
 import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import { Button, DatePicker, RangePicker } from '@/components';
+import { Button, ColumnPlot, DatePicker, RangePicker } from '@/components';
 dayjs.extend(duration);
 
 interface DataType {
@@ -603,6 +603,10 @@ const MonthReport: React.FC<Props> = ({
           onChange={handleShiftChange}
           showSorterTooltip={false}
         />
+    },
+    {
+      label: <><BarChartOutlined />{t('tags.efficiency.descr')}</>, key: 'graph', children:
+        <ColumnPlot data={data} />
     },
   ];
   return (

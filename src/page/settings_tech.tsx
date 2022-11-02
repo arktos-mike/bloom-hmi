@@ -32,8 +32,8 @@ const SettingsTech: React.FC<Props> = ({
 
   function localeParseFloat(str: String) {
     let out: String[] = [];
-    let thousandsSeparator = Number(10000).toLocaleString().charAt(2)
-    str.split(Number(1.1).toLocaleString().charAt(1)).map(function (x) {
+    let thousandsSeparator = Number(10000).toLocaleString(i18n.language).charAt(2)
+    str.split(Number(1.1).toLocaleString(i18n.language).charAt(1)).map(function (x) {
       x = x.replace(thousandsSeparator, "");
       out.push(x);
     })

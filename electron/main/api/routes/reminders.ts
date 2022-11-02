@@ -25,7 +25,6 @@ router.post('/ack/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   const table = req.body;
-  console.log(table)
   try {
     await db.query('TRUNCATE reminders')
     const data = await db.query(`INSERT INTO reminders select * from json_to_recordset($1) as x(id integer, active boolean, title text, descr text, type smallint, starttime timestamptz, runcondition numeric, nexttime timestamptz, nextrun numeric, acknowledged boolean)`, [JSON.stringify(table)]);

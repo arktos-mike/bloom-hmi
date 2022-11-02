@@ -3,7 +3,7 @@ import logo from '/icon.svg'
 import 'styles/app.less'
 import { Route, Link, Routes, useLocation, Navigate } from 'react-router-dom';
 import { Layout, Menu, Select, Drawer, Button, Input, notification, ConfigProvider, Space, Progress, Avatar, Tooltip, Spin, Badge } from 'antd';
-import { BellOutlined, ReconciliationOutlined, TagsOutlined, ReadOutlined, ScheduleOutlined, ToolOutlined, QuestionCircleOutlined, SyncOutlined, LoadingOutlined, AimOutlined, DashboardOutlined, CloseCircleTwoTone, EyeTwoTone, EyeInvisibleOutlined, GlobalOutlined, CloseOutlined, ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
+import { BellOutlined, ReconciliationOutlined, TagsOutlined, ReadOutlined, ScheduleOutlined, ToolOutlined, QuestionCircleOutlined, SyncOutlined, LoadingOutlined, AimOutlined, DashboardOutlined, CloseCircleTwoTone, EyeTwoTone, EyeInvisibleOutlined, GlobalOutlined, CloseOutlined, ToTopOutlined, VerticalAlignBottomOutlined, EyeOutlined, TeamOutlined, SettingOutlined, UserOutlined, CaretLeftOutlined, CaretRightOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "./components/Icons"
 import { useIdleTimer } from 'react-idle-timer'
 import Overview from "./page/overview";
@@ -44,6 +44,8 @@ import Reminders from './page/reminders';
 dayjs.extend(isBetween);
 import { differenceWith, isEqual } from 'lodash-es';
 
+import type { InputRef } from 'antd';
+
 const { Header, Content, Footer } = Layout;
 const { Option } = Select;
 
@@ -51,6 +53,7 @@ const App: React.FC = () => {
   const keyboardRef = useRef<KeyboardReactInterface | null>(null)
   const span = useRef<HTMLSpanElement | null>(null);
   const descr = useRef<HTMLSpanElement | null>(null);
+  const inputRef = useRef<InputRef>(null);
   const location = useLocation();
   const openNotificationWithIcon = (type: string, message: string, dur: number, key?: string, descr?: string, style?: React.CSSProperties) => {
     if (type == 'success' || type == 'warning' || type == 'info' || type == 'error') {
@@ -123,6 +126,7 @@ const App: React.FC = () => {
   const [token, setToken] = useState<string | null>(null)
   const [shadowUser, setShadowUser] = useState({ id: null, name: null, logintime: null })
   const [remember, setRemember] = useState(true)
+  const [control, setControl] = useState(false)
   const [today, setDate] = useState(new Date())
   const [visible, setVisible] = useState(false)
   const [userDialogVisible, setUserDialogVisible] = useState(false)
@@ -357,6 +361,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     setInputWidth(span.current?.offsetWidth ? span.current?.offsetWidth < 700 ? span.current?.offsetWidth + 5 : 700 : 5)
+    setControl(span.current?.offsetWidth ? span.current?.offsetWidth < 700 ? false : true : false)
     keyboardRef.current?.setInput(bufferKeyboard)
   }, [bufferKeyboard])
 
@@ -408,7 +413,7 @@ const App: React.FC = () => {
             <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode.val).color }}><Spin wrapperClassName="mode" spinning={!getTagLink('modeCode')}>{modeCodeObj(modeCode.val).text + ' '}{modeCodeObj(modeCode.val).icon}<div className='stopwatch'>{stopwatch(modeCode.updated)}</div></Spin></div>
             {shift.name && <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' ' + shift.name}<div className="percent">{Number(Number(shift.efficiency).toFixed(shift.efficiency < 10 ? 2 : 1).toString()).toLocaleString(i18n.language) + '%'}</div></Space></div><div className="progress"><Progress percent={shift.efficiency} showInfo={false} size="small" /></div></div>}
             <div className="user">
-              <div className="user" onClick={showUserDialog}>
+              <div className="user" onClick={() => { !visible && showUserDialog() }}>
                 <Avatar.Group size='large'>
                   {shadowUser['name'] && <Tooltip title={shadowUser['name']} placement="bottom">
                     <Avatar style={{ backgroundColor: "#87d068" }} icon={<UserOutlined />} />
@@ -465,8 +470,10 @@ const App: React.FC = () => {
                     <div style={{ display: 'inline-flex', width: '100%' }}>
                       <span ref={descr} className='descr'>{activeInput.descr}</span>
                       <div className='sel' style={{ position: 'absolute', opacity: 0, height: 0, overflow: 'hidden', whiteSpace: 'pre' }}><span className="text" ref={span}>{bufferKeyboard}</span></div>
-                      <Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>
-                        {activeInput.showInput ? <Input style={{ color: "#005092", width: inputWidth, marginLeft: 185 - (descr.current?.offsetWidth ? descr.current?.offsetWidth : 0) }} size='small' value={bufferKeyboard} bordered={false} /> : <Input.Password style={{ color: "#005092", width: inputWidth, marginLeft: 185 - (descr.current?.offsetWidth ? descr.current?.offsetWidth : 0) }} size='small' value={bufferKeyboard} bordered={false} visibilityToggle={false} />}
+                      <Space direction="horizontal" style={{ width: '100%', justifyContent: control? 'space-between':'center' }}>
+                        {control && <Button style={{ width: 41 }} type="link" onClick={() => { inputRef.current!.focus({ cursor: 'start', }); }} icon={<CaretLeftOutlined />}></Button>}
+                        {activeInput.showInput ? <Input style={{ color: "#005092", width: inputWidth }} size='small' value={bufferKeyboard} bordered={false} ref={inputRef} /> : <Input.Password style={{ color: "#005092", width: inputWidth }} size='small' value={bufferKeyboard} bordered={false} visibilityToggle={false} ref={inputRef} />}
+                        {control && <Button style={{ width: 41 }} type="link" onClick={() => { inputRef.current!.focus({ cursor: 'end', }); }} icon={<CaretRightOutlined />}></Button>}
                       </Space>
                     </div>
                   }
