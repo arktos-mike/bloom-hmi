@@ -3,7 +3,7 @@ dotenv.config()
 import cors from 'cors'
 import express from 'express'
 import mountRoutes from './routes'
-import { updFlagCOM1, updFlagCOM2, resetFlagCOM1, resetFlagCOM2 } from './routes'
+import { updFlagCOM1, updFlagCOM2, resetFlagCOM1, resetFlagCOM2, updFlagTCP1, resetFlagTCP1 } from './routes'
 import db from '../db'
 import * as bcrypt from 'bcrypt';
 import createTableText from './createdb'
@@ -70,7 +70,7 @@ const dbInit = async () => {
   await db.query(createTableText)
   await db.query('INSERT INTO lifetime VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT (serialno) DO NOTHING;', ['СТБУТТ1-280Кр', '00000001', new Date('2022-12-31T12:00:00.000Z'), 0, 0, '0H']);
   await network.get_active_interface(async function (err, obj) {
-    const ipConf = { opIP: obj, plcIP1: "192.168.1.6", plcIP2: "192.168.1.7" }
+    const ipConf = { opIP: obj, tcp1: { ip: '192.168.1.123', port: '502', sId: 1, swapBytes: true, swapWords: true } }
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
   })
 
@@ -102,7 +102,7 @@ const dbInit = async () => {
     });
     await db.query('INSERT INTO locales SELECT UNNEST($1::text[]), UNNEST($2::jsonb[]), UNNEST($3::boolean[]) ON CONFLICT (locale) DO NOTHING;', [['en', 'es', 'ru', 'tr'], [enlocale, eslocale, rulocale, trlocale], [false, false, true, false]])
     const { rows } = await db.query('SELECT COUNT(*) FROM clothlog');
-    if (rows[0].count==0) await db.query(`INSERT INTO clothlog VALUES(tstzrange(current_timestamp(3),NULL,'[)'),$1,(SELECT val from tags WHERE tag->>'name' = 'fullWarpBeamLength'))`, [0])
+    if (rows[0].count == 0) await db.query(`INSERT INTO clothlog VALUES(tstzrange(current_timestamp(3),NULL,'[)'),$1,(SELECT val from tags WHERE tag->>'name' = 'fullWarpBeamLength'))`, [0])
     const comRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['comConf']);
     com1 = Object.assign(com1, comRows.rows[0].data.opCOM1, { act: 0 });
     com2 = Object.assign(com2, comRows.rows[0].data.opCOM2, { act: 0 });

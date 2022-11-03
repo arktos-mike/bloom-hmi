@@ -59,7 +59,7 @@ const SettingsDev: React.FC<Props> = ({
       const response = await fetch('http://localhost:3000/config');
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
-      if (isSubscribed) { setRtu(json['rtuConf']['rtu1']); setLoading(false); };
+      if (isSubscribed) { setRtu(json['rtuConf']['rtu1']);  };
     }
     catch (error) { console.log(error); }
   }
@@ -69,7 +69,7 @@ const SettingsDev: React.FC<Props> = ({
       const response = await fetch('http://localhost:3000/config');
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
-      if (isSubscribed) setTcp(json['rtuConf']['tcp']);
+      if (isSubscribed) setTcp(json['ipConf']['tcp1']); setLoading(false);
     }
     catch (error) { console.log(error); }
   }
@@ -109,7 +109,7 @@ const SettingsDev: React.FC<Props> = ({
       const response = await fetch('http://localhost:3000/config/update', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
-        body: JSON.stringify({ tcp: { ip: values.ip, port: values.port, sId: values.sId, swapBytes: values.swapBytes, swapWords: values.swapWords, } }),
+        body: JSON.stringify({ tcp1: { ip: values.ip, port: values.port, sId: values.sId, swapBytes: values.swapBytes, swapWords: values.swapWords, } }),
       });
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
@@ -156,7 +156,7 @@ const SettingsDev: React.FC<Props> = ({
   useEffect(() => {
     setActiveInput({ ...activeInput, form: '', id: '' });
     fetchRTU();
-    //fetchTCP();
+    fetchTCP();
     return () => { isSubscribed = false }
   }, [])
 
@@ -286,7 +286,6 @@ const SettingsDev: React.FC<Props> = ({
                 wrapperCol={{ span: 18 }}
                 size='small'
                 form={formTCP}
-                disabled
                 style={{ width: '100%' }}
                 onFinish={onTCPChange}
                 preserve={false}
