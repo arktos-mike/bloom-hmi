@@ -71,7 +71,25 @@ const dbInit = async () => {
   await db.query('INSERT INTO lifetime VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT (serialno) DO NOTHING;', ['СТБУТТ1-280Кр', '00000001', new Date('2022-12-31T12:00:00.000Z'), 0, 0, '0H']);
   await network.get_active_interface(async function (err, obj) {
     const ipConf = { opIP: obj, tcp1: { ip: '192.168.1.123', port: '502', sId: 1, swapBytes: true, swapWords: true } }
+    const tcpTags = [
+      { tag: { name: "TCPstopAngle", group: "monitoring", dev: "tcp1", addr: "6", type: "word", reg: "r", min: 0, max: 359, dec: 0 }, link: false },
+      { tag: { name: "TCPorderLength", group: "monitoring", dev: "tcp1", addr: "4", type: "float", reg: "r", min: 0, max: 1000, dec: 2 }, link: false },
+      { tag: { name: "TCPspeedMainDrive", group: "monitoring", dev: "tcp", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, link: false },
+      { tag: { name: "TCPmodeCode", group: "monitoring", dev: "tcp1", addr: "8", type: "word", reg: "r", min: 0, max: 6, dec: 0 }, link: false },
+      { tag: { name: "TCPpicksLastRun", group: "monitoring", dev: "tcp1", addr: "0", type: "dword", reg: "r", min: 0, max: 4294967295, dec: 0 }, link: false },
+      { tag: { name: "TCPmodeControl", group: "setting", dev: "tcp1", addr: "12", type: "word", reg: "rw", min: 0, max: 65535, dec: 0 }, link: false },
+      { tag: { name: "TCPplanClothDensity", group: "setting", dev: "tcp1", type: "float", addr: "10", reg: "rw", min: 0.5, max: 1000, dec: 2 }, link: false },
+      { tag: { name: "TCPplanOrderLength", group: "setting", dev: "tcp1", type: "float", addr: "14", reg: "rw", min: 0, max: 1000, dec: 2 }, link: false },
+    ]
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
+    await db.query('INSERT INTO tags(tag,val,link) SELECT * FROM jsonb_to_recordset($1) as x(tag jsonb, val numeric, link boolean) ON CONFLICT (tag) DO NOTHING;', [JSON.stringify(tcpTags)])
+    bcrypt.hash('123456', 10, async (err, hash) => {
+      await db.query(`INSERT INTO users (id, name, password, role) VALUES(1,'Admin',$1,'admin') ON CONFLICT (id) DO NOTHING;`, [hash])
+    });
+    await db.query('INSERT INTO locales SELECT UNNEST($1::text[]), UNNEST($2::jsonb[]), UNNEST($3::boolean[]) ON CONFLICT (locale) DO NOTHING;', [['en', 'es', 'ru', 'tr'], [enlocale, eslocale, rulocale, trlocale], [false, false, true, false]])
+    const { rows } = await db.query('SELECT COUNT(*) FROM clothlog');
+    if (rows[0].count == 0) await db.query(`INSERT INTO clothlog VALUES(tstzrange(current_timestamp(3),NULL,'[)'),$1,(SELECT val from tags WHERE tag->>'name' = 'fullWarpBeamLength'))`, [0])
+    const tcpRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['ipConf']);
   })
 
   await SerialPort.list().then(async function (ports) {
@@ -137,6 +155,7 @@ const dbInit = async () => {
     }
 
   });
+
 }
 dbInit();
 //==============================================================
