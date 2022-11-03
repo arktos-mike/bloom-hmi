@@ -360,8 +360,8 @@ const App: React.FC = () => {
   }, [remember])
 
   useEffect(() => {
-    setInputWidth(span.current?.offsetWidth ? span.current?.offsetWidth < 700 ? span.current?.offsetWidth + 5 : 700 : 5)
-    setControl(span.current?.offsetWidth ? span.current?.offsetWidth < 700 ? false : true : false)
+    setInputWidth(span.current?.offsetWidth ? span.current?.offsetWidth < (window.innerWidth/1.7) ? span.current?.offsetWidth + 5 : (window.innerWidth/1.7) : 5)
+    setControl(span.current?.offsetWidth ? span.current?.offsetWidth < (window.innerWidth/1.7) ? false : true : false)
     keyboardRef.current?.setInput(bufferKeyboard)
   }, [bufferKeyboard])
 
