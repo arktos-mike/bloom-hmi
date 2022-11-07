@@ -29,6 +29,7 @@ const SettingsDev: React.FC<Props> = ({
   const [formTCP] = Form.useForm()
   const [opCOM, setOpCOM] = useState({ path: '', scan: 0, timeout: 0, conf: { baudRate: 0, dataBits: 0, stopBits: 0, parity: '' } })
   const [com, setCom] = useState('opCOM1')
+  const [conn, setConn] = useState('')
   const [rtu, setRtu] = useState({ com: '', sId: 0, swapBytes: true, swapWords: true })
   const [tcp, setTcp] = useState({ ip: '', port: 0, sId: 0, swapBytes: true, swapWords: true })
   const [loading, setLoading] = useState(true)
@@ -42,6 +43,16 @@ const SettingsDev: React.FC<Props> = ({
         duration: dur,
         style: style,
       });
+  }
+
+  const fetchConn = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/config');
+      if (!response.ok) { throw Error(response.statusText); }
+      const json = await response.json();
+      setConn(json['connConf']['conn']);
+    }
+    catch (error) { console.log(error); }
   }
 
   const fetchCOM = async () => {
@@ -59,7 +70,7 @@ const SettingsDev: React.FC<Props> = ({
       const response = await fetch('http://localhost:3000/config');
       if (!response.ok) { throw Error(response.statusText); }
       const json = await response.json();
-      if (isSubscribed) { setRtu(json['rtuConf']['rtu1']);  };
+      if (isSubscribed) { setRtu(json['rtuConf']['rtu1']); };
     }
     catch (error) { console.log(error); }
   }
@@ -72,6 +83,23 @@ const SettingsDev: React.FC<Props> = ({
       if (isSubscribed) setTcp(json['ipConf']['tcp1']); setLoading(false);
     }
     catch (error) { console.log(error); }
+  }
+
+  const onConnChange = async (conf: any) => {
+    if (conf != '') {
+      try {
+        const response = await fetch('http://localhost:3000/config/update', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json;charset=UTF-8', },
+          body: JSON.stringify({ conn: conf }),
+        });
+        const json = await response.json();
+        openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
+        if (!response.ok) { throw Error(response.statusText); }
+        fetchConn();
+      }
+      catch (error) { console.log(error) }
+    }
   }
 
   const onCOMChange = async (values: { path: any; scan: any; timeout: any; baudRate: any; dataBits: any; stopBits: any; parity: any; }) => {
@@ -155,6 +183,7 @@ const SettingsDev: React.FC<Props> = ({
 
   useEffect(() => {
     setActiveInput({ ...activeInput, form: '', id: '' });
+    fetchConn();
     fetchRTU();
     fetchTCP();
     return () => { isSubscribed = false }
@@ -237,7 +266,9 @@ const SettingsDev: React.FC<Props> = ({
           </Card>
         </Col>
         <Col span={12} style={{ display: 'flex', flex: '1 1 100%', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
-          <Card title={t('panel.rtu')} bordered={false} size='small' style={cardStyle2} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
+          <Card title={t('panel.rtu')} bordered={false} size='small' style={cardStyle2} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} extra={<Segmented size='middle' value={conn} onChange={(value) => { onConnChange(value.toString()) }} options={[{ label: 'TCP', value: 'ip', icon: <ApiOutlined />, },
+          { label: 'RTU', value: 'com', icon: <ApiOutlined />, },]}
+          />}>
             <Skeleton loading={loading} round active>
               <Form
                 size='small'
@@ -246,6 +277,7 @@ const SettingsDev: React.FC<Props> = ({
                 onFinish={onRTUChange}
                 preserve={false}
                 colon={false}
+                disabled={conn=='ip'}
               >
                 <Form.Item label=" " >
                   <Form.Item
@@ -279,7 +311,9 @@ const SettingsDev: React.FC<Props> = ({
               </Form>
             </Skeleton>
           </Card>
-          <Card title={t('panel.tcp')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
+          <Card title={t('panel.tcp')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} extra={<Segmented size='middle' value={conn} onChange={(value) => { onConnChange(value.toString()) }} options={[{ label: 'TCP', value: 'ip', icon: <ApiOutlined />, },
+          { label: 'RTU', value: 'com', icon: <ApiOutlined />, },]}
+          />}>
             <Skeleton loading={loading} round active>
               <Form
                 labelCol={{ span: 6 }}
@@ -290,6 +324,7 @@ const SettingsDev: React.FC<Props> = ({
                 onFinish={onTCPChange}
                 preserve={false}
                 colon={false}
+                disabled={conn=='com'}
               >
                 <Form.Item
                   label={t('tcp.address')}

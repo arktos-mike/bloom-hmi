@@ -7,6 +7,7 @@ const options = {
 export let updFlagCOM1 = false;
 export let updFlagCOM2 = false;
 export let updFlagTCP1 = false;
+export let updFlagConn = false;
 export const resetFlagCOM1 = () => {
   updFlagCOM1 = false;
 }
@@ -15,6 +16,9 @@ export const resetFlagCOM2 = () => {
 }
 export const resetFlagTCP1 = () => {
   updFlagTCP1 = false;
+}
+export const resetFlagConn = () => {
+  updFlagConn = false;
 }
 // create a new express-promise-router
 // this has the same API as the normal express router except
@@ -135,6 +139,14 @@ router.post('/update', async (req, res) => {
       await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{tcp1, swapBytes}', tcp1.swapBytes]);
       await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{tcp1, swapWords}', tcp1.swapWords]);
       updFlagTCP1 = true;
+      res.status(200).json({
+        message: "notifications.confupdate",
+      });
+    }
+    else if (req.body.conn) {
+      const { conn } = req.body;
+      await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['connConf', '{conn}', '"' + conn + '"']);
+      updFlagConn = true;
       res.status(200).json({
         message: "notifications.confupdate",
       });
