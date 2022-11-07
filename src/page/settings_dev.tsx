@@ -266,7 +266,7 @@ const SettingsDev: React.FC<Props> = ({
           </Card>
         </Col>
         <Col span={12} style={{ display: 'flex', flex: '1 1 100%', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
-          <Card title={t('panel.rtu')} bordered={false} size='small' style={cardStyle2} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} extra={<Segmented size='middle' value={conn} onChange={(value) => { onConnChange(value.toString()) }} options={[{ label: 'TCP', value: 'ip', icon: <ApiOutlined />, },
+          <Card title={t('panel.rtu')} bordered={false} size='small' style={cardStyle2} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} extra={<Segmented disabled={['admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? false : true} size='middle' value={conn} onChange={(value) => { onConnChange(value.toString()) }} options={[{ label: 'TCP', value: 'ip', icon: <ApiOutlined />, },
           { label: 'RTU', value: 'com', icon: <ApiOutlined />, },]}
           />}>
             <Skeleton loading={loading} round active>
@@ -311,7 +311,7 @@ const SettingsDev: React.FC<Props> = ({
               </Form>
             </Skeleton>
           </Card>
-          <Card title={t('panel.tcp')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} extra={<Segmented size='middle' value={conn} onChange={(value) => { onConnChange(value.toString()) }} options={[{ label: 'TCP', value: 'ip', icon: <ApiOutlined />, },
+          <Card title={t('panel.tcp')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} extra={<Segmented disabled={['admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? false : true} size='middle' value={conn} onChange={(value) => { onConnChange(value.toString()) }} options={[{ label: 'TCP', value: 'ip', icon: <ApiOutlined />, },
           { label: 'RTU', value: 'com', icon: <ApiOutlined />, },]}
           />}>
             <Skeleton loading={loading} round active>

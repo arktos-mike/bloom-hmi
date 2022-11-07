@@ -16,6 +16,7 @@ import { SerialPort } from 'serialport'
 import ModbusRTU from 'modbus-serial'
 const client1 = new ModbusRTU();
 const client2 = new ModbusRTU();
+const client3 = new ModbusRTU();
 const api = express()
 api.use(express.json())
 api.use(express.urlencoded({ extended: true }))
@@ -61,6 +62,7 @@ const MBS_STATE_FAIL_WRITE = "State fail (write)";
 // Modbus configuration values
 let com1 = { path: '', conf: {}, scan: 0, timeout: 0, mbsState: MBS_STATE_STEADY, slaves: Array() };
 let com2 = { path: '', conf: {}, scan: 0, timeout: 0, mbsState: MBS_STATE_STEADY, slaves: Array() };
+let ip1 = { ip: '', port: '', scan: 0, timeout: 0, mbsState: MBS_STATE_STEADY, slaves: Array() };
 
 //const arrayToObject = (arr, keyField) =>
 //  Object.assign({}, ...arr.map(item => ({ [item[keyField]]: item })))
@@ -69,12 +71,15 @@ const dbInit = async () => {
   // create table
   await db.query(createTableText)
   await db.query('INSERT INTO lifetime VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT (serialno) DO NOTHING;', ['СТБУТТ1-280Кр', '00000001', new Date('2022-12-31T12:00:00.000Z'), 0, 0, '0H']);
-  await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['connConf', {'conn':'com'}])
-  const  conn = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['connConf']);
-  contype=conn.rows[0].data.conn
+  await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['connConf', { 'conn': 'com' }])
+  const conn = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['connConf']);
+  contype = conn.rows[0].data.conn
   await network.get_active_interface(async function (err, obj) {
+    ip1 = { ip: '', port: '', scan: 0, timeout: 0, mbsState: MBS_STATE_STEADY, slaves: Array() };
     const ipConf = { opIP: obj, tcp1: { ip: '192.168.1.123', port: '502', sId: 1, swapBytes: true, swapWords: true } }
-    console.log(contype)
+    const tcpRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['ipConf']);
+    ip1 = Object.assign(ip1, tcpRows.rows[0].data.tcp1, { act: 0, path: tcpRows.rows[0].data.tcp1.ip + ':' + tcpRows.rows[0].data.tcp1.port });
+    ip1.slaves = []
     if (contype == 'ip') {
       const tcpTags = [
         { tag: { name: "stopAngle", group: "monitoring", dev: "tcp1", addr: "6", type: "word", reg: "r", min: 0, max: 359, dec: 0 }, link: false },
@@ -92,6 +97,12 @@ const dbInit = async () => {
       ]
       await db.query('DELETE FROM tags WHERE tag->>$1~$2', ['dev', 'rtu']);
       await db.query('INSERT INTO tags(tag,val,link) SELECT * FROM jsonb_to_recordset($1) as x(tag jsonb, val numeric, link boolean) ON CONFLICT (tag) DO NOTHING;', [JSON.stringify(tcpTags)])
+      const ip1t = await db.query('SELECT tag->$3 as name, tag->$4 as addr, tag->$5 as type, tag->$6 as reg FROM tags WHERE tag->>$1=$2 ORDER BY tag->>$4 DESC ', ['dev', 'tcp1', 'name', 'addr', 'type', 'reg']);
+      ip1.slaves.push(Object.assign({ name: 'tcp1' }, tcpRows.rows[0].data['tcp1'], { tags: ip1t.rows }));
+      if (ip1.mbsState == MBS_STATE_STEADY && ip1.slaves.length > 0) {
+        ip1.mbsState = MBS_STATE_INIT;
+        runModbus(client3, ip1)
+      }
     }
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
     bcrypt.hash('123456', 10, async (err, hash) => {
@@ -99,23 +110,21 @@ const dbInit = async () => {
     });
     const { rows } = await db.query('SELECT COUNT(*) FROM clothlog');
     if (rows[0].count == 0) await db.query(`INSERT INTO clothlog VALUES(tstzrange(current_timestamp(3),NULL,'[)'),$1,(SELECT val from tags WHERE tag->>'name' = 'fullWarpBeamLength'))`, [0])
-    const tcpRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['ipConf']);
-    console.log(tcpRows.rows[0].data.tcp1)
   })
 
   await SerialPort.list().then(async function (ports) {
-    if (ports[0] !== undefined) { com1.path = ports[0].path; } else { com1.path = "COM1"; }
-    if (ports[1] !== undefined) { com2.path = ports[1].path; } else { com2.path = "COM2"; }
+    if (ports[0] !== undefined && com1.path=='') { com1.path = ports[0].path; } else if (com1.path=='') { com1.path = "COM1"; }
+    if (ports[1] !== undefined && com2.path=='') { com2.path = ports[1].path; } else if (com2.path=='') { com2.path = "COM2"; }
     const comConf = { opCOM1: { path: com1.path, conf: { baudRate: 230400, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 500 }, opCOM2: { path: com2.path, conf: { baudRate: 115200, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 0 } }
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])
-    const comRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['comConf']);
-    com1 = Object.assign(com1, comRows.rows[0].data.opCOM1, { act: 0 });
-    com2 = Object.assign(com2, comRows.rows[0].data.opCOM2, { act: 0 });
-    com1.slaves = []
-    com2.slaves = []
+
     await db.query('INSERT INTO locales SELECT UNNEST($1::text[]), UNNEST($2::jsonb[]), UNNEST($3::boolean[]) ON CONFLICT (locale) DO NOTHING;', [['en', 'es', 'ru', 'tr'], [enlocale, eslocale, rulocale, trlocale], [false, false, true, false]])
-    console.log(contype)
     if (contype == 'com') {
+      const comRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['comConf']);
+      com1 = Object.assign(com1, comRows.rows[0].data.opCOM1, { act: 0 });
+      com2 = Object.assign(com2, comRows.rows[0].data.opCOM2, { act: 0 });
+      com1.slaves = []
+      com2.slaves = []
       const rtuConf = { rtu1: { com: 'opCOM1', sId: 1, swapBytes: true, swapWords: true } }
       const tags = [
         { tag: { name: "stopAngle", group: "monitoring", dev: "rtu1", addr: "6", type: "word", reg: "r", min: 0, max: 359, dec: 0 }, link: false },
@@ -134,8 +143,7 @@ const dbInit = async () => {
       await db.query('DELETE FROM tags WHERE tag->>$1~$2', ['dev', 'tcp']);
       await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['rtuConf', rtuConf])
       await db.query('INSERT INTO tags(tag,val,link) SELECT * FROM jsonb_to_recordset($1) as x(tag jsonb, val numeric, link boolean) ON CONFLICT (tag) DO NOTHING;', [JSON.stringify(tags)])
-       const rtuRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['rtuConf']);
-
+      const rtuRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['rtuConf']);
       for (let prop in rtuRows.rows[0].data) {
         switch (rtuRows.rows[0].data[prop].com) {
           case "opCOM1":
@@ -172,7 +180,8 @@ const connectClient = async function (client, port) {
   await client.setTimeout(port.timeout ? port.timeout : 50);
   // try to connect
   try {
-    await client.connectRTUBuffered(port.path, port.conf)
+    if (port.ip) { await client.connectTCP(port.ip, { port: Number(port.port) }) }
+    else { await client.connectRTUBuffered(port.path, port.conf) }
     port.mbsState = MBS_STATE_GOOD_CONNECT;
     mbsStatus = "[" + port.path + "]" + "Connected, wait for reading...";
     console.log(mbsStatus);
@@ -391,10 +400,19 @@ function delay(ms) {
 }
 //==============================================================
 const runModbus = async function (client, port) {
-  if (updFlagCOM1 || updFlagCOM2 || updFlagConn) { await dbInit(); await client.close(); (contype=='com') && await connectClient(client, port); updFlagConn && resetFlagConn();}
+  if (updFlagConn) {
+    const conn = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['connConf']);
+    contype = conn.rows[0].data.conn
+  }
+  if
+    (updFlagCOM1 || updFlagCOM2 || updFlagTCP1) {
+    await dbInit();
+    await client.close();
+    await connectClient(client, port);
+  }
   let nextAction;
   let slave = port.slaves[port.act];
-  if (port.slaves.length > 0 && slave?.tags?.length > 0) {
+  if (port.slaves.length > 0 && slave?.tags?.length > 0 && ((port.ip && (contype == 'ip')) || (!port.ip && (contype == 'com')))) {
     switch (port.mbsState) {
       case MBS_STATE_INIT:
         nextAction = await connectClient(client, port);
@@ -428,15 +446,16 @@ const runModbus = async function (client, port) {
     // execute "next action" function if defined
     if (nextAction !== undefined) {
       //console.log("[" + port.path + "]" + nextAction);
-      if (!updFlagCOM1 && !updFlagCOM2 && !updFlagConn) {
+      if (!updFlagCOM1 && !updFlagCOM2 && !updFlagTCP1 && !updFlagConn) {
         await nextAction();
         port.mbsState = MBS_STATE_IDLE;
       }
     }
   }
-  else if (port.slaves.length == 0) { if (client.isOpen) client.close(() => { console.log("[" + port.path + "]closed") }) }
-  updFlagCOM1 && resetFlagCOM1();
-  updFlagCOM2 && resetFlagCOM2();
+  else if ((port.slaves.length == 0) || (port.ip && (contype == 'com')) || (!port.ip && (contype == 'ip'))) { if (client.isOpen) { client.close(async () => { console.log("[" + port.path + "]closed"); updFlagConn && await dbInit(); updFlagConn && resetFlagConn(); }); } }
+  (!port.ip && updFlagCOM1) && resetFlagCOM1();
+  (!port.ip && updFlagCOM2) && resetFlagCOM2();
+  (port.ip && updFlagTCP1) && resetFlagTCP1();
   port.act++;
   if (port.act === port.slaves.length) {
     port.act = 0;
