@@ -64,17 +64,18 @@ let com2 = { path: '', conf: {}, scan: 0, timeout: 0, mbsState: MBS_STATE_STEADY
 
 //const arrayToObject = (arr, keyField) =>
 //  Object.assign({}, ...arr.map(item => ({ [item[keyField]]: item })))
-
+let contype = ''
 const dbInit = async () => {
   // create table
   await db.query(createTableText)
   await db.query('INSERT INTO lifetime VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT (serialno) DO NOTHING;', ['СТБУТТ1-280Кр', '00000001', new Date('2022-12-31T12:00:00.000Z'), 0, 0, '0H']);
   await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['connConf', {'conn':'com'}])
   const  conn = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['connConf']);
-  console.log(conn.rows[0].data.conn)
+  contype=conn.rows[0].data.conn
   await network.get_active_interface(async function (err, obj) {
     const ipConf = { opIP: obj, tcp1: { ip: '192.168.1.123', port: '502', sId: 1, swapBytes: true, swapWords: true } }
-    if (conn.rows[0].data.conn == 'ip') {
+    console.log(contype)
+    if (contype == 'ip') {
       const tcpTags = [
         { tag: { name: "stopAngle", group: "monitoring", dev: "tcp1", addr: "6", type: "word", reg: "r", min: 0, max: 359, dec: 0 }, link: false },
         { tag: { name: "orderLength", group: "monitoring", dev: "tcp1", addr: "4", type: "float", reg: "r", min: 0, max: 1000, dec: 2 }, link: false },
@@ -113,7 +114,8 @@ const dbInit = async () => {
     com1.slaves = []
     com2.slaves = []
     await db.query('INSERT INTO locales SELECT UNNEST($1::text[]), UNNEST($2::jsonb[]), UNNEST($3::boolean[]) ON CONFLICT (locale) DO NOTHING;', [['en', 'es', 'ru', 'tr'], [enlocale, eslocale, rulocale, trlocale], [false, false, true, false]])
-    if (conn.rows[0].data.conn == 'com') {
+    console.log(contype)
+    if (contype == 'com') {
       const rtuConf = { rtu1: { com: 'opCOM1', sId: 1, swapBytes: true, swapWords: true } }
       const tags = [
         { tag: { name: "stopAngle", group: "monitoring", dev: "rtu1", addr: "6", type: "word", reg: "r", min: 0, max: 359, dec: 0 }, link: false },
@@ -389,7 +391,7 @@ function delay(ms) {
 }
 //==============================================================
 const runModbus = async function (client, port) {
-  if (updFlagCOM1 || updFlagCOM2) { await dbInit(); await client.close(); await connectClient(client, port); }
+  if (updFlagCOM1 || updFlagCOM2 || updFlagConn) { await dbInit(); await client.close(); (contype=='com') && await connectClient(client, port); updFlagConn && resetFlagConn();}
   let nextAction;
   let slave = port.slaves[port.act];
   if (port.slaves.length > 0 && slave?.tags?.length > 0) {
@@ -426,7 +428,7 @@ const runModbus = async function (client, port) {
     // execute "next action" function if defined
     if (nextAction !== undefined) {
       //console.log("[" + port.path + "]" + nextAction);
-      if (!updFlagCOM1 && !updFlagCOM2) {
+      if (!updFlagCOM1 && !updFlagCOM2 && !updFlagConn) {
         await nextAction();
         port.mbsState = MBS_STATE_IDLE;
       }
