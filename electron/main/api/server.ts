@@ -75,8 +75,9 @@ const dbInit = async () => {
   const conn = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['connConf']);
   contype = conn.rows[0].data.conn
   await network.get_active_interface(async function (err, obj) {
-    ip1 = { ip: '', port: '', scan: 0, timeout: 0, mbsState: MBS_STATE_STEADY, slaves: Array() };
     const ipConf = { opIP: obj, tcp1: { ip: '192.168.1.123', port: '502', sId: 1, swapBytes: true, swapWords: true } }
+    await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
+    ip1 = { ...ip1, ip: '', port: '', scan: 0, timeout: 0, slaves: Array() };
     const tcpRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['ipConf']);
     ip1 = Object.assign(ip1, tcpRows.rows[0].data.tcp1, { act: 0, path: tcpRows.rows[0].data.tcp1.ip + ':' + tcpRows.rows[0].data.tcp1.port });
     ip1.slaves = []
@@ -104,7 +105,7 @@ const dbInit = async () => {
         runModbus(client3, ip1)
       }
     }
-    await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
+
     bcrypt.hash('123456', 10, async (err, hash) => {
       await db.query(`INSERT INTO users (id, name, password, role) VALUES(1,'Admin',$1,'admin') ON CONFLICT (id) DO NOTHING;`, [hash])
     });
