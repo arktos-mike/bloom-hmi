@@ -187,6 +187,9 @@ const connectClient = async function (client, port) {
     mbsStatus = "[" + port.path + "]" + "Connected, wait for reading...";
     console.log(mbsStatus);
   } catch (e) {
+    port.slaves.map(async (slave:any)=>{
+      await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 AND link=true;', ['dev', slave.name]);
+    })
     port.mbsState = MBS_STATE_FAIL_CONNECT;
     mbsStatus = "[" + port.path + "]" + e.message;
     console.log(mbsStatus);
@@ -408,7 +411,7 @@ const runModbus = async function (client, port) {
   if
     (updFlagCOM1 || updFlagCOM2 || updFlagTCP1) {
     await dbInit();
-    await client.close();
+    await client.close(async () => { console.log("[" + port.path + "]closed"); });
     await connectClient(client, port);
   }
   let nextAction;
@@ -428,7 +431,7 @@ const runModbus = async function (client, port) {
         break;
 
       case MBS_STATE_FAIL_CONNECT:
-        nextAction = connectClient(client, port);
+        nextAction = await connectClient(client, port);
         break;
       case MBS_STATE_GOOD_WRITE:
       case MBS_STATE_GOOD_READ:
