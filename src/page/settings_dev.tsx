@@ -277,7 +277,6 @@ const SettingsDev: React.FC<Props> = ({
                 onFinish={onRTUChange}
                 preserve={false}
                 colon={false}
-                disabled={conn=='ip'}
               >
                 <Form.Item label=" " >
                   <Form.Item
@@ -324,7 +323,6 @@ const SettingsDev: React.FC<Props> = ({
                 onFinish={onTCPChange}
                 preserve={false}
                 colon={false}
-                disabled={conn=='com'}
               >
                 <Form.Item
                   label={t('tcp.address')}

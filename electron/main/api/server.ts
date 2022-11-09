@@ -60,9 +60,9 @@ const MBS_STATE_FAIL_WRITE = "State fail (write)";
 
 
 // Modbus configuration values
-let com1 = { path: '', conf: {}, scan: 0, timeout: 0, mbsState: MBS_STATE_STEADY, slaves: Array() };
-let com2 = { path: '', conf: {}, scan: 0, timeout: 0, mbsState: MBS_STATE_STEADY, slaves: Array() };
-let ip1 = { ip: '', port: '', scan: 0, timeout: 0, mbsState: MBS_STATE_STEADY, slaves: Array() };
+let com1 = { self: 'com1', path: '', conf: {}, scan: 0, timeout: 0, mbsState: MBS_STATE_STEADY, slaves: Array() };
+let com2 = { self: 'com2', path: '', conf: {}, scan: 0, timeout: 0, mbsState: MBS_STATE_STEADY, slaves: Array() };
+let ip1 = { self: 'ip1', ip: '', port: '', path: '', scan: 0, timeout: 1000, mbsState: MBS_STATE_STEADY, slaves: Array() };
 
 //const arrayToObject = (arr, keyField) =>
 //  Object.assign({}, ...arr.map(item => ({ [item[keyField]]: item })))
@@ -74,105 +74,107 @@ const dbInit = async () => {
   await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['connConf', { 'conn': 'com' }])
   const conn = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['connConf']);
   contype = conn.rows[0].data.conn
-  await network.get_active_interface(async function (err, obj) {
-    const ipConf = { opIP: obj, tcp1: { ip: '192.168.1.123', port: '502', sId: 1, swapBytes: true, swapWords: true } }
-    await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
-    ip1 = { ...ip1, ip: '', port: '', scan: 0, timeout: 0, slaves: Array() };
+
+  await bcrypt.hash('123456', 10, async (err, hash) => {
+    await db.query(`INSERT INTO users (id, name, password, role) VALUES(1,'Admin',$1,'admin') ON CONFLICT (id) DO NOTHING;`, [hash])
+  });
+  const { rows } = await db.query('SELECT COUNT(*) FROM clothlog');
+  if (rows[0].count == 0)
+  {
+    await db.query(`INSERT INTO clothlog VALUES(tstzrange(current_timestamp(3),NULL,'[)'),$1,(SELECT val from tags WHERE tag->>'name' = 'fullWarpBeamLength'))`, [0])
+    await network.get_active_interface(async (err, obj) => {
+      const ipConf = { opIP: obj, tcp1: { ip: '192.168.1.123', port: '502', sId: 1, swapBytes: true, swapWords: true } }
+      await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
+    })
+    await SerialPort.list().then(async function (ports) {
+      if (ports[0] !== undefined && com1.path == '') { com1.path = ports[0].path; } else if (com1.path == '') { com1.path = "COM1"; }
+      if (ports[1] !== undefined && com2.path == '') { com2.path = ports[1].path; } else if (com2.path == '') { com2.path = "COM2"; }
+      const comConf = { opCOM1: { path: com1.path, conf: { baudRate: 230400, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 500 }, opCOM2: { path: com2.path, conf: { baudRate: 115200, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 0 } }
+      await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])
+
+    });
+  }
+  await db.query('INSERT INTO locales SELECT UNNEST($1::text[]), UNNEST($2::jsonb[]), UNNEST($3::boolean[]) ON CONFLICT (locale) DO NOTHING;', [['en', 'es', 'ru', 'tr'], [enlocale, eslocale, rulocale, trlocale], [false, false, true, false]])
+
+  if (contype == 'ip') {
     const tcpRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['ipConf']);
     ip1 = Object.assign(ip1, tcpRows.rows[0].data.tcp1, { act: 0, path: tcpRows.rows[0].data.tcp1.ip + ':' + tcpRows.rows[0].data.tcp1.port });
     ip1.slaves = []
-    if (contype == 'ip') {
-      const tcpTags = [
-        { tag: { name: "stopAngle", group: "monitoring", dev: "tcp1", addr: "6", type: "word", reg: "r", min: 0, max: 359, dec: 0 }, link: false },
-        { tag: { name: "orderLength", group: "monitoring", dev: "tcp1", addr: "4", type: "float", reg: "r", min: 0, max: 1000, dec: 2 }, link: false },
-        { tag: { name: "speedMainDrive", group: "monitoring", dev: "tcp1", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, link: false },
-        { tag: { name: "modeCode", group: "monitoring", dev: "tcp1", addr: "8", type: "word", reg: "r", min: 0, max: 6, dec: 0 }, link: false },
-        { tag: { name: "picksLastRun", group: "monitoring", dev: "tcp1", addr: "0", type: "dword", reg: "r", min: 0, max: 4294967295, dec: 0 }, link: false },
-        { tag: { name: "modeControl", group: "setting", dev: "tcp1", addr: "12", type: "word", reg: "rw", min: 0, max: 65535, dec: 0 }, link: false },
-        { tag: { name: "planClothDensity", group: "setting", dev: "tcp1", type: "float", addr: "10", reg: "rw", min: 0.5, max: 1000, dec: 2 }, link: false },
-        { tag: { name: "planOrderLength", group: "setting", dev: "tcp1", type: "float", addr: "14", reg: "rw", min: 0, max: 1000, dec: 2 }, link: false },
-        { tag: { name: "planSpeedMainDrive", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 600, dec: 1 }, val: 200.0 },
-        { tag: { name: "warpShrinkage", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 100, dec: 1 }, val: 1.0 },
-        { tag: { name: "fullWarpBeamLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
-        { tag: { name: "warpBeamLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
-      ]
-      await db.query('DELETE FROM tags WHERE tag->>$1~$2', ['dev', 'rtu']);
-      await db.query('INSERT INTO tags(tag,val,link) SELECT * FROM jsonb_to_recordset($1) as x(tag jsonb, val numeric, link boolean) ON CONFLICT (tag) DO NOTHING;', [JSON.stringify(tcpTags)])
-      const ip1t = await db.query('SELECT tag->$3 as name, tag->$4 as addr, tag->$5 as type, tag->$6 as reg FROM tags WHERE tag->>$1=$2 ORDER BY tag->>$4 DESC ', ['dev', 'tcp1', 'name', 'addr', 'type', 'reg']);
-      ip1.slaves.push(Object.assign({ name: 'tcp1' }, tcpRows.rows[0].data['tcp1'], { tags: ip1t.rows }));
-      if (ip1.mbsState == MBS_STATE_STEADY && ip1.slaves.length > 0) {
-        ip1.mbsState = MBS_STATE_INIT;
-        runModbus(client3, ip1)
+    const tcpTags = [
+      { tag: { name: "stopAngle", group: "monitoring", dev: "tcp1", addr: "6", type: "word", reg: "r", min: 0, max: 359, dec: 0 }, link: false },
+      { tag: { name: "orderLength", group: "monitoring", dev: "tcp1", addr: "4", type: "float", reg: "r", min: 0, max: 1000, dec: 2 }, link: false },
+      { tag: { name: "speedMainDrive", group: "monitoring", dev: "tcp1", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, link: false },
+      { tag: { name: "modeCode", group: "monitoring", dev: "tcp1", addr: "8", type: "word", reg: "r", min: 0, max: 6, dec: 0 }, link: false },
+      { tag: { name: "picksLastRun", group: "monitoring", dev: "tcp1", addr: "0", type: "dword", reg: "r", min: 0, max: 4294967295, dec: 0 }, link: false },
+      { tag: { name: "modeControl", group: "setting", dev: "tcp1", addr: "12", type: "word", reg: "rw", min: 0, max: 65535, dec: 0 }, link: false },
+      { tag: { name: "planClothDensity", group: "setting", dev: "tcp1", type: "float", addr: "10", reg: "rw", min: 0.5, max: 1000, dec: 2 }, link: false },
+      { tag: { name: "planOrderLength", group: "setting", dev: "tcp1", type: "float", addr: "14", reg: "rw", min: 0, max: 1000, dec: 2 }, link: false },
+      { tag: { name: "planSpeedMainDrive", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 600, dec: 1 }, val: 200.0 },
+      { tag: { name: "warpShrinkage", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 100, dec: 1 }, val: 1.0 },
+      { tag: { name: "fullWarpBeamLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
+      { tag: { name: "warpBeamLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
+    ]
+    await db.query('DELETE FROM tags WHERE tag->>$1~$2', ['dev', 'rtu']);
+    await db.query('INSERT INTO tags(tag,val,link) SELECT * FROM jsonb_to_recordset($1) as x(tag jsonb, val numeric, link boolean) ON CONFLICT (tag) DO NOTHING;', [JSON.stringify(tcpTags)])
+    const ip1t = await db.query('SELECT tag->$3 as name, tag->$4 as addr, tag->$5 as type, tag->$6 as reg FROM tags WHERE tag->>$1=$2 ORDER BY tag->>$4 DESC ', ['dev', 'tcp1', 'name', 'addr', 'type', 'reg']);
+    ip1.slaves.push(Object.assign({ name: 'tcp1' }, tcpRows.rows[0].data['tcp1'], { tags: ip1t.rows }));
+    if (ip1.mbsState == MBS_STATE_STEADY && ip1.slaves.length > 0) {
+      ip1.mbsState = MBS_STATE_INIT;
+      runModbus(client3, ip1)
+    }
+  }
+
+  if (contype == 'com') {
+    const comRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['comConf']);
+    com1 = Object.assign(com1, comRows.rows[0].data.opCOM1, { act: 0 });
+    com2 = Object.assign(com2, comRows.rows[0].data.opCOM2, { act: 0 });
+    com1.slaves = []
+    com2.slaves = []
+    const rtuConf = { rtu1: { com: 'opCOM1', sId: 1, swapBytes: true, swapWords: true } }
+    const tags = [
+      { tag: { name: "stopAngle", group: "monitoring", dev: "rtu1", addr: "6", type: "word", reg: "r", min: 0, max: 359, dec: 0 }, link: false },
+      { tag: { name: "orderLength", group: "monitoring", dev: "rtu1", addr: "4", type: "float", reg: "r", min: 0, max: 1000, dec: 2 }, link: false },
+      { tag: { name: "speedMainDrive", group: "monitoring", dev: "rtu1", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, link: false },
+      { tag: { name: "modeCode", group: "monitoring", dev: "rtu1", addr: "8", type: "word", reg: "r", min: 0, max: 6, dec: 0 }, link: false },
+      { tag: { name: "picksLastRun", group: "monitoring", dev: "rtu1", addr: "0", type: "dword", reg: "r", min: 0, max: 4294967295, dec: 0 }, link: false },
+      { tag: { name: "modeControl", group: "setting", dev: "rtu1", addr: "12", type: "word", reg: "rw", min: 0, max: 65535, dec: 0 }, link: false },
+      { tag: { name: "planSpeedMainDrive", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 600, dec: 1 }, val: 200.0 },
+      { tag: { name: "planClothDensity", group: "setting", dev: "rtu1", type: "float", addr: "10", reg: "rw", min: 0.5, max: 1000, dec: 2 }, link: false },
+      { tag: { name: "planOrderLength", group: "setting", dev: "rtu1", type: "float", addr: "14", reg: "rw", min: 0, max: 1000, dec: 2 }, link: false },
+      { tag: { name: "warpShrinkage", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 100, dec: 1 }, val: 1.0 },
+      { tag: { name: "fullWarpBeamLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
+      { tag: { name: "warpBeamLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
+    ]
+    await db.query('DELETE FROM tags WHERE tag->>$1~$2', ['dev', 'tcp']);
+    await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['rtuConf', rtuConf])
+    await db.query('INSERT INTO tags(tag,val,link) SELECT * FROM jsonb_to_recordset($1) as x(tag jsonb, val numeric, link boolean) ON CONFLICT (tag) DO NOTHING;', [JSON.stringify(tags)])
+    const rtuRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['rtuConf']);
+    for (let prop in rtuRows.rows[0].data) {
+      switch (rtuRows.rows[0].data[prop].com) {
+        case "opCOM1":
+          //const com1t = await db.query('SELECT tag->$5 as name, tag->$6 as addr, tag->$7 as type, tag->$8 as reg FROM tags WHERE tag->>$1=$2 AND tag->>$3=$4', ['dev', prop, 'group', 'monitoring', 'name', 'addr', 'type', 'reg']);
+          const com1t = await db.query('SELECT tag->$3 as name, tag->$4 as addr, tag->$5 as type, tag->$6 as reg FROM tags WHERE tag->>$1=$2 ORDER BY tag->>$4 DESC ', ['dev', prop, 'name', 'addr', 'type', 'reg']);
+          com1.slaves.push(Object.assign({ name: prop }, rtuRows.rows[0].data[prop], { tags: com1t.rows }));
+          break;
+        case "opCOM2":
+          //const com2t = await db.query('SELECT tag->$5 as name, tag->$6 as addr, tag->$7 as type, tag->$8 as reg FROM tags WHERE tag->>$1=$2 AND tag->>$3=$4', ['dev', prop, 'group', 'monitoring', 'name', 'addr', 'type', 'reg']);
+          const com2t = await db.query('SELECT tag->$3 as name, tag->$4 as addr, tag->$5 as type, tag->$6 as reg FROM tags WHERE tag->>$1=$2 ORDER BY tag->>$4 DESC ', ['dev', prop, 'name', 'addr', 'type', 'reg']);
+          com2.slaves.push(Object.assign({ name: prop }, rtuRows.rows[0].data[prop], { tags: com2t.rows }));
+          break;
+        default:
+        // nothing to do
       }
     }
 
-    bcrypt.hash('123456', 10, async (err, hash) => {
-      await db.query(`INSERT INTO users (id, name, password, role) VALUES(1,'Admin',$1,'admin') ON CONFLICT (id) DO NOTHING;`, [hash])
-    });
-    const { rows } = await db.query('SELECT COUNT(*) FROM clothlog');
-    if (rows[0].count == 0) await db.query(`INSERT INTO clothlog VALUES(tstzrange(current_timestamp(3),NULL,'[)'),$1,(SELECT val from tags WHERE tag->>'name' = 'fullWarpBeamLength'))`, [0])
-  })
-
-  await SerialPort.list().then(async function (ports) {
-    if (ports[0] !== undefined && com1.path=='') { com1.path = ports[0].path; } else if (com1.path=='') { com1.path = "COM1"; }
-    if (ports[1] !== undefined && com2.path=='') { com2.path = ports[1].path; } else if (com2.path=='') { com2.path = "COM2"; }
-    const comConf = { opCOM1: { path: com1.path, conf: { baudRate: 230400, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 500 }, opCOM2: { path: com2.path, conf: { baudRate: 115200, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 0 } }
-    await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])
-
-    await db.query('INSERT INTO locales SELECT UNNEST($1::text[]), UNNEST($2::jsonb[]), UNNEST($3::boolean[]) ON CONFLICT (locale) DO NOTHING;', [['en', 'es', 'ru', 'tr'], [enlocale, eslocale, rulocale, trlocale], [false, false, true, false]])
-    if (contype == 'com') {
-      const comRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['comConf']);
-      com1 = Object.assign(com1, comRows.rows[0].data.opCOM1, { act: 0 });
-      com2 = Object.assign(com2, comRows.rows[0].data.opCOM2, { act: 0 });
-      com1.slaves = []
-      com2.slaves = []
-      const rtuConf = { rtu1: { com: 'opCOM1', sId: 1, swapBytes: true, swapWords: true } }
-      const tags = [
-        { tag: { name: "stopAngle", group: "monitoring", dev: "rtu1", addr: "6", type: "word", reg: "r", min: 0, max: 359, dec: 0 }, link: false },
-        { tag: { name: "orderLength", group: "monitoring", dev: "rtu1", addr: "4", type: "float", reg: "r", min: 0, max: 1000, dec: 2 }, link: false },
-        { tag: { name: "speedMainDrive", group: "monitoring", dev: "rtu1", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, link: false },
-        { tag: { name: "modeCode", group: "monitoring", dev: "rtu1", addr: "8", type: "word", reg: "r", min: 0, max: 6, dec: 0 }, link: false },
-        { tag: { name: "picksLastRun", group: "monitoring", dev: "rtu1", addr: "0", type: "dword", reg: "r", min: 0, max: 4294967295, dec: 0 }, link: false },
-        { tag: { name: "modeControl", group: "setting", dev: "rtu1", addr: "12", type: "word", reg: "rw", min: 0, max: 65535, dec: 0 }, link: false },
-        { tag: { name: "planSpeedMainDrive", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 600, dec: 1 }, val: 200.0 },
-        { tag: { name: "planClothDensity", group: "setting", dev: "rtu1", type: "float", addr: "10", reg: "rw", min: 0.5, max: 1000, dec: 2 }, link: false },
-        { tag: { name: "planOrderLength", group: "setting", dev: "rtu1", type: "float", addr: "14", reg: "rw", min: 0, max: 1000, dec: 2 }, link: false },
-        { tag: { name: "warpShrinkage", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 100, dec: 1 }, val: 1.0 },
-        { tag: { name: "fullWarpBeamLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
-        { tag: { name: "warpBeamLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
-      ]
-      await db.query('DELETE FROM tags WHERE tag->>$1~$2', ['dev', 'tcp']);
-      await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['rtuConf', rtuConf])
-      await db.query('INSERT INTO tags(tag,val,link) SELECT * FROM jsonb_to_recordset($1) as x(tag jsonb, val numeric, link boolean) ON CONFLICT (tag) DO NOTHING;', [JSON.stringify(tags)])
-      const rtuRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['rtuConf']);
-      for (let prop in rtuRows.rows[0].data) {
-        switch (rtuRows.rows[0].data[prop].com) {
-          case "opCOM1":
-            //const com1t = await db.query('SELECT tag->$5 as name, tag->$6 as addr, tag->$7 as type, tag->$8 as reg FROM tags WHERE tag->>$1=$2 AND tag->>$3=$4', ['dev', prop, 'group', 'monitoring', 'name', 'addr', 'type', 'reg']);
-            const com1t = await db.query('SELECT tag->$3 as name, tag->$4 as addr, tag->$5 as type, tag->$6 as reg FROM tags WHERE tag->>$1=$2 ORDER BY tag->>$4 DESC ', ['dev', prop, 'name', 'addr', 'type', 'reg']);
-            com1.slaves.push(Object.assign({ name: prop }, rtuRows.rows[0].data[prop], { tags: com1t.rows }));
-            break;
-          case "opCOM2":
-            //const com2t = await db.query('SELECT tag->$5 as name, tag->$6 as addr, tag->$7 as type, tag->$8 as reg FROM tags WHERE tag->>$1=$2 AND tag->>$3=$4', ['dev', prop, 'group', 'monitoring', 'name', 'addr', 'type', 'reg']);
-            const com2t = await db.query('SELECT tag->$3 as name, tag->$4 as addr, tag->$5 as type, tag->$6 as reg FROM tags WHERE tag->>$1=$2 ORDER BY tag->>$4 DESC ', ['dev', prop, 'name', 'addr', 'type', 'reg']);
-            com2.slaves.push(Object.assign({ name: prop }, rtuRows.rows[0].data[prop], { tags: com2t.rows }));
-            break;
-          default:
-          // nothing to do
-        }
-      }
-
-      if (com1.mbsState == MBS_STATE_STEADY && com1.slaves.length > 0) {
-        com1.mbsState = MBS_STATE_INIT;
-        runModbus(client1, com1)
-      }
-      if ((com2.mbsState == MBS_STATE_STEADY && com2.slaves.length > 0)) {
-        com2.mbsState = MBS_STATE_INIT;
-        runModbus(client2, com2)
-      }
+    if (com1.mbsState == MBS_STATE_STEADY && com1.slaves.length > 0) {
+      com1.mbsState = MBS_STATE_INIT;
+      runModbus(client1, com1)
     }
-  });
-
+    if ((com2.mbsState == MBS_STATE_STEADY && com2.slaves.length > 0)) {
+      com2.mbsState = MBS_STATE_INIT;
+      runModbus(client2, com2)
+    }
+  }
 }
 dbInit();
 //==============================================================
@@ -187,7 +189,7 @@ const connectClient = async function (client, port) {
     mbsStatus = "[" + port.path + "]" + "Connected, wait for reading...";
     console.log(mbsStatus);
   } catch (e) {
-    port.slaves.map(async (slave:any)=>{
+    port.slaves.map(async (slave: any) => {
       await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 AND link=true;', ['dev', slave.name]);
     })
     port.mbsState = MBS_STATE_FAIL_CONNECT;
@@ -407,12 +409,15 @@ const runModbus = async function (client, port) {
   if (updFlagConn) {
     const conn = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['connConf']);
     contype = conn.rows[0].data.conn
-  }
-  if
-    (updFlagCOM1 || updFlagCOM2 || updFlagTCP1) {
-    await dbInit();
     await client.close(async () => { console.log("[" + port.path + "]closed"); });
+    await dbInit();
+    resetFlagConn();
+  }
+  if ((updFlagCOM1 && port.self == 'com1') || (updFlagCOM2 && port.self == 'com2') || (updFlagTCP1 && port.self == 'ip1')) {
+    await client.close(async () => { console.log("[" + port.path + "]closed"); });
+    await dbInit();
     await connectClient(client, port);
+    (port.self == 'com1') && resetFlagCOM1(); (port.self == 'com2') && resetFlagCOM2(); (port.self == 'ip1') && resetFlagTCP1();
   }
   let nextAction;
   let slave = port.slaves[port.act];
@@ -450,21 +455,19 @@ const runModbus = async function (client, port) {
     // execute "next action" function if defined
     if (nextAction !== undefined) {
       //console.log("[" + port.path + "]" + nextAction);
-      if (!updFlagCOM1 && !updFlagCOM2 && !updFlagTCP1 && !updFlagConn) {
+      if ((!((port.self == 'com1') && updFlagCOM1) || !((port.self == 'com2') && updFlagCOM2) || !((port.self == 'ip1') && updFlagTCP1)) && !updFlagConn) {
         await nextAction();
         port.mbsState = MBS_STATE_IDLE;
       }
     }
   }
-  else if ((port.slaves.length == 0) || (port.ip && (contype == 'com')) || (!port.ip && (contype == 'ip'))) { if (client.isOpen) { client.close(async () => { console.log("[" + port.path + "]closed"); updFlagConn && await dbInit(); updFlagConn && resetFlagConn(); }); } }
-  (!port.ip && updFlagCOM1) && resetFlagCOM1();
-  (!port.ip && updFlagCOM2) && resetFlagCOM2();
-  (port.ip && updFlagTCP1) && resetFlagTCP1();
+  else if (port.slaves.length == 0) { if (client.isOpen) { await client.close(async () => { console.log("[" + port.path + "]closed"); }); } }
   port.act++;
   if (port.act === port.slaves.length) {
     port.act = 0;
   }
   await delay(port.scan);
   //console.log("runmodbus" + port.path + port.mbsState + port.slaves.length)
-  runModbus(client, port);
+  if ((port.ip && contype == 'ip') || (!port.ip && contype == 'com')) { runModbus(client, port); }
+  else { port.mbsState = MBS_STATE_STEADY; (port.self == 'com1') && resetFlagCOM1(); (port.self == 'com2') && resetFlagCOM2(); (port.self == 'ip1') && resetFlagTCP1(); }
 };
