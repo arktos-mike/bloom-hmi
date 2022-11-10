@@ -140,7 +140,7 @@ const SettingsTech: React.FC<Props> = ({
       const newData = tags.data;
       const index = newData.findIndex((o: any) => o['tag']['name'] == tagName);
       if (newData[index] && (newData[index]['link'] == null || newData[index]['link'] == true) && (newData[index]['val'] != tagValue) && (newData[index]['tag']['min'] <= tagValue) && (newData[index]['tag']['max'] >= tagValue)) {
-        const response = await fetch((newData[index]['tag']['dev'].includes('rtu')) ? 'http://localhost:3000/tags/writeTagRTU' : 'http://localhost:3000/tags/writeTag', {
+        const response = await fetch((newData[index]['tag']['dev'].includes('rtu') || newData[index]['tag']['dev'].includes('tcp')) ? 'http://localhost:3000/tags/writeTagRTU' : 'http://localhost:3000/tags/writeTag', {
           method: 'POST',
           headers: { 'content-type': 'application/json;charset=UTF-8', },
           body: JSON.stringify({ name: tagName, value: tagValue }),
@@ -184,7 +184,7 @@ const SettingsTech: React.FC<Props> = ({
               <Skeleton loading={loading} round active>
                 <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center', marginTop: '15px' }}>
                   <Display value={getTagVal('warpBeamLength')} tag={getTag('warpBeamLength')} />
-                  <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<RedoOutlined style={{ fontSize: '150%' }} />} size="large" type="primary" style={{ margin: 10 }} onClick={()=>{confirmFullWarpBeam()}} ></Button>
+                  <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<RedoOutlined style={{ fontSize: '150%' }} />} size="large" type="primary" style={{ margin: 10 }} onClick={() => { confirmFullWarpBeam() }} ></Button>
                 </div>
                 <div style={{ marginTop: '15px', width: '75%' }}>
                   <InputNumber className="narrow" eng descr value={activeInput.id == ('warpLength') ? activeInput.input : getTagVal('fullWarpBeamLength')} tag={getTag('fullWarpBeamLength')} userRights={['admin', 'manager']} token={token} placeholder='tags.fullWarpBeamLength.descr' controls={false} onUpdate={(value: any) => { setTagVal('fullWarpBeamLength', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'warp', id: 'warpLength', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
@@ -198,7 +198,7 @@ const SettingsTech: React.FC<Props> = ({
                 <Options userRights={['admin', 'manager']} token={token} value={query(Number(getTagVal('modeControl')), 1)} text='tags.modeControl.descr' options={[{ key: 0, text: 'tags.modeControl.0' }, { key: 1, text: 'tags.modeControl.1' }]} onChange={(value: number) => { setTagVal('modeControl', value == 0 ? turnOFF(Number(getTagVal('modeControl')), 1) : turnON(Number(getTagVal('modeControl')), 1)) }}></Options>
                 <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center', marginTop: '15px' }}>
                   <Display value={getTagVal('orderLength')} tag={getTag('orderLength')} />
-                  <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<ScissorOutlined style={{ fontSize: '150%' }} />} size="large" type="primary" style={{ margin: 10 }} onClick={()=>{query(Number(getTagVal('modeControl')), 1) && confirmNullOrder()}} ></Button>
+                  <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<ScissorOutlined style={{ fontSize: '150%' }} />} size="large" type="primary" style={{ margin: 10 }} onClick={() => { query(Number(getTagVal('modeControl')), 1) && confirmNullOrder() }} ></Button>
                 </div>
                 <div style={{ marginTop: '15px', width: '75%' }}>
                   <InputNumber className="narrow" eng descr value={activeInput.id == ('orderLength') ? activeInput.input : getTagVal('planOrderLength')} tag={getTag('planOrderLength')} userRights={['admin', 'manager']} token={token} placeholder='tags.planOrderLength.descr' controls={false} onUpdate={(value: any) => { setTagVal('planOrderLength', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'orderLength', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />

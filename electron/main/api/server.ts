@@ -67,35 +67,11 @@ let ip1 = { self: 'ip1', ip: '', port: '', path: '', scan: 0, timeout: 1000, mbs
 //const arrayToObject = (arr, keyField) =>
 //  Object.assign({}, ...arr.map(item => ({ [item[keyField]]: item })))
 let contype = ''
-const dbInit = async () => {
+
+const dbConf = async () => {
   // create table
-  await db.query(createTableText)
-  await db.query('INSERT INTO lifetime VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT (serialno) DO NOTHING;', ['СТБУТТ1-280Кр', '00000001', new Date('2022-12-31T12:00:00.000Z'), 0, 0, '0H']);
-  await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['connConf', { 'conn': 'com' }])
   const conn = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['connConf']);
   contype = conn.rows[0].data.conn
-
-  await bcrypt.hash('123456', 10, async (err, hash) => {
-    await db.query(`INSERT INTO users (id, name, password, role) VALUES(1,'Admin',$1,'admin') ON CONFLICT (id) DO NOTHING;`, [hash])
-  });
-  const { rows } = await db.query('SELECT COUNT(*) FROM clothlog');
-  if (rows[0].count == 0)
-  {
-    await db.query(`INSERT INTO clothlog VALUES(tstzrange(current_timestamp(3),NULL,'[)'),$1,(SELECT val from tags WHERE tag->>'name' = 'fullWarpBeamLength'))`, [0])
-    await network.get_active_interface(async (err, obj) => {
-      const ipConf = { opIP: obj, tcp1: { ip: '192.168.1.123', port: '502', sId: 1, swapBytes: true, swapWords: true } }
-      await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
-    })
-    await SerialPort.list().then(async function (ports) {
-      if (ports[0] !== undefined && com1.path == '') { com1.path = ports[0].path; } else if (com1.path == '') { com1.path = "COM1"; }
-      if (ports[1] !== undefined && com2.path == '') { com2.path = ports[1].path; } else if (com2.path == '') { com2.path = "COM2"; }
-      const comConf = { opCOM1: { path: com1.path, conf: { baudRate: 230400, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 500 }, opCOM2: { path: com2.path, conf: { baudRate: 115200, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 0 } }
-      await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])
-
-    });
-  }
-  await db.query('INSERT INTO locales SELECT UNNEST($1::text[]), UNNEST($2::jsonb[]), UNNEST($3::boolean[]) ON CONFLICT (locale) DO NOTHING;', [['en', 'es', 'ru', 'tr'], [enlocale, eslocale, rulocale, trlocale], [false, false, true, false]])
-
   if (contype == 'ip') {
     const tcpRows = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['ipConf']);
     ip1 = Object.assign(ip1, tcpRows.rows[0].data.tcp1, { act: 0, path: tcpRows.rows[0].data.tcp1.ip + ':' + tcpRows.rows[0].data.tcp1.port });
@@ -176,6 +152,32 @@ const dbInit = async () => {
     }
   }
 }
+
+const dbInit = async () => {
+  await db.query(createTableText);
+  await db.query('INSERT INTO locales SELECT UNNEST($1::text[]), UNNEST($2::jsonb[]), UNNEST($3::boolean[]) ON CONFLICT (locale) DO NOTHING;', [['en', 'es', 'ru', 'tr'], [enlocale, eslocale, rulocale, trlocale], [false, false, true, false]])
+  const { rows } = await db.query('SELECT COUNT(*) FROM clothlog');
+  if (rows[0].count == 0) {
+    await db.query('INSERT INTO lifetime VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT (serialno) DO NOTHING;', ['СТБУТТ1-280Кр', '00000001', new Date('2022-12-31T12:00:00.000Z'), 0, 0, '0H']);
+    await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['connConf', { 'conn': 'com' }])
+    await bcrypt.hash('123456', 10, async (err, hash) => {
+      await db.query(`INSERT INTO users (id, name, password, role) VALUES(1,'Admin',$1,'admin') ON CONFLICT (id) DO NOTHING;`, [hash])
+    });
+    await db.query(`INSERT INTO clothlog VALUES(tstzrange(current_timestamp(3),NULL,'[)'),$1,(SELECT val from tags WHERE tag->>'name' = 'fullWarpBeamLength'))`, [0])
+    await network.get_active_interface(async (err, obj) => {
+      const ipConf = { opIP: obj, tcp1: { ip: '192.168.1.123', port: '502', sId: 1, swapBytes: true, swapWords: true } }
+      await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
+    })
+    await SerialPort.list().then(async function (ports) {
+      if (ports[0] !== undefined && com1.path == '') { com1.path = ports[0].path; } else if (com1.path == '') { com1.path = "COM1"; }
+      if (ports[1] !== undefined && com2.path == '') { com2.path = ports[1].path; } else if (com2.path == '') { com2.path = "COM2"; }
+      const comConf = { opCOM1: { path: com1.path, conf: { baudRate: 230400, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 500 }, opCOM2: { path: com2.path, conf: { baudRate: 115200, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 0 } }
+      await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])
+    });
+  }
+  await dbConf();
+}
+
 dbInit();
 //==============================================================
 const connectClient = async function (client, port) {
@@ -222,21 +224,30 @@ const writeModbusData = async function (tagName, val) {
     const tagRow = await db.query('select tag->$1 as dev, tag->$2 as addr, tag->$3 as type, tag->$4 as reg FROM tags WHERE tag->>$5=$6', ['dev', 'addr', 'type', 'reg', 'name', tagName]);
     let tag = tagRow.rows[0];
     tag.name = tagName;
-    const slaveRow = await db.query('SELECT data->$1 as rtu FROM hwconfig WHERE name=$2 AND data?$1', [tagRow.rows[0].dev, 'rtuConf']);
-    let slave = slaveRow.rows[0].rtu;
     let client
     let port
-    switch (slave.com) {
-      case "opCOM1":
-        client = client1;
-        port = com1;
-        break;
-      case "opCOM2":
-        client = client2;
-        port = com2;
-        break;
-      default:
-      // nothing to do
+    let slave
+    if (contype == 'com') {
+      const slaveRow = await db.query('SELECT data->$1 as rtu FROM hwconfig WHERE name=$2 AND data?$1', [tagRow.rows[0].dev, 'rtuConf']);
+      slave = slaveRow.rows[0].rtu;
+      switch (slave.com) {
+        case "opCOM1":
+          client = client1;
+          port = com1;
+          break;
+        case "opCOM2":
+          client = client2;
+          port = com2;
+          break;
+        default:
+        // nothing to do
+      }
+    }
+    else {
+      const slaveRow = await db.query('SELECT data->$1 as tcp FROM hwconfig WHERE name=$2 AND data?$1', [tagRow.rows[0].dev, 'ipConf']);
+      slave = slaveRow.rows[0].tcp;
+      client = client3;
+      port = ip1;
     }
     await client.setID(slave.sId);
     switch (tag.type) {
@@ -410,12 +421,12 @@ const runModbus = async function (client, port) {
     const conn = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['connConf']);
     contype = conn.rows[0].data.conn
     await client.close(async () => { console.log("[" + port.path + "]closed"); });
-    await dbInit();
+    await dbConf();
     resetFlagConn();
   }
   if ((updFlagCOM1 && port.self == 'com1') || (updFlagCOM2 && port.self == 'com2') || (updFlagTCP1 && port.self == 'ip1')) {
     await client.close(async () => { console.log("[" + port.path + "]closed"); });
-    await dbInit();
+    await dbConf();
     await connectClient(client, port);
     (port.self == 'com1') && resetFlagCOM1(); (port.self == 'com2') && resetFlagCOM2(); (port.self == 'ip1') && resetFlagTCP1();
   }
