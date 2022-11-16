@@ -50,9 +50,9 @@ CREATE TABLE IF NOT EXISTS lifetime (
   type text,
   serialno text PRIMARY KEY,
   mfgdate date,
-  picks NUMERIC default 0,
-  cloth NUMERIC default 0,
-  motor interval default interval '0' second
+  picks NUMERIC not null default 0,
+  cloth NUMERIC not null default 0,
+  motor interval not null default interval '0' second
 );
 DROP RULE IF EXISTS lifetime_del_protect ON lifetime;
 CREATE RULE lifetime_del_protect AS ON DELETE TO lifetime DO INSTEAD NOTHING;
