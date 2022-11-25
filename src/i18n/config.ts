@@ -6,12 +6,12 @@ import { initReactI18next } from 'react-i18next';
 const getLng = async () => {
   try {
     const response = await fetch('http://localhost:3000/locales/lng');
-    if (!response.ok) { throw Error(response.statusText); }
+    if (!response.ok) { /*throw Error(response.statusText);*/ }
     const data = await response.json();
     return data.lng
 
   }
-  catch (error) { console.log(error); return { lng: '' } }
+  catch (error) { /*console.log(error);*/ return { lng: '' } }
 }
 
 const detectUserLanguage = (callback: (arg0: any) => void) => {

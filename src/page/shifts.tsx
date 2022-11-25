@@ -102,7 +102,7 @@ const Shifts: React.FC<Props> = ({
         const json = await response.json();
         openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
         setUpdated(json.error ? false : true);
-        if (!response.ok) { throw Error(response.statusText); }
+        if (!response.ok) { /*throw Error(response.statusText);*/ }
       }
     }
     catch (error) { console.log(error) }
@@ -274,7 +274,7 @@ const Shifts: React.FC<Props> = ({
     setLoading(true);
     try {
       const response = await fetch('http://localhost:3000/shifts');
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setPagination({ ...pagination, total: json.length });
       let count = 1;
@@ -291,7 +291,7 @@ const Shifts: React.FC<Props> = ({
       setLoading(false);
       rulesCheck(json);
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   };
 
   return (

@@ -37,11 +37,11 @@ router.post('/', async (req, res) => {
 
     }
     catch (err) {
-        console.log(err);
+        /*console.log(err);*/
         res.status(500).json({
-            error: "Could not set system date/time", 
+            error: "Could not set system date/time",
             message: "notifications.servererror",
         });
     };
 })
-export default router 
+export default router

@@ -190,22 +190,22 @@ const UserReport: React.FC<Props> = ({
           headers: { 'content-type': 'application/json;charset=UTF-8', },
           body: JSON.stringify({ id: user, start: period ? period[0] : dayjs().startOf('month'), end: period ? period[1] : dayjs() }),
         });
-        if (!response.ok) { throw Error(response.statusText); }
+        if (!response.ok) { /*throw Error(response.statusText);*/ }
         const json = await response.json();
         setTotal(json);
       }
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   };
 
   const fetchUsers = async () => {
     try {
       const response = await fetch('http://localhost:3000/users/weavers');
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setUsers(json);
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   };
 
   const fetchData = async () => {
@@ -217,13 +217,13 @@ const UserReport: React.FC<Props> = ({
           headers: { 'content-type': 'application/json;charset=UTF-8', },
           body: JSON.stringify({ id: user, start: period ? period[0] : dayjs().startOf('month'), end: period ? period[1] : dayjs() }),
         });
-        if (!response.ok) { throw Error(response.statusText); }
+        if (!response.ok) { /*throw Error(response.statusText);*/ }
         const json = await response.json();
         setData(json);
         setLoading(false);
       }
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   };
 
   useEffect(() => {

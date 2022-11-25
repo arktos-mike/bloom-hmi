@@ -153,7 +153,7 @@ router.post('/update', async (req, res) => {
     }
   }
   catch (err) {
-    console.log(err);
+    /*console.log(err);*/
     res.status(500).json({
       message: "notifications.dberror",
       error: "Database error while updating config!", //Database connection error

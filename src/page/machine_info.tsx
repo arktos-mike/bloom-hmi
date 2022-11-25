@@ -26,11 +26,11 @@ const MachineInfo: React.FC = () => {
   const fetchData = async () => {
     try {
       const response = await fetch('http://localhost:3000/machine');
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       if (isSubscribed) { setState(json[0]); setLoading(false) }
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   }
 
   useEffect(() => {

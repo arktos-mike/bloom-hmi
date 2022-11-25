@@ -80,10 +80,10 @@ const Overview: React.FC<Props> = ({
       const response = await fetch('http://localhost:3000/reminders/ack/' + id, {
         method: 'POST',
       });
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       setUpdatedReminders(true);
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   };
 
   function localeParseFloat(str: String) {
@@ -103,7 +103,7 @@ const Overview: React.FC<Props> = ({
         headers: { 'content-type': 'application/json;charset=UTF-8', },
         body: JSON.stringify({ id: ((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id : shadowUser.id), start: shadowUser.logintime, end: dayjs() }),
       });
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setUserInfo(json[0]);
       if (json[0] && Array.isArray(json[0]['stops'])) {
@@ -115,24 +115,24 @@ const Overview: React.FC<Props> = ({
         setUserDonut(obj);
       }
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   };
 
   const fetchPieces = async () => {
     try {
       const response = await fetch('http://localhost:3000/logs//getRolls');
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setPieces(json);
       setLoading(false)
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   }
 
   const fetchTags = async () => {
     try {
       const response = await fetch('http://localhost:3000/tags');
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       json.map((tag: any) => (
         tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec']).toString()
@@ -140,7 +140,7 @@ const Overview: React.FC<Props> = ({
       );
       setTags({ data: json });
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   }
   const getTag = (tagName: string) => {
     let obj = tags.data.find((o: any) => o['tag']['name'] == tagName)

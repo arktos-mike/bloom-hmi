@@ -64,9 +64,9 @@ const SettingsTech: React.FC<Props> = ({
           await setTagVal('modeControl', turnON(Number(getTagVal('modeControl')), 2));
           const json = await response.json();
           openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
-          if (!response.ok) { throw Error(response.statusText); }
+          if (!response.ok) { /*throw Error(response.statusText);*/ }
         }
-        catch (error) { console.log(error); }
+        catch (error) { /*console.log(error);*/ }
       },
     });
   };
@@ -91,9 +91,9 @@ const SettingsTech: React.FC<Props> = ({
           });
           const json = await response.json();
           openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
-          if (!response.ok) { throw Error(response.statusText); }
+          if (!response.ok) { /*throw Error(response.statusText);*/ }
         }
-        catch (error) { console.log(error); }
+        catch (error) { /*console.log(error);*/ }
       },
     });
   };
@@ -145,7 +145,7 @@ const SettingsTech: React.FC<Props> = ({
           headers: { 'content-type': 'application/json;charset=UTF-8', },
           body: JSON.stringify({ name: tagName, value: tagValue }),
         });
-        if (!response.ok) { throw Error(response.statusText); }
+        if (!response.ok) { /*throw Error(response.statusText);*/ }
         newData[index]['val'] = tagValue;
         setTags({ data: newData });
       }
@@ -153,7 +153,7 @@ const SettingsTech: React.FC<Props> = ({
         openNotificationWithIcon('warning', t('notifications.dataerror'), 3, '', { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' });
       }
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   }
 
   const fetchTags = async (tagNames: string[]) => {
@@ -163,7 +163,7 @@ const SettingsTech: React.FC<Props> = ({
         headers: { 'content-type': 'application/json;charset=UTF-8', },
         body: JSON.stringify({ name: tagNames }),
       });
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       json.map((tag: any) => (
         tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec']).toString()
@@ -172,7 +172,7 @@ const SettingsTech: React.FC<Props> = ({
       setTags({ data: json });
       setLoading(false)
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   }
 
   return (

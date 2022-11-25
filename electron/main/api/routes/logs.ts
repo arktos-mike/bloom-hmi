@@ -22,7 +22,7 @@ router.post('/clothlogchange', async (req, res) => {
       message: "notifications.confupdate",
     });
   } catch (err) {
-    console.log(err);
+    /*console.log(err);*/
     res.status(500).json({
       message: "notifications.dberror",
       error: "Database error occurred!", //Database connection error

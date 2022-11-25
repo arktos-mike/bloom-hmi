@@ -102,7 +102,7 @@ app.on('activate', () => {
 })
 
 process.on("uncaughtException", (err) => {
-  console.log(err);
+  /*console.log(err);*/
 });
 
 // new window example arg: new windows url

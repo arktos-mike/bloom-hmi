@@ -29,7 +29,7 @@ router.post('/', async (req, res) => {
                     }
                     else {
                         res.status(500).json({
-                            error: "Could not reboot", 
+                            error: "Could not reboot",
                             message: "notifications.servererror",
                         });
                     }
@@ -39,11 +39,11 @@ router.post('/', async (req, res) => {
 
     }
     catch (err) {
-        console.log(err);
+        /*console.log(err);*/
         res.status(500).json({
-            error: "Could not reboot", 
+            error: "Could not reboot",
             message: "notifications.servererror",
         });
     };
 })
-export default router 
+export default router

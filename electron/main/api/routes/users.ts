@@ -63,7 +63,7 @@ router.post('/register', async (req, res) => {
     }
   }
   catch (err) {
-    console.log(err);
+    /*console.log(err);*/
     res.status(500).json({
       message: "notifications.dberror",
       error: "Database error while registring user!", //Database connection error
@@ -79,7 +79,7 @@ router.post('/logout', async (req, res) => {
       message: "notifications.logout",
     });
   } catch (err) {
-    console.log(err);
+    /*console.log(err);*/
     res.status(500).json({
       message: "notifications.dberror",
       error: "Database error occurred!", //Database connection error
@@ -135,7 +135,7 @@ router.post('/login', async (req, res) => {
       })
     }
   } catch (err) {
-    console.log(err);
+    /*console.log(err);*/
     res.status(500).json({
       message: "notifications.dberror",
       error: "Database error occurred while signing in!", //Database connection error
@@ -174,7 +174,7 @@ router.post('/login/:id', async (req, res) => {
       });
     }
   } catch (err) {
-    console.log(err);
+    /*console.log(err);*/
     res.status(500).json({
       message: "notifications.dberror",
       error: "Database error occurred while signing in!", //Database connection error
@@ -208,7 +208,7 @@ router.delete('/:id', async (req, res) => {
       })
     }
   } catch (err) {
-    console.log(err);
+    /*console.log(err);*/
     res.status(500).json({
       message: "notifications.dberror",
       error: "Database error occurred while deleting user!", //Database connection error
@@ -228,7 +228,7 @@ router.post('/decode/:jwt', async (req, res) => {
     }
   }
   catch (err) {
-    console.log(err);
+    /*console.log(err);*/
     res.status(500).json({
       error: "Token not valid!", //Database connection error
     });
@@ -363,7 +363,7 @@ router.post('/update', async (req, res) => {
     }
   }
   catch (err) {
-    console.log(err);
+    /*console.log(err);*/
     res.status(500).json({
       message: "notifications.dberror",
       error: "Database error while updating user!", //Database connection error

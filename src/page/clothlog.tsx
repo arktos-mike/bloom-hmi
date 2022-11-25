@@ -77,7 +77,7 @@ const ClothLog: React.FC<Props> = ({
           headers: { 'content-type': 'application/json;charset=UTF-8', },
           body: JSON.stringify({ start: period[0], end: period[1] }),
         });
-        if (!response.ok) { throw Error(response.statusText); }
+        if (!response.ok) { /*throw Error(response.statusText);*/ }
         const json = await response.json();
         openNotificationWithIcon('success', t('notifications.logupdate'), 3, '', { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
         setPagination({ ...pagination, total: json.length });
@@ -151,13 +151,13 @@ const ClothLog: React.FC<Props> = ({
         headers: { 'content-type': 'application/json;charset=UTF-8', },
         body: JSON.stringify({ start: period ? period[0] : dayjs().startOf('day'), end: period ? period[1] : dayjs() }),
       });
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setPagination({ ...pagination, total: json.length });
       setData(json);
       setLoading(false);
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   };
 
   useEffect(() => {

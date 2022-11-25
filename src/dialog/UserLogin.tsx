@@ -40,11 +40,11 @@ const UserLogin: React.FC<Props> = ({
   const fetchData = async () => {
     try {
       const response = await fetch('http://localhost:3000/users/names');
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setState({ data: json });
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   }
 
   useEffect(() => {
@@ -96,11 +96,11 @@ const UserLogin: React.FC<Props> = ({
         });
         const jsonb = await response.json();
         setToken(jsonb.token || null);
-        if (!response.ok) { throw Error(response.statusText); }
+        if (!response.ok) { /*throw Error(response.statusText);*/ }
       }
       else { setToken(null); }
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   }
 
   const onFinish = async (values: { user: any; password: any; remember: boolean; }) => {
@@ -114,7 +114,7 @@ const UserLogin: React.FC<Props> = ({
         const json = await response.json();
         setToken(json.token || token);
         openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
-        if (!response.ok) { throw Error(response.statusText); }
+        if (!response.ok) { /*throw Error(response.statusText);*/ }
       }
       setRemember(values.remember);
     }

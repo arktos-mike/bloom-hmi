@@ -32,7 +32,7 @@ const SettingsOp: React.FC<Props> = ({
         method: 'PATCH',
       });
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   }
   let isSubscribed = true;
 
@@ -57,21 +57,21 @@ const SettingsOp: React.FC<Props> = ({
   const fetchLngs = async () => {
     try {
       const response = await fetch('http://localhost:3000/locales');
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       if (isSubscribed) { setLngs({ data: json }); setLoading(false); };
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   }
 
   const fetchIP = async () => {
     try {
       const response = await fetch('http://localhost:3000/config');
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       if (isSubscribed) setOpIP(json['ipConf']['opIP']);
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   }
 
   const curDate = today.toLocaleDateString(i18n.language == 'en' ? 'en-GB' : i18n.language, { dateStyle: 'full' });
@@ -95,7 +95,7 @@ const SettingsOp: React.FC<Props> = ({
       });
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
     }
     catch (error) { console.log(error) }
   }
@@ -109,7 +109,7 @@ const SettingsOp: React.FC<Props> = ({
       });
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       fetchIP();
     }
     catch (error) { console.log(error) }
@@ -126,7 +126,7 @@ const SettingsOp: React.FC<Props> = ({
       });
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       form.resetFields()
     }
     catch (error) { console.log(error) }

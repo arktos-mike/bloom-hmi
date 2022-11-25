@@ -48,41 +48,41 @@ const SettingsDev: React.FC<Props> = ({
   const fetchConn = async () => {
     try {
       const response = await fetch('http://localhost:3000/config');
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setConn(json['connConf']['conn']);
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   }
 
   const fetchCOM = async () => {
     try {
       const response = await fetch('http://localhost:3000/config');
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       if (isSubscribed) setOpCOM(json['comConf'][com]);
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   }
 
   const fetchRTU = async () => {
     try {
       const response = await fetch('http://localhost:3000/config');
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       if (isSubscribed) { setRtu(json['rtuConf']['rtu1']); };
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   }
 
   const fetchTCP = async () => {
     try {
       const response = await fetch('http://localhost:3000/config');
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       if (isSubscribed) setTcp(json['ipConf']['tcp1']); setLoading(false);
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   }
 
   const onConnChange = async (conf: any) => {
@@ -95,7 +95,7 @@ const SettingsDev: React.FC<Props> = ({
         });
         const json = await response.json();
         openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
-        if (!response.ok) { throw Error(response.statusText); }
+        if (!response.ok) { /*throw Error(response.statusText);*/ }
         fetchConn();
       }
       catch (error) { console.log(error) }
@@ -111,7 +111,7 @@ const SettingsDev: React.FC<Props> = ({
       });
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       fetchCOM();
     }
     catch (error) { console.log(error) }
@@ -126,7 +126,7 @@ const SettingsDev: React.FC<Props> = ({
       });
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       fetchRTU();
     }
     catch (error) { console.log(error) }
@@ -141,7 +141,7 @@ const SettingsDev: React.FC<Props> = ({
       });
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       fetchTCP();
     }
     catch (error) { console.log(error) }

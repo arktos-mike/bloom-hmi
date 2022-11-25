@@ -78,7 +78,7 @@ const App: React.FC = () => {
       }
       else { setShadowUser({ id: null, name: null, logintime: json[0].logintime }) }
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   }
 
   const checkLogin = async () => {
@@ -92,11 +92,11 @@ const App: React.FC = () => {
         });
         const jsonb = await response.json();
         setToken(jsonb.token || null);
-        if (!response.ok) { throw Error(response.statusText); }
+        if (!response.ok) { /*throw Error(response.statusText);*/ }
       }
       else { setToken(null); }
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   }
 
   const onIdle = async () => {
@@ -242,11 +242,11 @@ const App: React.FC = () => {
   const fetchLngs = async () => {
     try {
       const response = await fetch('http://localhost:3000/locales');
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setLngs({ data: json });
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   }
 
   const fetchTags = async (tagNames: string[]) => {
@@ -256,7 +256,7 @@ const App: React.FC = () => {
         headers: { 'content-type': 'application/json;charset=UTF-8', },
         body: JSON.stringify({ name: tagNames }),
       });
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       (json || []).map((tag: any) => (
         tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec']).toString()));
@@ -264,7 +264,7 @@ const App: React.FC = () => {
       let obj = tags.data.find(o => o['tag']['name'] == 'modeCode')
       obj && setModeCode({ val: obj['val'], updated: dayjs(obj['updated']) })
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   }
 
   const getTagLink = (tagName: string) => {
@@ -282,12 +282,12 @@ const App: React.FC = () => {
   const fetchShift = async () => {
     try {
       const response = await fetch('http://localhost:3000/shifts/currentshift');
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setShift({ ...shift, name: json[0]['shiftname'], start: json[0]['shiftstart'], end: json[0]['shiftend'], duration: json[0]['shiftdur'] });
       setUpdated(false);
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   };
   const fetchStatInfo = async () => {
     try {
@@ -297,24 +297,24 @@ const App: React.FC = () => {
           headers: { 'content-type': 'application/json;charset=UTF-8', },
           body: JSON.stringify({ start: shift.start, end: new Date() }),
         });
-        if (!response.ok) { throw Error(response.statusText); }
+        if (!response.ok) { /*throw Error(response.statusText);*/ }
         const json = await response.json();
         setShift({ ...shift, picks: json[0]['picks'] || 0, meters: json[0]['meters'] || 0, rpm: json[0]['rpm'] || 0, mph: json[0]['mph'] || 0, efficiency: json[0]['efficiency'] || 0, starts: json[0]['starts'] || 0, runtime: json[0]['runtime'] || '', stops: json[0]['stops'] || {} });
         setUpdated(false);
       }
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   };
 
   const fetchReminders = async () => {
     try {
       const response = await fetch('http://localhost:3000/reminders/active');
-      if (!response.ok) { throw Error(response.statusText); }
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setRemindersFilter(differenceWith(json, (reminders || []), isEqual));
       if (!isEqual(reminders, json)) { setReminders(json) }
     }
-    catch (error) { console.log(error); }
+    catch (error) { /*console.log(error);*/ }
   };
 
   useEffect(() => {
