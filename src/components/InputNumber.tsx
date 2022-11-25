@@ -16,6 +16,7 @@ const Component = (props: any) => {
 
   useEffect(() => {
     props.value != null && props.onUpdate && props.onUpdate(localeParseFloat(props.value));
+    return () => { }
   }, [props.value]);
 
   const { t, i18n } = useTranslation();

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Modal, Button, Form, Input, InputNumber, Select, notification } from 'antd'
-import { LockOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { useEffect } from 'react'
+import { Modal, Form, Input, InputNumber, Select, notification } from 'antd'
+import { LockOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 const { Option } = Select;
 
@@ -30,36 +30,10 @@ const UserEdit: React.FC<Props> = ({
   useEffect(() => {
     if (form && isModalVisible && activeInput.form == 'edit') {
       form.setFieldsValue({ [activeInput.id]: activeInput.input })
+      return () => { }
     }
   }, [activeInput])
 
-  const handleDelete = async (id: Number) => {
-    try {
-      const response = await fetch('http://localhost:3000/users/' + id, {
-        method: 'DELETE',
-      });
-      const json = await response.json();
-      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
-      if (!response.ok) { /*throw Error(response.statusText);*/ }
-    }
-    catch (error) { console.log(error) }
-    setIsModalVisible(false)
-    form.resetFields()
-    setToken(null)
-  }
-  const confirm = () => {
-    Modal.confirm({
-      title: t('confirm.title'),
-      icon: <ExclamationCircleOutlined style={{ fontSize: "300%" }} />,
-      content: t('confirm.descr'),
-      okText: t('confirm.ok'),
-      cancelText: t('confirm.cancel'),
-      centered: true,
-      okButtonProps: { size: 'large', danger: true },
-      cancelButtonProps: { size: 'large' },
-      onOk: () => { handleDelete(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id) },
-    });
-  };
   useEffect(() => {
     if (form && isModalVisible) {
       form.setFieldsValue({
@@ -69,6 +43,7 @@ const UserEdit: React.FC<Props> = ({
         role: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : ''
       })
     }
+    return () => { }
   }, [form, token])
 
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {

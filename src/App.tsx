@@ -318,60 +318,81 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchReminders();
-    setUpdatedReminders(false);
+    (async () => {
+      await fetchReminders();
+      setUpdatedReminders(false);
+    })();
+    return () => { }
   }, [dayjs().minute(), updatedReminders])
 
   useEffect(() => {
     (reminders || []).map((note: any) => (
       openNotificationWithIcon('info', note['title'], 5, note['id'], note['descr'], { backgroundColor: '#e6f7ff', border: '2px solid #91d5ff' })));
+      return () => { }
   }, [token])
 
   useEffect(() => {
     (remindersFilter || []).map((note: any) => (
       openNotificationWithIcon('info', note['title'], 0, note['id'], note['descr'], { backgroundColor: '#e6f7ff', border: '2px solid #91d5ff' })));
+      return () => { }
   }, [remindersFilter])
 
   useEffect(() => {
-    clock();
-    fetchLngs();
-    fetchShift();
-    checkLogin();
-    fetchReminders();
-    setUpdated(true);
+    (async () => {
+      await clock();
+      await fetchLngs();
+      await fetchShift();
+      await checkLogin();
+      await fetchReminders();
+      setUpdated(true);
+    })();
+    return () => { }
   }, [])
 
   useEffect(() => {
-    fetchTags(['modeCode', 'stopAngle', 'speedMainDrive']);
-    fetchStatInfo();
+    (async () => {
+      await fetchTags(['modeCode', 'stopAngle', 'speedMainDrive']);
+      await fetchStatInfo();
+    })();
+    return () => { }
   }, [tags])
 
   useEffect(() => {
-    fetchShift();
+    (async () => {
+      await fetchShift();
+    })();
+    return () => { }
   }, [updated, shift.end && dayjs().isAfter(shift.end)])
 
   useEffect(() => {
-    setToken(token);
-    checkShadowUser();
+    (async () => {
+      setToken(token);
+      await checkShadowUser();
+    })();
+    return () => { }
   }, [token])
 
   useEffect(() => {
     setRemember(remember)
+    return () => { }
   }, [remember])
 
   useEffect(() => {
-    setInputWidth(span.current?.offsetWidth ? span.current?.offsetWidth < (window.innerWidth/1.7) ? span.current?.offsetWidth + 5 : (window.innerWidth/1.7) : 5)
-    setControl(span.current?.offsetWidth ? span.current?.offsetWidth < (window.innerWidth/1.7) ? false : true : false)
+    setInputWidth(span.current?.offsetWidth ? span.current?.offsetWidth < (window.innerWidth / 1.7) ? span.current?.offsetWidth + 5 : (window.innerWidth / 1.7) : 5)
+    setControl(span.current?.offsetWidth ? span.current?.offsetWidth < (window.innerWidth / 1.7) ? false : true : false)
     keyboardRef.current?.setInput(bufferKeyboard)
+    return () => { }
   }, [bufferKeyboard])
 
   useEffect(() => {
     keyboardRef.current?.setInput(activeInput.input);
     setBufferKeyboard(activeInput.input);
+    return () => { }
   }, [activeInput.form, activeInput.id, activeInput.descr, activeInput.input])
 
   useEffect(() => {
     lngToLayout()
+    return () => { }
   }, [activeInput.num, keyboardLng])
 
   const smallItems = [
@@ -470,7 +491,7 @@ const App: React.FC = () => {
                     <div style={{ display: 'inline-flex', width: '100%' }}>
                       <span ref={descr} className='descr'>{activeInput.descr}</span>
                       <div className='sel' style={{ position: 'absolute', opacity: 0, height: 0, overflow: 'hidden', whiteSpace: 'pre' }}><span className="text" ref={span}>{bufferKeyboard}</span></div>
-                      <Space direction="horizontal" style={{ width: '100%', justifyContent: control? 'space-between':'center' }}>
+                      <Space direction="horizontal" style={{ width: '100%', justifyContent: control ? 'space-between' : 'center' }}>
                         {control && <Button style={{ width: 41 }} type="link" onClick={() => { inputRef.current!.focus({ cursor: 'start', }); }} icon={<CaretLeftOutlined />}></Button>}
                         {activeInput.showInput ? <Input style={{ color: "#005092", width: inputWidth }} size='small' value={bufferKeyboard} bordered={false} ref={inputRef} /> : <Input.Password style={{ color: "#005092", width: inputWidth }} size='small' value={bufferKeyboard} bordered={false} visibilityToggle={false} ref={inputRef} />}
                         {control && <Button style={{ width: 41 }} type="link" onClick={() => { inputRef.current!.focus({ cursor: 'end', }); }} icon={<CaretRightOutlined />}></Button>}

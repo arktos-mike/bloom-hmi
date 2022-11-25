@@ -1,7 +1,7 @@
 import { Modal, Button, Form, Input, InputNumber, Select, notification } from 'antd'
 import { LockOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 const { Option } = Select;
 
 type Props = {
@@ -29,6 +29,7 @@ const UserRegister: React.FC<Props> = ({
         if (form && isModalVisible && activeInput.form == 'reg') {
             form.setFieldsValue({ [activeInput.id]: activeInput.input })
         }
+        return () => { }
     }, [activeInput])
 
     const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {

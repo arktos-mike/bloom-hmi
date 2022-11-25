@@ -16,7 +16,6 @@ const MachineInfo: React.FC = () => {
   const { t, i18n } = useTranslation();
   const [state, setState] = useState({ type: '', serialno: '', mfgdate: '', picks: 0, cloth: 0, motor: '' })
   const [loading, setLoading] = useState(true)
-  let isSubscribed = true;
 
   const duration2text = (int: any) => {
     let diff = dayjs.duration(int);
@@ -28,15 +27,17 @@ const MachineInfo: React.FC = () => {
       const response = await fetch('http://localhost:3000/machine');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
-      if (isSubscribed) { setState(json[0]); setLoading(false) }
+      setState(json[0]); setLoading(false)
     }
     catch (error) { /*console.log(error);*/ }
   }
 
   useEffect(() => {
-    dayjs.locale(i18n.language)
-    fetchData()
-    return () => { isSubscribed = false }
+    (async () => {
+      dayjs.locale(i18n.language)
+      await fetchData()
+    })();
+    return () => { }
   }, [state])
 
   return (

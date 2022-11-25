@@ -169,16 +169,19 @@ const Users: React.FC<Props> = ({
   useEffect(() => {
     setActiveInput({ ...activeInput, form: '', id: '' });
     fetchData();
+    return () => { }
   }, [editVisible, regVisible]);
 
   useEffect(() => {
     setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
+    return () => { }
   }, [])
 
   useEffect(() => {
     if (typeof pagination.defaultPageSize == 'undefined') {
       setPagination({ ...pagination, defaultPageSize: height ? Math.floor((height - 100) / 70) : 6, pageSize: height ? Math.floor((height - 100) / 70) : 6 })
     }
+    return () => { }
   }, [pagination])
 
   return (

@@ -3,8 +3,6 @@ import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import { InputNumber, Options, Display, Button } from '../components';
 import { ScissorOutlined, RedoOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
-import format from 'dayjs';
-import dayjs from 'dayjs';
 
 const cardStyle = { background: "whitesmoke", width: '100%', display: 'flex', flexDirection: 'column' as 'column' }
 const cardHeadStyle = { background: "#1890ff", color: "white" }
@@ -40,7 +38,6 @@ const SettingsTech: React.FC<Props> = ({
     return parseFloat(out.join("."));
   }
 
-  let isSubscribed = true;
   const [tags, setTags] = useState({ data: [] as any })
   const [loading, setLoading] = useState(true)
 
@@ -111,11 +108,14 @@ const SettingsTech: React.FC<Props> = ({
 
   useEffect(() => {
     setActiveInput({ ...activeInput, form: '', id: '' });
+    return () => { }
   }, [])
 
   useEffect(() => {
-    fetchTags(['picksLastRun', 'planSpeedMainDrive', 'planClothDensity', 'orderLength', 'planOrderLength', 'modeControl', 'fullWarpBeamLength', 'warpBeamLength', 'warpShrinkage']);
-    return () => { isSubscribed = false }
+    (async () => {
+      await fetchTags(['picksLastRun', 'planSpeedMainDrive', 'planClothDensity', 'orderLength', 'planOrderLength', 'modeControl', 'fullWarpBeamLength', 'warpBeamLength', 'warpShrinkage']);
+    })();
+    return () => { }
   }, [tags])
 
   const getTag = (tagName: string) => {

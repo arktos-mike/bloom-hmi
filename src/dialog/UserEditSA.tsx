@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Modal, Button, Form, Input, InputNumber, Select, notification } from 'antd'
 import { LockOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -35,12 +35,14 @@ const UserEditSA: React.FC<Props> = ({
                 role: user.role
             })
         }
+        return () => { }
     }, [form, user])
 
     useEffect(() => {
         if (form && isModalVisible && activeInput.form == 'editSA') {
             form.setFieldsValue({ [activeInput.id]: activeInput.input })
         }
+        return () => { }
     }, [activeInput])
 
     const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 const Component = (props: any) => {
   useEffect(() => {
     props.onUpdate && props.onUpdate(props.value);
+    return () => { }
   }, [props.value]);
   const { t } = useTranslation();
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {

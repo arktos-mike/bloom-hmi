@@ -17,7 +17,7 @@ type Props = {
   token: any;
   modeCode: { val: Number, updated: any };
   reminders: any;
-  setUpdatedReminders: (val:boolean)=>void;
+  setUpdatedReminders: (val: boolean) => void;
 };
 
 const Overview: React.FC<Props> = ({
@@ -42,7 +42,6 @@ const Overview: React.FC<Props> = ({
   const [shiftDonutSel, setShiftDonutSel] = useState({ run: true, other: false, button: false, warp: true, weft: true, tool: true, fabric: false } as any)
   const div = useRef<HTMLDivElement | null>(null);
   const contentStyle = { height: height, margin: '1px' };
-  let isSubscribed = true;
 
   const duration2text = (diff: any) => {
     if (diff == null) return null
@@ -108,7 +107,7 @@ const Overview: React.FC<Props> = ({
       setUserInfo(json[0]);
       if (json[0] && Array.isArray(json[0]['stops'])) {
         let obj = []
-        obj.push({ reason: 'run', value: dayjs.duration(json[0]['runtime']||0).asMilliseconds(), count: Number(json[0]['starts']) })
+        obj.push({ reason: 'run', value: dayjs.duration(json[0]['runtime'] || 0).asMilliseconds(), count: Number(json[0]['starts']) })
         for (let stop of json[0]['stops']) {
           obj.push({ reason: Object.keys(stop)[0], value: dayjs.duration(stop[Object.keys(stop)[0]]['dur']).asMilliseconds(), count: stop[Object.keys(stop)[0]]['total'] })
         }
@@ -124,7 +123,7 @@ const Overview: React.FC<Props> = ({
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setPieces(json);
-      setLoading(false)
+
     }
     catch (error) { /*console.log(error);*/ }
   }
@@ -161,30 +160,38 @@ const Overview: React.FC<Props> = ({
   }
 
   useEffect(() => {
-    fetchTags();
-    fetchUserStatInfo();
-    fetchPieces();
-    return () => { isSubscribed = false }
+    (async () => {
+      await fetchTags();
+      await fetchUserStatInfo();
+      await fetchPieces();
+      setLoading(false);
+    })();
+    return () => { }
   }, [tags])
 
   useEffect(() => {
-    setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
-    fetchUserStatInfo();
+    (async () => {
+      setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
+      await fetchUserStatInfo();
+    })();
+    return () => { }
   }, [])
 
   useEffect(() => {
     let obj = []
     if (Array.isArray(shift['stops'])) {
-      obj.push({ reason: 'run', value: dayjs.duration(shift['runtime']||0).asMilliseconds(), count: Number(shift['starts']) })
+      obj.push({ reason: 'run', value: dayjs.duration(shift['runtime'] || 0).asMilliseconds(), count: Number(shift['starts']) })
       for (let stop of shift['stops']) {
         obj.push({ reason: Object.keys(stop)[0], value: dayjs.duration(stop[Object.keys(stop)[0]]['dur']).asMilliseconds(), count: stop[Object.keys(stop)[0]]['total'] })
       }
       setShiftDonut(obj);
     }
+    return () => { }
   }, [shift])
 
   useEffect(() => {
     dayjs.locale(i18n.language)
+    return () => { }
   }, [i18n.language])
 
 
@@ -342,26 +349,26 @@ const Overview: React.FC<Props> = ({
             </div></div></div>
         <div>
           <div style={{ ...contentStyle, maxHeight: '100%', overflowY: 'auto' }}>
-            { (reminders || []).length ?
+            {(reminders || []).length ?
               (reminders || []).map((note: any) => (
                 <React.Fragment key={note['id']}>
-                  <div style={{display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center', padding: 5}}>
+                  <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center', padding: 5 }}>
                     <Alert
-                    style={{flexGrow:'1', marginRight:10}}
+                      style={{ flexGrow: '1', marginRight: 10 }}
                       message={note['title']}
                       description={note['descr']}
                       type="info"
                     />
-                    <Button userRights={['admin', 'manager', 'fixer']} token={token} shape="circle" icon={<CheckOutlined />} size="small" type="primary" style={{ margin: 0, background: "#87d068", borderColor: "#87d068" }} onClick={()=>{confirm(note['id'])}} />
+                    <Button userRights={['admin', 'manager', 'fixer']} token={token} shape="circle" icon={<CheckOutlined />} size="small" type="primary" style={{ margin: 0, background: "#87d068", borderColor: "#87d068" }} onClick={() => { confirm(note['id']) }} />
                   </div>
                 </React.Fragment>
               )) :
               <Result
-              status="success"
-              title={t('notifications.none')}
-              subTitle={t('notifications.descr')}
-              style={{ height: '100%', alignItems: 'center' }}
-            />
+                status="success"
+                title={t('notifications.none')}
+                subTitle={t('notifications.descr')}
+                style={{ height: '100%', alignItems: 'center' }}
+              />
             }
           </div>
         </div>

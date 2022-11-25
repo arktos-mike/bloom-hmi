@@ -20,9 +20,7 @@ const SettingsDev: React.FC<Props> = ({
   activeInput,
   setActiveInput,
 }) => {
-  const { t, i18n } = useTranslation();
-
-  let isSubscribed = true;
+  const { t } = useTranslation();
 
   const [formCOM] = Form.useForm()
   const [formRTU] = Form.useForm()
@@ -60,7 +58,7 @@ const SettingsDev: React.FC<Props> = ({
       const response = await fetch('http://localhost:3000/config');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
-      if (isSubscribed) setOpCOM(json['comConf'][com]);
+      setOpCOM(json['comConf'][com]);
     }
     catch (error) { /*console.log(error);*/ }
   }
@@ -70,7 +68,7 @@ const SettingsDev: React.FC<Props> = ({
       const response = await fetch('http://localhost:3000/config');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
-      if (isSubscribed) { setRtu(json['rtuConf']['rtu1']); };
+      setRtu(json['rtuConf']['rtu1']);
     }
     catch (error) { /*console.log(error);*/ }
   }
@@ -80,7 +78,7 @@ const SettingsDev: React.FC<Props> = ({
       const response = await fetch('http://localhost:3000/config');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
-      if (isSubscribed) setTcp(json['ipConf']['tcp1']); setLoading(false);
+      setTcp(json['ipConf']['tcp1']); setLoading(false);
     }
     catch (error) { /*console.log(error);*/ }
   }
@@ -148,7 +146,7 @@ const SettingsDev: React.FC<Props> = ({
   }
   useEffect(() => {
     fetchCOM();
-    return () => { isSubscribed = false }
+    return () => { }
   }, [com])
 
   useEffect(() => {
@@ -161,24 +159,28 @@ const SettingsDev: React.FC<Props> = ({
     if (formTCP && activeInput.form == 'tcp') {
       formTCP.setFieldsValue({ [activeInput.id]: activeInput.input })
     }
+    return () => { }
   }, [activeInput])
 
   useEffect(() => {
     if (formCOM) {
       formCOM.setFieldsValue({ path: opCOM.path, scan: opCOM.scan, timeout: opCOM.timeout, baudRate: opCOM.conf.baudRate, dataBits: opCOM.conf.dataBits, stopBits: opCOM.conf.stopBits, parity: opCOM.conf.parity })
     }
+    return () => { }
   }, [opCOM])
 
   useEffect(() => {
     if (formRTU) {
       formRTU.setFieldsValue({ com: rtu.com, sId: rtu.sId, swapBytes: rtu.swapBytes, swapWords: rtu.swapWords })
     }
+    return () => { }
   }, [rtu])
 
   useEffect(() => {
     if (formTCP) {
       formTCP.setFieldsValue({ ip: tcp.ip, port: tcp.port, sId: tcp.sId, swapBytes: tcp.swapBytes, swapWords: tcp.swapWords })
     }
+    return () => { }
   }, [tcp])
 
   useEffect(() => {
@@ -186,7 +188,7 @@ const SettingsDev: React.FC<Props> = ({
     fetchConn();
     fetchRTU();
     fetchTCP();
-    return () => { isSubscribed = false }
+    return () => { }
   }, [])
 
   return (

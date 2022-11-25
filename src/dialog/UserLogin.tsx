@@ -50,6 +50,7 @@ const UserLogin: React.FC<Props> = ({
   useEffect(() => {
     fetchData()
     if (form && isModalVisible) form.resetFields()
+    return () => { }
   }, [isModalVisible, editVisible, regVisible])
 
   useEffect(() => {
@@ -61,6 +62,7 @@ const UserLogin: React.FC<Props> = ({
         form.setFieldsValue({ [activeInput.id]: activeInput.input })
       }
     }
+    return () => { }
   }, [activeInput])
 
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {

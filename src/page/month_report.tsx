@@ -1,4 +1,4 @@
-import { Modal, notification, Table, Badge, Space, Tabs } from 'antd';
+import { Modal, Table, Badge, Space, Tabs } from 'antd';
 import type { ColumnsType, TableProps } from 'antd/es/table';
 import { ScheduleOutlined, ReconciliationOutlined, TeamOutlined, MinusCircleTwoTone, PlusCircleTwoTone, ToolOutlined, QuestionCircleOutlined, ExclamationCircleOutlined, DeleteOutlined, BarChartOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "../components/Icons"
@@ -7,7 +7,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import { Button, ColumnPlot, DatePicker, RangePicker } from '@/components';
+import { Button, ColumnPlot, DatePicker } from '@/components';
 dayjs.extend(duration);
 
 interface DataType {
@@ -70,17 +70,6 @@ const MonthReport: React.FC<Props> = ({
   const [sortedInfo, setSortedInfo] = useState<SorterResult<DataType>>({});
   const [height, setHeight] = useState<number | undefined>(0)
   const div = useRef<HTMLDivElement | null>(null);
-
-  const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
-    if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
-      notification[type]({
-        message: message,
-        description: descr,
-        placement: 'bottomRight',
-        duration: dur,
-        style: style,
-      });
-  };
 
   const stopObj = (reason: string) => {
     let obj;
@@ -450,10 +439,12 @@ const MonthReport: React.FC<Props> = ({
   useEffect(() => {
     setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
     fetchUsers();
+    return () => { }
   }, []);
 
   useEffect(()=>{
     dayjs.locale(i18n.language)
+    return () => { }
   }, [i18n.language])
 
   useEffect(() => {
@@ -461,6 +452,7 @@ const MonthReport: React.FC<Props> = ({
     fetchData();
     fetchUserData();
     fetchShiftData();
+    return () => { }
   }, [period]);
 
   const items = [

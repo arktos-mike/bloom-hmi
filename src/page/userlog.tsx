@@ -189,16 +189,19 @@ const UserLog: React.FC<Props> = ({
   useEffect(() => {
     dayjs.locale(i18n.language)
     fetchData();
+    return () => { }
   }, [period]);
 
   useEffect(() => {
     setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
+    return () => { }
   }, [])
 
   useEffect(() => {
     if (typeof pagination.defaultPageSize == 'undefined') {
       setPagination({ ...pagination, defaultPageSize: height ? Math.floor((height - 165) / 45) : 8, pageSize: height ? Math.floor((height - 165) / 45) : 8 })
     }
+    return () => { }
   }, [pagination])
 
   return (

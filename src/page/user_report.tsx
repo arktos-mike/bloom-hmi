@@ -1,6 +1,6 @@
 import { Modal, notification, Table, Badge, Space } from 'antd';
-import type { ColumnsType, TablePaginationConfig, TableProps } from 'antd/es/table';
-import { MinusCircleTwoTone, PlusCircleTwoTone, ToolOutlined, QuestionCircleOutlined, SyncOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
+import type { ColumnsType, TableProps } from 'antd/es/table';
+import { MinusCircleTwoTone, PlusCircleTwoTone, ToolOutlined, QuestionCircleOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "../components/Icons"
 import { FilterValue, SorterResult } from 'antd/es/table/interface';
 import React, { useEffect, useRef, useState } from 'react'
@@ -228,23 +228,28 @@ const UserReport: React.FC<Props> = ({
 
   useEffect(() => {
     setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
+    return () => { }
   }, []);
 
   useEffect(()=>{
     dayjs.locale(i18n.language)
+    return () => { }
   }, [i18n.language])
 
   useEffect(() => {
     fetchUsers();
+    return () => { }
   }, [token]);
 
   useEffect(() => {
     shadowUser.id && setUser(Number(shadowUser.id));
+    return () => { }
   }, [shadowUser]);
 
   useEffect(() => {
     fetchStatInfo();
     fetchData();
+    return () => { }
   }, [period, user]);
 
   return (

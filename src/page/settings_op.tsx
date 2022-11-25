@@ -34,7 +34,6 @@ const SettingsOp: React.FC<Props> = ({
     }
     catch (error) { /*console.log(error);*/ }
   }
-  let isSubscribed = true;
 
   const [form] = Form.useForm()
   const [formIP] = Form.useForm()
@@ -59,7 +58,7 @@ const SettingsOp: React.FC<Props> = ({
       const response = await fetch('http://localhost:3000/locales');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
-      if (isSubscribed) { setLngs({ data: json }); setLoading(false); };
+      setLngs({ data: json }); setLoading(false);
     }
     catch (error) { /*console.log(error);*/ }
   }
@@ -69,7 +68,7 @@ const SettingsOp: React.FC<Props> = ({
       const response = await fetch('http://localhost:3000/config');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
-      if (isSubscribed) setOpIP(json['ipConf']['opIP']);
+      setOpIP(json['ipConf']['opIP']);
     }
     catch (error) { /*console.log(error);*/ }
   }
@@ -133,24 +132,28 @@ const SettingsOp: React.FC<Props> = ({
   }
 
   useEffect(() => {
-    setActiveInput({ ...activeInput, form: '', id: '' });
-    fetchLngs();
-    fetchIP();
-    clock();
-    dayjs.locale(i18n.language)
-    return () => { isSubscribed = false }
+    (async () => {
+      setActiveInput({ ...activeInput, form: '', id: '' });
+      await fetchLngs();
+      await fetchIP();
+      clock();
+      dayjs.locale(i18n.language)
+    })();
+    return () => { }
   }, [])
 
   useEffect(() => {
     if (formIP && activeInput.form == 'ip') {
       formIP.setFieldsValue({ [activeInput.id]: activeInput.input })
     }
+    return () => { }
   }, [activeInput])
 
   useEffect(() => {
     if (formIP) {
       formIP.setFieldsValue({ ip: opIP.ip_address, mask: opIP.netmask, gw: opIP.gateway_ip })
     }
+    return () => { }
   }, [opIP])
 
   useEffect(() => {
@@ -158,6 +161,7 @@ const SettingsOp: React.FC<Props> = ({
       if (form.getFieldValue('date')) form.setFieldsValue({ date: format(dayjs(form.getFieldValue('date')), 'L') })
       if (form.getFieldValue('time')) form.setFieldsValue({ time: format(form.getFieldValue('time'), 'LTS') })
     }
+    return () => { }
   }, [i18n.language])
 
   return (

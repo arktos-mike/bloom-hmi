@@ -54,10 +54,6 @@ const ClothLog: React.FC<Props> = ({
      else { obj = { color: '#00000000', text: t('tags.mode.unknown'), icon: <QuestionCircleOutlined style={{ fontSize: '175%', color: '#00000000', paddingInline: 5 }} /> } }
     return obj;
   }
-  const duration2text = (start: any, end: any) => {
-    let diff = dayjs.duration(dayjs(end).diff(start))
-    return (diff.days() > 0 ? diff.days() + " " + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + " " + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + " " + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + " " + t('shift.secs') : "")
-  }
 
   const handleChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter, currentDataSource) => {
     setFilteredInfo(filters);
@@ -162,17 +158,20 @@ const ClothLog: React.FC<Props> = ({
 
   useEffect(() => {
     setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
+    return () => { }
   }, [])
 
   useEffect(() => {
     if (typeof pagination.defaultPageSize == 'undefined') {
       setPagination({ ...pagination, defaultPageSize: height ? Math.floor((height - 165) / 62) : 6, pageSize: height ? Math.floor((height - 165) / 62) : 6 })
     }
+    return () => { }
   }, [pagination])
 
   useEffect(() => {
     dayjs.locale(i18n.language)
     fetchData();
+    return () => { }
   }, [period]);
 
   return (

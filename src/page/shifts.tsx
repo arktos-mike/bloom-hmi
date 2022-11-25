@@ -190,12 +190,14 @@ const Shifts: React.FC<Props> = ({
     setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
     setActiveInput({ ...activeInput, form: '', id: '' });
     fetchData();
+    return () => { }
   }, []);
 
   useEffect(() => {
     if (typeof pagination.defaultPageSize == 'undefined') {
       setPagination({ ...pagination, defaultPageSize: height ? Math.floor((height - 100) / 73) : 5, pageSize: height ? Math.floor((height - 100) / 73) : 5 })
     }
+    return () => { }
   }, [pagination])
 
 
