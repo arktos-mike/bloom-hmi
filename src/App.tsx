@@ -328,22 +328,24 @@ const App: React.FC = () => {
   useEffect(() => {
     (reminders || []).map((note: any) => (
       openNotificationWithIcon('info', note['title'], 5, note['id'], note['descr'], { backgroundColor: '#e6f7ff', border: '2px solid #91d5ff' })));
-      return () => { }
+    return () => { }
   }, [token])
 
   useEffect(() => {
     (remindersFilter || []).map((note: any) => (
       openNotificationWithIcon('info', note['title'], 0, note['id'], note['descr'], { backgroundColor: '#e6f7ff', border: '2px solid #91d5ff' })));
-      return () => { }
+    return () => { }
   }, [remindersFilter])
 
   useEffect(() => {
     (async () => {
       await clock();
-      await fetchLngs();
-      await fetchShift();
-      await checkLogin();
-      await fetchReminders();
+      await Promise.all([
+        fetchLngs(),
+        fetchShift(),
+        checkLogin(),
+        fetchReminders()
+      ]);
       setUpdated(true);
     })();
     return () => { }
@@ -351,8 +353,10 @@ const App: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      await fetchTags(['modeCode', 'stopAngle', 'speedMainDrive']);
-      await fetchStatInfo();
+      await Promise.all([
+        fetchTags(['modeCode', 'stopAngle', 'speedMainDrive']),
+        fetchStatInfo()
+      ]);
     })();
     return () => { }
   }, [tags])

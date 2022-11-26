@@ -161,9 +161,11 @@ const Overview: React.FC<Props> = ({
 
   useEffect(() => {
     (async () => {
-      await fetchTags();
-      await fetchUserStatInfo();
-      await fetchPieces();
+      await Promise.all([
+        fetchTags(),
+        fetchUserStatInfo(),
+        fetchPieces()
+      ]);
       setLoading(false);
     })();
     return () => { }
