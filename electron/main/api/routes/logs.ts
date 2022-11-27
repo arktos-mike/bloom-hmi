@@ -9,7 +9,7 @@ const router = PromiseRouter();
 // export our router to be mounted by the parent application
 
 router.get('/getRolls', async (req, res) => {
-  const { rows } = await db.query(`SELECT count(*) FROM clothlog WHERE not upper_inf(timestamp) and timestamp && tstzrange(lower((SELECT timestamp WHERE upper_inf(timestamp) and event=0)),current_timestamp(3),'[)') AND event=$1`, [1]);
+  const { rows } = await db.query(`SELECT count(*) FROM clothlog WHERE not upper_inf(timestamp) and timestamp && tstzrange(lower((SELECT timestamp FROM clothlog WHERE upper_inf(timestamp) and event=0)),current_timestamp(3),'[)') AND event=$1`, [1]);
   res.status(200).send(rows[0].count)
 })
 

@@ -119,7 +119,7 @@ const Overview: React.FC<Props> = ({
 
   const fetchPieces = async () => {
     try {
-      const response = await fetch('http://localhost:3000/logs//getRolls');
+      const response = await fetch('http://localhost:3000/logs/getRolls');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setPieces(json);
