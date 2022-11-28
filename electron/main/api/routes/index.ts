@@ -3,6 +3,7 @@ export { updFlagCOM1, updFlagCOM2, resetFlagCOM1, resetFlagCOM2, updFlagTCP1, re
 import config from './config'
 import locales from './locales'
 import users from './users'
+export {sse} from './tags'
 import tags from './tags'
 import datetime from './datetime'
 import reboot from './reboot'

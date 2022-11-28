@@ -10,7 +10,7 @@ import { FabricFullIcon, ButtonIcon, WeftIcon, FabricPieceIcon, FabricPieceLengt
 const cardStyle = { background: "whitesmoke", width: '100%', display: 'flex', flexDirection: 'column' as 'column' }
 const cardHeadStyle = { background: "#1890ff", color: "white" }
 const cardBodyStyle = { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' as 'column' }
-const es = new EventSource('http://localhost:3000/tags/events');
+
 type Props = {
   shadowUser: any;
   shift: any;
@@ -195,16 +195,6 @@ const Overview: React.FC<Props> = ({
     dayjs.locale(i18n.language)
     return () => { }
   }, [i18n.language])
-
-  //const es = new EventSource('http://localhost:3000/tags/events');
-  //es.onmessage = event => {
-  //  console.log(event)
-  //}
-
-  // Listen to event with name 'eventName'
-  //es.addEventListener('tags', event => {
-  //  console.log(event)
-  //});
 
   return (
     <div ref={div} className='wrapper'>

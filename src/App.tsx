@@ -55,6 +55,7 @@ const App: React.FC = () => {
   const descr = useRef<HTMLSpanElement | null>(null);
   const inputRef = useRef<InputRef>(null);
   const location = useLocation();
+
   const openNotificationWithIcon = (type: string, message: string, dur: number, key?: string, descr?: string, style?: React.CSSProperties) => {
     if (type == 'success' || type == 'warning' || type == 'info' || type == 'error') {
       notification[type]({
@@ -316,6 +317,22 @@ const App: React.FC = () => {
     }
     catch (error) { /*console.log(error);*/ }
   };
+
+  useEffect(() => {
+    const source = new EventSource('http://localhost:3000/tags/events');
+    source.addEventListener('tags', (e) => {
+      if (e.lastEventId == 'modeCode') {
+        const json = JSON.parse(e.data);
+        console.log(json)
+      }
+    });
+    source.addEventListener('error', (e) => {
+      // console.error('Error: ',  e);
+    });
+    return () => {
+      source.close();
+    };
+  }, []);
 
   useEffect(() => {
     (async () => {
