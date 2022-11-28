@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv'
 dotenv.config()
 import cors from 'cors'
 import express from 'express'
+import compression from 'compression'
 import mountRoutes from './routes'
 import { updFlagCOM1, updFlagCOM2, resetFlagCOM1, resetFlagCOM2, updFlagTCP1, resetFlagTCP1, updFlagConn, resetFlagConn } from './routes'
 import db from '../db'
@@ -21,6 +22,7 @@ const api = express()
 api.use(express.json())
 api.use(express.urlencoded({ extended: true }))
 api.use(cors())
+api.use(compression())
 mountRoutes(api)
 api.post('/tags/writeTagRTU', async (req, res) => {
   const { name, value } = req.body;

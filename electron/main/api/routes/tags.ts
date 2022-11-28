@@ -1,10 +1,23 @@
 import PromiseRouter from 'express-promise-router'
+import SSE from "express-sse";
+const sse = new SSE(["array", "containing", "initial", "content", "(optional)"]);
 import db from '../../db'
 // create a new express-promise-router
 // this has the same API as the normal express router except
 // it allows you to use async functions as route handlers
 const router = PromiseRouter();
 // export our router to be mounted by the parent application
+
+router.get('/events', sse.init);
+setInterval(async () => {
+    const { rows } = await db.query('SELECT tag, val, updated, link FROM tags ORDER BY tag->>$1', ['name']);
+    // Sends message to all connected clients!
+    sse.send(rows, 'tags', 'id');
+    //sse.updateInit(["array", "containing", "new", "content"]);
+    //sse.serialize(["array", "to", "be", "sent", "as", "serialized", "events"]);
+    // All options for sending a message:
+}, 1000);
+
 router.get('/', async (req, res) => {
   const { rows } = await db.query('SELECT tag, val, updated, link FROM tags ORDER BY tag->>$1', ['name']);
   res.status(200).send(rows)
