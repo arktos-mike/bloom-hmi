@@ -598,7 +598,7 @@ const MonthReport: React.FC<Props> = ({
     },
     {
       label: <><BarChartOutlined />{t('tags.efficiency.descr')}</>, key: 'graph', children:
-        <ColumnPlot data={data} />
+        <ColumnPlot data={data} height={height ? height - 125 : 0} />
     },
   ];
   return (

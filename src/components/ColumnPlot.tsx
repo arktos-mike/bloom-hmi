@@ -6,7 +6,7 @@ dayjs.extend(duration);
 import { useTranslation } from 'react-i18next';
 
 const Component: React.FC<any> =
-  ({ data }) => {
+  ({ data, height }) => {
     const [ndata, setNdata] = useState([]);
     const { t, i18n } = useTranslation();
     useEffect(() => {
@@ -17,6 +17,7 @@ const Component: React.FC<any> =
 
     const config = {
       data: ndata,
+      height: height,
       xField: 'starttime',
       yField: 'efficiency',
       xAxis: {
