@@ -7,7 +7,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import { Button, DatePicker, RangePicker, Select } from '@/components';
+import { Button, DatePicker, Select } from '@/components';
 dayjs.extend(duration);
 
 interface DataType {
@@ -44,17 +44,6 @@ const UserReport: React.FC<Props> = ({
   const [sortedInfo, setSortedInfo] = useState<SorterResult<DataType>>({});
   const [height, setHeight] = useState<number | undefined>(0)
   const div = useRef<HTMLDivElement | null>(null);
-
-  const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
-    if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
-      notification[type]({
-        message: message,
-        description: descr,
-        placement: 'bottomRight',
-        duration: dur,
-        style: style,
-      });
-  };
 
   const stopObj = (reason: string) => {
     let obj;
