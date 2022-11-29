@@ -310,7 +310,7 @@ const readModbusData = async function (client, port, slave) {
               let val = data.buffer[0];
               const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false) RETURNING *;', [val, 'dev', slave.name, 'name', tag.name]);
               if (rows[0] && rows[0]['tag']['group']=='event') {
-                sse.send(rows[0], 'tags', tag.name);
+                sse.send(rows, 'tags', tag.name);
               }
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
@@ -320,7 +320,7 @@ const readModbusData = async function (client, port, slave) {
               //console.log(mbsStatus);
               const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *', ['dev', slave.name, 'name', tag.name]);
               if (rows[0]) {
-                sse.send(rows[0], 'tags', tag.name);
+                sse.send(rows, 'tags', tag.name);
               }
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             }
@@ -347,7 +347,7 @@ const readModbusData = async function (client, port, slave) {
               }
               const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND ( (round(val::numeric,(tag->>$6)::integer)) IS DISTINCT FROM (round($1::numeric,(tag->>$6)::integer)) OR link=false) RETURNING *;', [val, 'dev', slave.name, 'name', tag.name, 'dec']);
               if (rows[0] && rows[0]['tag']['group']=='event') {
-                sse.send(rows[0], 'tags', tag.name);
+                sse.send(rows, 'tags', tag.name);
               }
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
@@ -357,7 +357,7 @@ const readModbusData = async function (client, port, slave) {
               //console.log(mbsStatus);
               const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *;', ['dev', slave.name, 'name', tag.name]);
               if (rows[0]) {
-                sse.send(rows[0], 'tags', tag.name);
+                sse.send(rows, 'tags', tag.name);
               }
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             }
@@ -374,7 +374,7 @@ const readModbusData = async function (client, port, slave) {
               let val = data.buffer[0];
               const { rows } = db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false) RETURNING *;', [val, 'dev', slave.name, 'name', tag.name]);
               if (rows[0] && rows[0]['tag']['group']=='event') {
-                sse.send(rows[0], 'tags', tag.name);
+                sse.send(rows, 'tags', tag.name);
               }
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
@@ -384,7 +384,7 @@ const readModbusData = async function (client, port, slave) {
               //console.log(mbsStatus);
               const { rows } = db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *;', ['dev', slave.name, 'name', tag.name]);
               if (rows[0]) {
-                sse.send(rows[0], 'tags', tag.name);
+                sse.send(rows, 'tags', tag.name);
               }
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             }
@@ -411,7 +411,7 @@ const readModbusData = async function (client, port, slave) {
               }
               const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND ( (round(val::numeric,(tag->>$6)::integer)) IS DISTINCT FROM (round($1::numeric,(tag->>$6)::integer)) OR link=false) RETURNING *;', [val, 'dev', slave.name, 'name', tag.name, 'dec']);
               if (rows[0] && rows[0]['tag']['group']=='event') {
-                sse.send(rows[0], 'tags', tag.name);
+                sse.send(rows, 'tags', tag.name);
               }
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
@@ -422,13 +422,13 @@ const readModbusData = async function (client, port, slave) {
               if (tag.name == 'modeCode') {
                 const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false, val=0 where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *;', ['dev', slave.name, 'name', tag.name]);
                 if (rows[0]) {
-                  sse.send(rows[0], 'tags', tag.name);
+                  sse.send(rows, 'tags', tag.name);
                 }
               }
               else {
                 const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *;', ['dev', slave.name, 'name', tag.name]);
                 if (rows[0]) {
-                  sse.send(rows[0], 'tags', tag.name);
+                  sse.send(rows, 'tags', tag.name);
                 }
               }
               if (count > 1) { count--; await process(slave.tags[count - 1]); }

@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import App from './App'
 //import './samples/node-api'
+import { SSEProvider } from 'react-hooks-sse';
 import 'styles/index.css'
 import 'dayjs/locale/ru'
 import 'dayjs/locale/es'
@@ -13,7 +14,7 @@ dayjs.extend(localizedFormat);
 
 ReactDOM.render(
   <React.StrictMode>
-    <HashRouter><App /></HashRouter>
+    <HashRouter><SSEProvider endpoint="http://localhost:3000/tags/events"><App /></SSEProvider></HashRouter>
   </React.StrictMode>,
   document.getElementById('root')
 )

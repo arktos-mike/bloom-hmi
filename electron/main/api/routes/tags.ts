@@ -10,13 +10,15 @@ const router = PromiseRouter();
 
 router.get('/events', sse.init);
 setInterval(async () => {
-    const { rows } = await db.query('SELECT tag, val, updated, link FROM tags WHERE tag->>$1=$2', ['group', 'monitoring']);
-    // Sends message to all connected clients!
-    rows.map(row=>sse.send(row, 'tags', row['tag']['name']))
-    //sse.updateInit(["array", "containing", "new", "content"]);
-    //sse.serialize(["array", "to", "be", "sent", "as", "serialized", "events"]);
-    // All options for sending a message:
-}, 1000);
+  const mon = await db.query('SELECT tag, val, updated, link FROM tags WHERE tag->>$1=$2', ['group', 'monitoring']);
+  // Sends message to all connected clients!
+  sse.send(mon.rows, 'tags', 'monitoring');
+  const rolls = await db.query(`SELECT count(*) FROM clothlog WHERE not upper_inf(timestamp) and timestamp && tstzrange(lower((SELECT timestamp FROM clothlog WHERE upper_inf(timestamp) and event=0)),current_timestamp(3),'[)') AND event=$1`, [1]);
+  sse.send(rolls.rows[0].count, 'rolls');
+  //sse.updateInit(["array", "containing", "new", "content"]);
+  //sse.serialize(["array", "to", "be", "sent", "as", "serialized", "events"]);
+  // All options for sending a message:
+}, 5000);
 
 router.get('/', async (req, res) => {
   const { rows } = await db.query('SELECT tag, val, updated, link FROM tags ORDER BY tag->>$1', ['name']);
@@ -26,21 +28,21 @@ router.get('/', async (req, res) => {
 router.post('/writeTag', async (req, res) => {
   const { name, value } = req.body;
   try {
-    if (value!=null){
-    const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 AND val IS DISTINCT FROM $1 RETURNING *;', [value, 'name', name]);
-    if (rows[0]) {
-      sse.send(rows[0], 'tags', name);
+    if (value != null) {
+      const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 AND val IS DISTINCT FROM $1 RETURNING *;', [value, 'name', name]);
+      if (rows[0]) {
+        sse.send(rows[0], 'tags', name);
+      }
+      res.status(200).send({
+        message: "Writing data to tag",
+        body: { name, value },
+      })
+    } else {
+      res.status(500).send({
+        error: "Null value or no link",
+        body: { name, value },
+      })
     }
-    res.status(200).send({
-      message: "Writing data to tag",
-      body: { name, value },
-    })
-  } else {
-    res.status(500).send({
-      error: "Null value or no link",
-      body: { name, value },
-    })
-  }
   } catch (err) {
     /*console.log(err);*/
     res.status(500).json({
