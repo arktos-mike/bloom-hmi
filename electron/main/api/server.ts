@@ -82,7 +82,7 @@ const dbConf = async () => {
       { tag: { name: "stopAngle", group: "monitoring", dev: "tcp1", addr: "6", type: "word", reg: "r", min: 0, max: 359, dec: 0 }, link: false },
       { tag: { name: "orderLength", group: "monitoring", dev: "tcp1", addr: "4", type: "float", reg: "r", min: 0, max: 1000, dec: 2 }, link: false },
       { tag: { name: "speedMainDrive", group: "monitoring", dev: "tcp1", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, link: false },
-      { tag: { name: "modeCode", group: "monitoring", dev: "tcp1", addr: "8", type: "word", reg: "r", min: 0, max: 6, dec: 0 }, link: false },
+      { tag: { name: "modeCode", group: "event", dev: "tcp1", addr: "8", type: "word", reg: "r", min: 0, max: 6, dec: 0 }, link: false },
       { tag: { name: "picksLastRun", group: "monitoring", dev: "tcp1", addr: "0", type: "dword", reg: "r", min: 0, max: 4294967295, dec: 0 }, link: false },
       { tag: { name: "modeControl", group: "setting", dev: "tcp1", addr: "12", type: "word", reg: "rw", min: 0, max: 65535, dec: 0 }, link: false },
       { tag: { name: "planClothDensity", group: "setting", dev: "tcp1", type: "float", addr: "10", reg: "rw", min: 0.5, max: 1000, dec: 2 }, link: false },
@@ -90,7 +90,7 @@ const dbConf = async () => {
       { tag: { name: "planSpeedMainDrive", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 600, dec: 1 }, val: 200.0 },
       { tag: { name: "warpShrinkage", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 100, dec: 1 }, val: 1.0 },
       { tag: { name: "fullWarpBeamLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
-      { tag: { name: "warpBeamLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
+      { tag: { name: "warpBeamLength", group: "monitoring", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
     ]
     await db.query('DELETE FROM tags WHERE tag->>$1~$2', ['dev', 'rtu']);
     await db.query('INSERT INTO tags(tag,val,link) SELECT * FROM jsonb_to_recordset($1) as x(tag jsonb, val numeric, link boolean) ON CONFLICT (tag) DO NOTHING;', [JSON.stringify(tcpTags)])
@@ -113,7 +113,7 @@ const dbConf = async () => {
       { tag: { name: "stopAngle", group: "monitoring", dev: "rtu1", addr: "6", type: "word", reg: "r", min: 0, max: 359, dec: 0 }, link: false },
       { tag: { name: "orderLength", group: "monitoring", dev: "rtu1", addr: "4", type: "float", reg: "r", min: 0, max: 1000, dec: 2 }, link: false },
       { tag: { name: "speedMainDrive", group: "monitoring", dev: "rtu1", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, link: false },
-      { tag: { name: "modeCode", group: "monitoring", dev: "rtu1", addr: "8", type: "word", reg: "r", min: 0, max: 6, dec: 0 }, link: false },
+      { tag: { name: "modeCode", group: "event", dev: "rtu1", addr: "8", type: "word", reg: "r", min: 0, max: 6, dec: 0 }, link: false },
       { tag: { name: "picksLastRun", group: "monitoring", dev: "rtu1", addr: "0", type: "dword", reg: "r", min: 0, max: 4294967295, dec: 0 }, link: false },
       { tag: { name: "modeControl", group: "setting", dev: "rtu1", addr: "12", type: "word", reg: "rw", min: 0, max: 65535, dec: 0 }, link: false },
       { tag: { name: "planSpeedMainDrive", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 600, dec: 1 }, val: 200.0 },
@@ -121,7 +121,7 @@ const dbConf = async () => {
       { tag: { name: "planOrderLength", group: "setting", dev: "rtu1", type: "float", addr: "14", reg: "rw", min: 0, max: 1000, dec: 2 }, link: false },
       { tag: { name: "warpShrinkage", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 100, dec: 1 }, val: 1.0 },
       { tag: { name: "fullWarpBeamLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
-      { tag: { name: "warpBeamLength", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
+      { tag: { name: "warpBeamLength", group: "monitoring", dev: "op", type: "float", reg: "rw", min: 0, max: 5000, dec: 1 }, val: 3000.0 },
     ]
     await db.query('DELETE FROM tags WHERE tag->>$1~$2', ['dev', 'tcp']);
     await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['rtuConf', rtuConf])
@@ -308,15 +308,20 @@ const readModbusData = async function (client, port, slave) {
               port.mbsState = MBS_STATE_GOOD_READ;
               mbsStatus = "success";
               let val = data.buffer[0];
-              await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false);', [val, 'dev', slave.name, 'name', tag.name]);
-              //sse.send(JSON.stringify({tag:tag.name, val:val}), 'tags', tag.name);
+              const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false) RETURNING *;', [val, 'dev', slave.name, 'name', tag.name]);
+              if (rows[0] && rows[0]['tag']['group']=='event') {
+                sse.send(rows[0], 'tags', tag.name);
+              }
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             } catch (e) {
               port.mbsState = MBS_STATE_FAIL_READ;
               //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
               //console.log(mbsStatus);
-              await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true', ['dev', slave.name, 'name', tag.name]);
+              const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *', ['dev', slave.name, 'name', tag.name]);
+              if (rows[0]) {
+                sse.send(rows[0], 'tags', tag.name);
+              }
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             }
             break;
@@ -340,15 +345,20 @@ const readModbusData = async function (client, port, slave) {
                 default:
                   break;
               }
-              await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false);', [val, 'dev', slave.name, 'name', tag.name]);
-              //sse.send(JSON.stringify({tag:tag.name, val:val}), 'tags', tag.name);
+              const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND ( (round(val::numeric,(tag->>$6)::integer)) IS DISTINCT FROM (round($1::numeric,(tag->>$6)::integer)) OR link=false) RETURNING *;', [val, 'dev', slave.name, 'name', tag.name, 'dec']);
+              if (rows[0] && rows[0]['tag']['group']=='event') {
+                sse.send(rows[0], 'tags', tag.name);
+              }
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             } catch (e) {
               port.mbsState = MBS_STATE_FAIL_READ;
               //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
               //console.log(mbsStatus);
-              await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true;', ['dev', slave.name, 'name', tag.name]);
+              const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *;', ['dev', slave.name, 'name', tag.name]);
+              if (rows[0]) {
+                sse.send(rows[0], 'tags', tag.name);
+              }
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             }
             break;
@@ -362,15 +372,20 @@ const readModbusData = async function (client, port, slave) {
               port.mbsState = MBS_STATE_GOOD_READ;
               mbsStatus = "success";
               let val = data.buffer[0];
-              await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false);', [val, 'dev', slave.name, 'name', tag.name]);
-              //sse.send(JSON.stringify({tag:tag.name, val:val}), 'tags', tag.name);
+              const { rows } = db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false) RETURNING *;', [val, 'dev', slave.name, 'name', tag.name]);
+              if (rows[0] && rows[0]['tag']['group']=='event') {
+                sse.send(rows[0], 'tags', tag.name);
+              }
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             } catch (e) {
               port.mbsState = MBS_STATE_FAIL_READ;
               //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
               //console.log(mbsStatus);
-              await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true;', ['dev', slave.name, 'name', tag.name]);
+              const { rows } = db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *;', ['dev', slave.name, 'name', tag.name]);
+              if (rows[0]) {
+                sse.send(rows[0], 'tags', tag.name);
+              }
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             }
             break;
@@ -394,11 +409,9 @@ const readModbusData = async function (client, port, slave) {
                 default:
                   break;
               }
-              const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false) RETURNING tag->>$4 as name;', [val, 'dev', slave.name, 'name', tag.name]);
-
-              if (rows[0] && rows[0].name == 'modeCode') {
-                //console.log(rows[0].name + ':' + val)
-                sse.send({ tag: tag.name, val: val }, 'tags', tag.name);
+              const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND ( (round(val::numeric,(tag->>$6)::integer)) IS DISTINCT FROM (round($1::numeric,(tag->>$6)::integer)) OR link=false) RETURNING *;', [val, 'dev', slave.name, 'name', tag.name, 'dec']);
+              if (rows[0] && rows[0]['tag']['group']=='event') {
+                sse.send(rows[0], 'tags', tag.name);
               }
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
@@ -407,10 +420,16 @@ const readModbusData = async function (client, port, slave) {
               //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
               //console.log(mbsStatus);
               if (tag.name == 'modeCode') {
-                await db.query('UPDATE tags SET updated=current_timestamp, link=false, val=0 where tag->>$1=$2 and tag->>$3=$4 AND link=true;', ['dev', slave.name, 'name', tag.name]);
+                const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false, val=0 where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *;', ['dev', slave.name, 'name', tag.name]);
+                if (rows[0]) {
+                  sse.send(rows[0], 'tags', tag.name);
+                }
               }
               else {
-                await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true;', ['dev', slave.name, 'name', tag.name]);
+                const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *;', ['dev', slave.name, 'name', tag.name]);
+                if (rows[0]) {
+                  sse.send(rows[0], 'tags', tag.name);
+                }
               }
               if (count > 1) { count--; await process(slave.tags[count - 1]); }
             }

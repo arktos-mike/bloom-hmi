@@ -10,6 +10,7 @@ const cardBodyStyle = { flex: 1, display: 'flex', alignItems: 'center', justifyC
 
 type Props = {
   token: any;
+  tags: any;
   modeCode: { val: Number, updated: any };
   activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string };
   setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string }) => void;
@@ -17,6 +18,7 @@ type Props = {
 
 const SettingsTech: React.FC<Props> = ({
   token,
+  tags,
   modeCode,
   activeInput,
   setActiveInput,
@@ -38,7 +40,7 @@ const SettingsTech: React.FC<Props> = ({
     return parseFloat(out.join("."));
   }
 
-  const [tags, setTags] = useState({ data: [] as any })
+  //const [tags, setTags] = useState({ data: [] as any })
   const [loading, setLoading] = useState(true)
 
   const confirmNullOrder = () => {
@@ -111,20 +113,13 @@ const SettingsTech: React.FC<Props> = ({
     return () => { }
   }, [])
 
-  useEffect(() => {
-    (async () => {
-      await fetchTags(['picksLastRun', 'planSpeedMainDrive', 'planClothDensity', 'orderLength', 'planOrderLength', 'modeControl', 'fullWarpBeamLength', 'warpBeamLength', 'warpShrinkage']);
-    })();
-    return () => { }
-  }, [tags])
-
   const getTag = (tagName: string) => {
-    let obj = tags.data.find((o: any) => o['tag']['name'] == tagName)
+    let obj = tags.find((o: any) => o['tag']['name'] == tagName)
     if (obj) { return { ...obj['tag'], link: obj['link'] }; }
     else { return null };
   }
   const getTagVal = (tagName: string): string => {
-    let obj = tags.data.find((o: any) => o['tag']['name'] == tagName)
+    let obj = tags.find((o: any) => o['tag']['name'] == tagName)
     if (obj) {
       if (tagName == 'warpBeamLength' && modeCode.val == 1) {
         return Number((Number(obj['val']) - (localeParseFloat(getTagVal('picksLastRun')) / (100 * localeParseFloat(getTagVal('planClothDensity')) * (1 - 0.01 * localeParseFloat(getTagVal('warpShrinkage')))))).toFixed(obj['tag']['dec'])).toLocaleString(i18n.language);
@@ -137,7 +132,7 @@ const SettingsTech: React.FC<Props> = ({
   }
   const setTagVal = async (tagName: string, tagValue: number) => {
     try {
-      const newData = tags.data;
+      const newData = tags;
       const index = newData.findIndex((o: any) => o['tag']['name'] == tagName);
       if (newData[index] && (newData[index]['link'] == null || newData[index]['link'] == true) && (newData[index]['val'] != tagValue) && (newData[index]['tag']['min'] <= tagValue) && (newData[index]['tag']['max'] >= tagValue)) {
         const response = await fetch((newData[index]['tag']['dev'].includes('rtu') || newData[index]['tag']['dev'].includes('tcp')) ? 'http://localhost:3000/tags/writeTagRTU' : 'http://localhost:3000/tags/writeTag', {
@@ -146,31 +141,12 @@ const SettingsTech: React.FC<Props> = ({
           body: JSON.stringify({ name: tagName, value: tagValue }),
         });
         if (!response.ok) { /*throw Error(response.statusText);*/ }
-        newData[index]['val'] = tagValue;
-        setTags({ data: newData });
+        //newData[index]['val'] = tagValue;
+        //setTags({ data: newData });
       }
       else if ((newData[index]['tag']['min'] > tagValue) || (newData[index]['tag']['max'] < tagValue)) {
         openNotificationWithIcon('warning', t('notifications.dataerror'), 3, '', { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' });
       }
-    }
-    catch (error) { /*console.log(error);*/ }
-  }
-
-  const fetchTags = async (tagNames: string[]) => {
-    try {
-      const response = await fetch('http://localhost:3000/tags/filter', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json;charset=UTF-8', },
-        body: JSON.stringify({ name: tagNames }),
-      });
-      if (!response.ok) { /*throw Error(response.statusText);*/ }
-      const json = await response.json();
-      json.map((tag: any) => (
-        tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec']).toString()
-      )
-      );
-      setTags({ data: json });
-      setLoading(false)
     }
     catch (error) { /*console.log(error);*/ }
   }

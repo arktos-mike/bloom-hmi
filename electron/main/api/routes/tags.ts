@@ -9,14 +9,14 @@ const router = PromiseRouter();
 // export our router to be mounted by the parent application
 
 router.get('/events', sse.init);
-//setInterval(async () => {
-//    const { rows } = await db.query('SELECT tag, val, updated, link FROM tags ORDER BY tag->>$1', ['name']);
+setInterval(async () => {
+    const { rows } = await db.query('SELECT tag, val, updated, link FROM tags WHERE tag->>$1=$2', ['group', 'monitoring']);
     // Sends message to all connected clients!
-//    sse.send(rows, 'tags', 'all');
+    rows.map(row=>sse.send(row, 'tags', row['tag']['name']))
     //sse.updateInit(["array", "containing", "new", "content"]);
     //sse.serialize(["array", "to", "be", "sent", "as", "serialized", "events"]);
     // All options for sending a message:
-//}, 10000);
+}, 1000);
 
 router.get('/', async (req, res) => {
   const { rows } = await db.query('SELECT tag, val, updated, link FROM tags ORDER BY tag->>$1', ['name']);
@@ -27,7 +27,10 @@ router.post('/writeTag', async (req, res) => {
   const { name, value } = req.body;
   try {
     if (value!=null){
-    await db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 AND val IS DISTINCT FROM $1;', [value, 'name', name]);
+    const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp where tag->>$2=$3 AND val IS DISTINCT FROM $1 RETURNING *;', [value, 'name', name]);
+    if (rows[0]) {
+      sse.send(rows[0], 'tags', name);
+    }
     res.status(200).send({
       message: "Writing data to tag",
       body: { name, value },

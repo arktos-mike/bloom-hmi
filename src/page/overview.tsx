@@ -15,6 +15,7 @@ type Props = {
   shadowUser: any;
   shift: any;
   token: any;
+  tags: any;
   modeCode: { val: Number, updated: any };
   reminders: any;
   setUpdatedReminders: (val: boolean) => void;
@@ -24,6 +25,7 @@ const Overview: React.FC<Props> = ({
   shadowUser,
   shift,
   token,
+  tags,
   modeCode,
   reminders,
   setUpdatedReminders
@@ -32,7 +34,7 @@ const Overview: React.FC<Props> = ({
   const [formWeaver] = Form.useForm();
   const { t, i18n } = useTranslation();
   const [height, setHeight] = useState<number | undefined>(0)
-  const [tags, setTags] = useState({ data: [] as any })
+  //const [tags, setTags] = useState({ data: [] as any })
   const [loading, setLoading] = useState(true)
   const [userInfo, setUserInfo] = useState()
   const [pieces, setPieces] = useState()
@@ -128,26 +130,13 @@ const Overview: React.FC<Props> = ({
     catch (error) { /*console.log(error);*/ }
   }
 
-  const fetchTags = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/tags');
-      if (!response.ok) { /*throw Error(response.statusText);*/ }
-      const json = await response.json();
-      json.map((tag: any) => (
-        tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec']).toString()
-      )
-      );
-      setTags({ data: json });
-    }
-    catch (error) { /*console.log(error);*/ }
-  }
   const getTag = (tagName: string) => {
-    let obj = tags.data.find((o: any) => o['tag']['name'] == tagName)
+    let obj = tags.find((o: any) => o['tag']['name'] == tagName)
     if (obj) { return { ...obj['tag'], link: obj['link'] }; }
     else { return null };
   }
   const getTagVal = (tagName: string): string => {
-    let obj = tags.data.find((o: any) => o['tag']['name'] == tagName)
+    let obj = tags.find((o: any) => o['tag']['name'] == tagName)
     if (obj) {
       if (tagName == 'warpBeamLength' && modeCode.val == 1) {
         return Number((Number(obj['val']) - (localeParseFloat(getTagVal('picksLastRun')) / (100 * localeParseFloat(getTagVal('planClothDensity')) * (1 - 0.01 * localeParseFloat(getTagVal('warpShrinkage')))))).toFixed(obj['tag']['dec'])).toLocaleString(i18n.language);
@@ -162,14 +151,14 @@ const Overview: React.FC<Props> = ({
   useEffect(() => {
     (async () => {
       await Promise.all([
-        fetchTags(),
+        //fetchTags(),
         fetchUserStatInfo(),
         fetchPieces()
       ]);
       setLoading(false);
     })();
     return () => { }
-  }, [tags])
+  }, [modeCode.val, (modeCode.val == 1) && (dayjs().second() % 1 == 0)])
 
   useEffect(() => {
     (async () => {
@@ -379,7 +368,7 @@ const Overview: React.FC<Props> = ({
               <Skeleton loading={loading} round active>
                 <Descriptions column={24} size='small' >
                   {
-                    (tags.data || []).map((tag: any) => (
+                    tags.map((tag: any) => (
                       <React.Fragment key={tag['tag']['name']}>
                         <Descriptions.Item span={1} contentStyle={{ justifyContent: 'center' }}><Badge status={tag['link'] == null ? 'default' : tag['link'] == true ? 'success' : 'error'} /></Descriptions.Item><Descriptions.Item span={8}>{t('tags.' + tag['tag']['name'] + '.descr')}</Descriptions.Item><Descriptions.Item span={9}><b>{getTagVal(tag['tag']['name'])}</b>&nbsp;{(['modeCode', 'modeControl'].includes(tag['tag']['name']) ? '' : t('tags.' + tag['tag']['name'] + '.eng'))}</Descriptions.Item><Descriptions.Item span={6}>{dayjs(tag['updated']).format('LL LTS.SSS')}</Descriptions.Item>
                       </React.Fragment>

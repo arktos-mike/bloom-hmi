@@ -132,13 +132,13 @@ const App: React.FC = () => {
   const [visible, setVisible] = useState(false)
   const [userDialogVisible, setUserDialogVisible] = useState(false)
   const [layout, setLayout] = useState('default')
-  const [tags, setTags] = useState({ data: [] })
+  const [tags, setTags] = useState<any[]>([])
   const [shift, setShift] = useState({ name: '', start: '', end: '', duration: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: '', stops: {} })
   const [updated, setUpdated] = useState(false)
   const [updatedReminders, setUpdatedReminders] = useState(false)
   const [openKeys, setOpenKeys] = useState(['']);
   const [reminders, setReminders] = useState()
-  const [remindersFilter, setRemindersFilter] = useState<any[]>()
+  const [remindersFilter, setRemindersFilter] = useState<any[]>([])
 
   const handleShift = () => {
     setLayout(layout === "default" ? "shift" : "default")
@@ -250,32 +250,30 @@ const App: React.FC = () => {
     catch (error) { /*console.log(error);*/ }
   }
 
-  const fetchTags = async (tagNames: string[]) => {
+  const fetchTags = async () => {
     try {
-      const response = await fetch('http://localhost:3000/tags/filter', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json;charset=UTF-8', },
-        body: JSON.stringify({ name: tagNames }),
-      });
+      const response = await fetch('http://localhost:3000/tags');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
-      (json || []).map((tag: any) => (
-        tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec']).toString()));
-      setTags({ data: json });
-      let obj = tags.data.find(o => o['tag']['name'] == 'modeCode')
+      json.map((tag: any) => (
+        tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec']).toString()
+      )
+      );
+      setTags(json);
+      let obj = tags.find(o => o['tag']['name'] == 'modeCode')
       obj && setModeCode({ val: obj['val'], updated: dayjs(obj['updated']) })
     }
     catch (error) { /*console.log(error);*/ }
   }
 
   const getTagLink = (tagName: string) => {
-    let obj = tags.data.find(o => o['tag']['name'] == tagName)
+    let obj = tags.find(o => o['tag']['name'] == tagName)
     if (obj) { return obj['link'] }
     else { return false };
   }
 
   const getTagVal = (tagName: string) => {
-    let obj = tags.data.find(o => o['tag']['name'] == tagName)
+    let obj = tags.find(o => o['tag']['name'] == tagName)
     if (obj) { return Number(obj['val']).toLocaleString(i18n.language); }
     else { return null };
   }
@@ -319,11 +317,44 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
+    (async () => {
+      await Promise.all([
+        clock(),
+        fetchLngs(),
+        fetchTags(),
+        fetchStatInfo(),
+        fetchShift(),
+        checkLogin(),
+        fetchReminders()
+      ]);
+      setUpdated(true);
+    })();
+    return () => { }
+  }, [])
+
+  useEffect(() => {
+
+      console.log(tags)
+
+    return () => { }
+  }, [tags])
+
+  useEffect(() => {
     const source = new EventSource('http://localhost:3000/tags/events');
     source.addEventListener('tags', (e) => {
+
+      const json = JSON.parse(e.data);
+      if (tags.length) {
+        const updatedTags = tags.map(item => {
+          if (item['tag']['name'] == json['tag']['name']) {
+            return { ...(item as object), ...json };
+          }
+          return item;
+        });
+        setTags(updatedTags);
+      }
       if (e.lastEventId == 'modeCode') {
-        const json = JSON.parse(e.data);
-        console.log(json)
+        setModeCode({ val: json['val'], updated: dayjs(json['updated']) })
       }
     });
     source.addEventListener('error', (e) => {
@@ -349,34 +380,19 @@ const App: React.FC = () => {
   }, [token])
 
   useEffect(() => {
-    (remindersFilter || []).map((note: any) => (
+    remindersFilter.map((note: any) => (
       openNotificationWithIcon('info', note['title'], 0, note['id'], note['descr'], { backgroundColor: '#e6f7ff', border: '2px solid #91d5ff' })));
     return () => { }
   }, [remindersFilter])
 
   useEffect(() => {
     (async () => {
-      await clock();
-      await Promise.all([
-        fetchLngs(),
-        fetchShift(),
-        checkLogin(),
-        fetchReminders()
-      ]);
-      setUpdated(true);
-    })();
-    return () => { }
-  }, [])
-
-  useEffect(() => {
-    (async () => {
-      await Promise.all([
-        fetchTags(['modeCode', 'stopAngle', 'speedMainDrive']),
+      Promise.all([
         fetchStatInfo()
       ]);
     })();
     return () => { }
-  }, [tags])
+  }, [dayjs().second()]) //modeCode.val, (modeCode.val == 1) && (dayjs().second() % 1 == 0
 
   useEffect(() => {
     (async () => {
@@ -476,7 +492,7 @@ const App: React.FC = () => {
               </div>
               <div className="site-layout-content">
                 <Routes>
-                  <Route index element={<Overview token={token} modeCode={modeCode} shift={shift} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
+                  <Route index element={<Overview tags={tags} token={token} modeCode={modeCode} shift={shift} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
                   <Route path={'/machineInfo'} element={<MachineInfo />} />
                   <Route path={'/reminders'} element={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Reminders activeInput={activeInput} setActiveInput={setActiveInput} setUpdatedReminders={setUpdatedReminders} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                   <Route path={'/reports'} element={<MonthReport token={token} />} />
@@ -486,8 +502,8 @@ const App: React.FC = () => {
                   <Route path={'/logs/modelog'} element={<ModeLog token={token} />} />
                   <Route path={'/logs/userlog'} element={<UserLog token={token} />} />
                   <Route path={'/logs/clothlog'} element={<ClothLog token={token} />} />
-                  <Route path={'/settings'} element={<SettingsTech token={token} activeInput={activeInput} setActiveInput={setActiveInput} modeCode={modeCode} />} />
-                  <Route path={'/settings/settingsTech'} element={<SettingsTech token={token} activeInput={activeInput} setActiveInput={setActiveInput} modeCode={modeCode} />} />
+                  <Route path={'/settings'} element={<SettingsTech tags={tags} token={token} activeInput={activeInput} setActiveInput={setActiveInput} modeCode={modeCode} />} />
+                  <Route path={'/settings/settingsTech'} element={<SettingsTech tags={tags} token={token} activeInput={activeInput} setActiveInput={setActiveInput} modeCode={modeCode} />} />
                   <Route path={'/settings/settingsOp'} element={<SettingsOp token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
                   <Route path={'/settings/settingsDev'} element={<SettingsDev token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
                   <Route path={'/users'} element={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? <Users activeInput={activeInput} setActiveInput={setActiveInput} token={token} /> : <Navigate to="/" /> : <Navigate to="/" />} />
