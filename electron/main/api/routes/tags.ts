@@ -13,8 +13,6 @@ setInterval(async () => {
   const mon = await db.query('SELECT tag, val, updated, link FROM tags WHERE tag->>$1=$2', ['group', 'monitoring']);
   // Sends message to all connected clients!
   sse.send(mon.rows, 'tags', 'monitoring');
-  const rolls = await db.query(`SELECT count(*) FROM clothlog WHERE not upper_inf(timestamp) and timestamp && tstzrange(lower((SELECT timestamp FROM clothlog WHERE upper_inf(timestamp) and event=0)),current_timestamp(3),'[)') AND event=$1`, [1]);
-  sse.send(rolls.rows[0].count, 'rolls', 'pieces');
   //sse.updateInit(["array", "containing", "new", "content"]);
   //sse.serialize(["array", "to", "be", "sent", "as", "serialized", "events"]);
   // All options for sending a message:
