@@ -41,7 +41,7 @@ const SettingsTech: React.FC<Props> = ({
   }
 
   //const [tags, setTags] = useState({ data: [] as any })
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
 
   const confirmNullOrder = () => {
     Modal.confirm({

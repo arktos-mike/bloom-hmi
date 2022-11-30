@@ -342,48 +342,56 @@ const App: React.FC = () => {
       link: null
     }],
     {
-      parser(input) {
+      parser(input: string) {
         return JSON.parse(input);
       },
     }
   );
 
+  const pieces = useSSE(
+    'rolls',
+    ''
+  );
+
   useEffect(() => {
-    if (tags.length>0) {
-      const updatedTags = tags.map(obj => mon.find(o => o['tag']!['name'] === obj['tag']['name']) || obj);
+    if (tags.length > 0) {
+      const updatedTags = tags.map(obj => mon.find((o: any) => o['tag']!['name'] === obj['tag']['name']) || obj);
+      updatedTags.map((tag: any) => (
+        tag && (tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec']).toString())
+      ));
       setTags(updatedTags);
       let obj = mon.find(o => o['tag']!['name'] == 'modeCode')
       obj && setModeCode({ val: obj['val'], updated: dayjs(obj['updated']) })
     }
-    }, [mon]);
+  }, [mon]);
 
-/*
-  useEffect(() => {
-    const source = new EventSource('http://localhost:3000/tags/events');
-    source.addEventListener('tags', (e) => {
+  /*
+    useEffect(() => {
+      const source = new EventSource('http://localhost:3000/tags/events');
+      source.addEventListener('tags', (e) => {
 
-      const json = JSON.parse(e.data);
-      if (tags.length) {
-        const updatedTags = tags.map(item => {
-          if (item['tag']['name'] == json['tag']['name']) {
-            return { ...(item as object), ...json };
-          }
-          return item;
-        });
-        setTags(updatedTags);
-      }
-      if (e.lastEventId == 'modeCode') {
-        setModeCode({ val: json['val'], updated: dayjs(json['updated']) })
-      }
-    });
-    source.addEventListener('error', (e) => {
-      // console.error('Error: ',  e);
-    });
-    return () => {
-      source.close();
-    };
-  }, []);
-*/
+        const json = JSON.parse(e.data);
+        if (tags.length) {
+          const updatedTags = tags.map(item => {
+            if (item['tag']['name'] == json['tag']['name']) {
+              return { ...(item as object), ...json };
+            }
+            return item;
+          });
+          setTags(updatedTags);
+        }
+        if (e.lastEventId == 'modeCode') {
+          setModeCode({ val: json['val'], updated: dayjs(json['updated']) })
+        }
+      });
+      source.addEventListener('error', (e) => {
+        // console.error('Error: ',  e);
+      });
+      return () => {
+        source.close();
+      };
+    }, []);
+  */
   useEffect(() => {
     (async () => {
       await fetchReminders();
@@ -481,146 +489,146 @@ const App: React.FC = () => {
     <div>
       <ConfigProvider locale={i18n.language === 'en' ? enlocale : i18n.language === 'ru' ? rulocale : i18n.language === 'tr' ? trlocale : i18n.language === 'es' ? eslocale : enlocale}>
         <Layout className="layout">
-            <Header style={{ position: 'fixed', zIndex: 1, width: '100%', padding: 0, display: 'inline-flex', justifyContent: "space-between" }}>
-              <div className="logo" onClick={showDrawer}>
-                <img src={logo} className="applogo" alt=""></img>
-              </div>
-              <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={location.pathname == '/' ? ['overview'] : [location.pathname.split("/").slice(-1)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? smallItemsMan : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? smallItemsFix : smallItems : smallItems} />
-              <div className="speed"><Spin wrapperClassName="speed" spinning={modeCode.val == 1 ? !getTagLink('speedMainDrive') : !getTagLink('stopAngle')}>{modeCode.val == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode.val == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}<div className="sub">{modeCode.val == 1 ? t('tags.speedMainDrive.eng') : '°'}</div></Spin></div>
-              <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode.val).color }}><Spin wrapperClassName="mode" spinning={!getTagLink('modeCode')}>{modeCodeObj(modeCode.val).text + ' '}{modeCodeObj(modeCode.val).icon}<div className='stopwatch'>{stopwatch(modeCode.updated)}</div></Spin></div>
-              {shift.name && <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' ' + shift.name}<div className="percent">{Number(Number(shift.efficiency).toFixed(shift.efficiency < 10 ? 2 : 1).toString()).toLocaleString(i18n.language) + '%'}</div></Space></div><div className="progress"><Progress percent={shift.efficiency} showInfo={false} size="small" /></div></div>}
-              <div className="user">
-                <div className="user" onClick={() => { !visible && showUserDialog() }}>
-                  <Avatar.Group size='large'>
-                    {shadowUser['name'] && <Tooltip title={shadowUser['name']} placement="bottom">
-                      <Avatar style={{ backgroundColor: "#87d068" }} icon={<UserOutlined />} />
-                    </Tooltip>}
-                    <Avatar size={50} style={{ backgroundColor: avatarColor() }} icon={<UserOutlined />} />
-                  </Avatar.Group>
-                  <table><tbody><tr><td><div className='username'>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</div></td></tr><tr><td><div className='userrole'>{t(token ? 'user.' + JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : '')}</div></td></tr></tbody></table>
-                </div><UserLogin shadowUser={shadowUser} token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} activeInput={activeInput} setActiveInput={setActiveInput} />
-              </div>
-              <div className="clock">
-                <div className="time">{curTime}</div><div className="date">{curDate}</div>
-              </div>
-            </Header>
-            <div className="site-drawer-render-in-current-wrapper">
-              <Content className="content">
-                <div>
-                  <Breadcrumb />
-                </div>
-                <div className="site-layout-content">
-                  <Routes>
-                    <Route index element={<Overview tags={tags} token={token} modeCode={modeCode} shift={shift} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
-                    <Route path={'/machineInfo'} element={<MachineInfo />} />
-                    <Route path={'/reminders'} element={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Reminders activeInput={activeInput} setActiveInput={setActiveInput} setUpdatedReminders={setUpdatedReminders} /> : <Navigate to="/" /> : <Navigate to="/" />} />
-                    <Route path={'/reports'} element={<MonthReport token={token} />} />
-                    <Route path={'/reports/monthReport'} element={<MonthReport token={token} />} />
-                    <Route path={'/reports/userReport'} element={<UserReport token={token} shadowUser={shadowUser} />} />
-                    <Route path={'/logs'} element={<ModeLog token={token} />} />
-                    <Route path={'/logs/modelog'} element={<ModeLog token={token} />} />
-                    <Route path={'/logs/userlog'} element={<UserLog token={token} />} />
-                    <Route path={'/logs/clothlog'} element={<ClothLog token={token} />} />
-                    <Route path={'/settings'} element={<SettingsTech tags={tags} token={token} activeInput={activeInput} setActiveInput={setActiveInput} modeCode={modeCode} />} />
-                    <Route path={'/settings/settingsTech'} element={<SettingsTech tags={tags} token={token} activeInput={activeInput} setActiveInput={setActiveInput} modeCode={modeCode} />} />
-                    <Route path={'/settings/settingsOp'} element={<SettingsOp token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
-                    <Route path={'/settings/settingsDev'} element={<SettingsDev token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
-                    <Route path={'/users'} element={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? <Users activeInput={activeInput} setActiveInput={setActiveInput} token={token} /> : <Navigate to="/" /> : <Navigate to="/" />} />
-                    <Route path={'/shifts'} element={token ? ['manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Shifts activeInput={activeInput} setActiveInput={setActiveInput} setUpdated={setUpdated} /> : <Navigate to="/" /> : <Navigate to="/" />} />
-                    <Route path="*" element={<Navigate to="/" />} />
-                  </Routes>
-                  <Drawer
-                    placement="left"
-                    closable={false}
-                    open={visible}
-                    getContainer={false}
-                    style={{ position: 'absolute', }}
-                    bodyStyle={{ margin: "0px", padding: "0px" }}
-                  >
-                    <Menu style={{ fontSize: '150%' }} mode="inline" items={bigItems} openKeys={openKeys} onOpenChange={onOpenChange} selectedKeys={location.pathname == '/' ? ['overview'] : location.pathname.split("/").filter((item) => item)} defaultSelectedKeys={['overview']}>
-                    </Menu>
-                  </Drawer>
-                  <Drawer
-                    autoFocus={false}
-                    //destroyOnClose={true}
-                    title={
-                      <div style={{ display: 'inline-flex', width: '100%' }}>
-                        <span ref={descr} className='descr'>{activeInput.descr}</span>
-                        <div className='sel' style={{ position: 'absolute', opacity: 0, height: 0, overflow: 'hidden', whiteSpace: 'pre' }}><span className="text" ref={span}>{bufferKeyboard}</span></div>
-                        <Space direction="horizontal" style={{ width: '100%', justifyContent: control ? 'space-between' : 'center' }}>
-                          {control && <Button style={{ width: 41 }} type="link" onClick={() => { inputRef.current!.focus({ cursor: 'start', }); }} icon={<CaretLeftOutlined />}></Button>}
-                          {activeInput.showInput ? <Input style={{ color: "#005092", width: inputWidth }} size='small' value={bufferKeyboard} bordered={false} ref={inputRef} /> : <Input.Password style={{ color: "#005092", width: inputWidth }} size='small' value={bufferKeyboard} bordered={false} visibilityToggle={false} ref={inputRef} />}
-                          {control && <Button style={{ width: 41 }} type="link" onClick={() => { inputRef.current!.focus({ cursor: 'end', }); }} icon={<CaretRightOutlined />}></Button>}
-                        </Space>
-                      </div>
-                    }
-                    placement="bottom"
-                    height={keyboardCollapse ? 42 : 376}
-                    mask={true}
-                    maskStyle={{ backgroundColor: "inherit", opacity: 0 }}
-                    maskClosable={true}
-                    open={activeInput.showKeyboard}
-                    onClose={() => { setActiveInput({ ...activeInput, showKeyboard: false }); setBufferKeyboard(activeInput.input) }}
-                    closeIcon={<CloseOutlined style={{ color: '#1890ff', fontSize: '150%' }} />}
-                    headerStyle={{ padding: 0 }}
-                    bodyStyle={{ margin: "0px", padding: "0px", background: '#E1F5FE' }}
-                    extra={
-                      <>
-                        {bufferKeyboard && <Button style={{ width: 41 }} type="link" onClick={() => { setBufferKeyboard(''); }} icon={<CloseCircleTwoTone style={{ fontSize: '130%' }} />}></Button>}
-                        <Button style={{ width: 41 }} type="link" onClick={() => { setActiveInput({ ...activeInput, showInput: !activeInput.showInput }); }} icon={activeInput.showInput ? <EyeTwoTone style={{ fontSize: '130%' }} /> : <EyeInvisibleOutlined style={{ fontSize: '130%' }} />}></Button>
-                        <Button style={{ width: 41, color: "#1890ff", fontSize: '20px', padding: 0 }} type="link" onClick={() => { setActiveInput({ ...activeInput, num: !activeInput.num }); }} >{activeInput.num ? 'ABC' : '123'}</Button>
-                        <Select style={{ color: "#005092" }} value={keyboardLng} optionLabelProp="label" size="large" dropdownStyle={{ fontSize: '40px !important', zIndex: 2000 }} dropdownAlign={{ offset: [-45, 4] }} dropdownMatchSelectWidth={false} onChange={(val) => { setKeyboardLng(val); }} bordered={false} suffixIcon={<GlobalOutlined style={{ color: '#1890ff', fontSize: '130%' }} />}
-                        >
-                          {(lngs.data || []).map(lng => (
-                            <Option key={lng['locale']} value={lng['locale']} label={String(lng['locale']).toUpperCase()}>
-                              <div>{String(lng['locale']).toUpperCase()} - {t('self', { lng: lng['locale'] })}</div></Option>
-                          ))}
-                        </Select>
-                        <Button style={{ width: 41 }} type="link" icon={keyboardCollapse ? <ToTopOutlined style={{ fontSize: '150%' }} /> : <VerticalAlignBottomOutlined style={{ fontSize: '150%' }} />} onClick={() => { setKeyboardCollapse(!keyboardCollapse) }} />
-
-                      </>
-                    }
-                    zIndex={2000}
-                  >
-                    <Keyboard
-                      keyboardRef={(r) => (keyboardRef.current = r)}
-                      layout={keyboardLayout}
-                      theme={activeInput.num ? "numericTheme" : "hg-theme-default"}
-                      layoutName={layout}
-                      onKeyPress={onKeyPress}
-                      onKeyReleased={onKeyReleased}
-                      physicalKeyboardHighlight={true}
-                      physicalKeyboardHighlightPress={true}
-                      onChange={(input) => {
-                        setBufferKeyboard(input);
-                        if (activeInput.form == 'login' && activeInput.id == 'name') {
-                          setActiveInput({ ...activeInput, input: input })
-                        }
-                      }}
-                      display={activeInput.num ? { '-': '+/-', '{bksp}': '🠔', '{enter}': '⤶', '{lock}': '⇧', '{space}': '﹈', } : { '{bksp}': '🠔', '{enter}': '⤶', '{lock}': '⇧', '{space}': '﹈', }}
-                      excludeFromLayout={{
-                        default: [".com", "{tab}", "{shift}"], shift: [".com", "{tab}", "{shift}"]
-                      }}
-                      inputName={activeInput.pattern}
-                      inputPattern={{
-                        'default': /.*/,
-                        'shift': /^.{1,2}$/,
-                        'username': /^[\p{L}\s]*$/gu,
-                        'phonenumber': /^[0-9]{1,15}$/,
-                        'email': /^[a-zA-Z0-9.!@#$%&’*+/=?^_`{|}~-]*$/,
-                        'float': /[+-]?([0-9\s\.\,])+/,
-                        'ip': /^[0-9\.]{1,15}$/,
-                        'dec-': /^-?(0|[1-9][\d\s]*)$/,
-                        'dec+': /^(0|[1-9\s][\d\s]*)$/,
-                      }
-                      }
-                    />
-                  </Drawer>
-                </div>
-              </Content>
-              <Footer style={{ textAlign: 'center', margin: '0px', padding: '3px', color: 'rgba(0, 0, 0, 0.45)' }}>{t('footer')}</Footer>
+          <Header style={{ position: 'fixed', zIndex: 1, width: '100%', padding: 0, display: 'inline-flex', justifyContent: "space-between" }}>
+            <div className="logo" onClick={showDrawer}>
+              <img src={logo} className="applogo" alt=""></img>
             </div>
-          </Layout>
+            <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={location.pathname == '/' ? ['overview'] : [location.pathname.split("/").slice(-1)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? smallItemsMan : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? smallItemsFix : smallItems : smallItems} />
+            <div className="speed"><Spin wrapperClassName="speed" spinning={modeCode.val == 1 ? !getTagLink('speedMainDrive') : !getTagLink('stopAngle')}>{modeCode.val == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode.val == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}<div className="sub">{modeCode.val == 1 ? t('tags.speedMainDrive.eng') : '°'}</div></Spin></div>
+            <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode.val).color }}><Spin wrapperClassName="mode" spinning={!getTagLink('modeCode')}>{modeCodeObj(modeCode.val).text + ' '}{modeCodeObj(modeCode.val).icon}<div className='stopwatch'>{stopwatch(modeCode.updated)}</div></Spin></div>
+            {shift.name && <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' ' + shift.name}<div className="percent">{Number(Number(shift.efficiency).toFixed(shift.efficiency < 10 ? 2 : 1).toString()).toLocaleString(i18n.language) + '%'}</div></Space></div><div className="progress"><Progress percent={shift.efficiency} showInfo={false} size="small" /></div></div>}
+            <div className="user">
+              <div className="user" onClick={() => { !visible && showUserDialog() }}>
+                <Avatar.Group size='large'>
+                  {shadowUser['name'] && <Tooltip title={shadowUser['name']} placement="bottom">
+                    <Avatar style={{ backgroundColor: "#87d068" }} icon={<UserOutlined />} />
+                  </Tooltip>}
+                  <Avatar size={50} style={{ backgroundColor: avatarColor() }} icon={<UserOutlined />} />
+                </Avatar.Group>
+                <table><tbody><tr><td><div className='username'>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</div></td></tr><tr><td><div className='userrole'>{t(token ? 'user.' + JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : '')}</div></td></tr></tbody></table>
+              </div><UserLogin shadowUser={shadowUser} token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} activeInput={activeInput} setActiveInput={setActiveInput} />
+            </div>
+            <div className="clock">
+              <div className="time">{curTime}</div><div className="date">{curDate}</div>
+            </div>
+          </Header>
+          <div className="site-drawer-render-in-current-wrapper">
+            <Content className="content">
+              <div>
+                <Breadcrumb />
+              </div>
+              <div className="site-layout-content">
+                <Routes>
+                  <Route index element={<Overview pieces={pieces} tags={tags} token={token} modeCode={modeCode} shift={shift} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
+                  <Route path={'/machineInfo'} element={<MachineInfo />} />
+                  <Route path={'/reminders'} element={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Reminders activeInput={activeInput} setActiveInput={setActiveInput} setUpdatedReminders={setUpdatedReminders} /> : <Navigate to="/" /> : <Navigate to="/" />} />
+                  <Route path={'/reports'} element={<MonthReport token={token} />} />
+                  <Route path={'/reports/monthReport'} element={<MonthReport token={token} />} />
+                  <Route path={'/reports/userReport'} element={<UserReport token={token} shadowUser={shadowUser} />} />
+                  <Route path={'/logs'} element={<ModeLog token={token} />} />
+                  <Route path={'/logs/modelog'} element={<ModeLog token={token} />} />
+                  <Route path={'/logs/userlog'} element={<UserLog token={token} />} />
+                  <Route path={'/logs/clothlog'} element={<ClothLog token={token} />} />
+                  <Route path={'/settings'} element={<SettingsTech tags={tags} token={token} activeInput={activeInput} setActiveInput={setActiveInput} modeCode={modeCode} />} />
+                  <Route path={'/settings/settingsTech'} element={<SettingsTech tags={tags} token={token} activeInput={activeInput} setActiveInput={setActiveInput} modeCode={modeCode} />} />
+                  <Route path={'/settings/settingsOp'} element={<SettingsOp token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
+                  <Route path={'/settings/settingsDev'} element={<SettingsDev token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
+                  <Route path={'/users'} element={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? <Users activeInput={activeInput} setActiveInput={setActiveInput} token={token} /> : <Navigate to="/" /> : <Navigate to="/" />} />
+                  <Route path={'/shifts'} element={token ? ['manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Shifts activeInput={activeInput} setActiveInput={setActiveInput} setUpdated={setUpdated} /> : <Navigate to="/" /> : <Navigate to="/" />} />
+                  <Route path="*" element={<Navigate to="/" />} />
+                </Routes>
+                <Drawer
+                  placement="left"
+                  closable={false}
+                  open={visible}
+                  getContainer={false}
+                  style={{ position: 'absolute', }}
+                  bodyStyle={{ margin: "0px", padding: "0px" }}
+                >
+                  <Menu style={{ fontSize: '150%' }} mode="inline" items={bigItems} openKeys={openKeys} onOpenChange={onOpenChange} selectedKeys={location.pathname == '/' ? ['overview'] : location.pathname.split("/").filter((item) => item)} defaultSelectedKeys={['overview']}>
+                  </Menu>
+                </Drawer>
+                <Drawer
+                  autoFocus={false}
+                  //destroyOnClose={true}
+                  title={
+                    <div style={{ display: 'inline-flex', width: '100%' }}>
+                      <span ref={descr} className='descr'>{activeInput.descr}</span>
+                      <div className='sel' style={{ position: 'absolute', opacity: 0, height: 0, overflow: 'hidden', whiteSpace: 'pre' }}><span className="text" ref={span}>{bufferKeyboard}</span></div>
+                      <Space direction="horizontal" style={{ width: '100%', justifyContent: control ? 'space-between' : 'center' }}>
+                        {control && <Button style={{ width: 41 }} type="link" onClick={() => { inputRef.current!.focus({ cursor: 'start', }); }} icon={<CaretLeftOutlined />}></Button>}
+                        {activeInput.showInput ? <Input style={{ color: "#005092", width: inputWidth }} size='small' value={bufferKeyboard} bordered={false} ref={inputRef} /> : <Input.Password style={{ color: "#005092", width: inputWidth }} size='small' value={bufferKeyboard} bordered={false} visibilityToggle={false} ref={inputRef} />}
+                        {control && <Button style={{ width: 41 }} type="link" onClick={() => { inputRef.current!.focus({ cursor: 'end', }); }} icon={<CaretRightOutlined />}></Button>}
+                      </Space>
+                    </div>
+                  }
+                  placement="bottom"
+                  height={keyboardCollapse ? 42 : 376}
+                  mask={true}
+                  maskStyle={{ backgroundColor: "inherit", opacity: 0 }}
+                  maskClosable={true}
+                  open={activeInput.showKeyboard}
+                  onClose={() => { setActiveInput({ ...activeInput, showKeyboard: false }); setBufferKeyboard(activeInput.input) }}
+                  closeIcon={<CloseOutlined style={{ color: '#1890ff', fontSize: '150%' }} />}
+                  headerStyle={{ padding: 0 }}
+                  bodyStyle={{ margin: "0px", padding: "0px", background: '#E1F5FE' }}
+                  extra={
+                    <>
+                      {bufferKeyboard && <Button style={{ width: 41 }} type="link" onClick={() => { setBufferKeyboard(''); }} icon={<CloseCircleTwoTone style={{ fontSize: '130%' }} />}></Button>}
+                      <Button style={{ width: 41 }} type="link" onClick={() => { setActiveInput({ ...activeInput, showInput: !activeInput.showInput }); }} icon={activeInput.showInput ? <EyeTwoTone style={{ fontSize: '130%' }} /> : <EyeInvisibleOutlined style={{ fontSize: '130%' }} />}></Button>
+                      <Button style={{ width: 41, color: "#1890ff", fontSize: '20px', padding: 0 }} type="link" onClick={() => { setActiveInput({ ...activeInput, num: !activeInput.num }); }} >{activeInput.num ? 'ABC' : '123'}</Button>
+                      <Select style={{ color: "#005092" }} value={keyboardLng} optionLabelProp="label" size="large" dropdownStyle={{ fontSize: '40px !important', zIndex: 2000 }} dropdownAlign={{ offset: [-45, 4] }} dropdownMatchSelectWidth={false} onChange={(val) => { setKeyboardLng(val); }} bordered={false} suffixIcon={<GlobalOutlined style={{ color: '#1890ff', fontSize: '130%' }} />}
+                      >
+                        {(lngs.data || []).map(lng => (
+                          <Option key={lng['locale']} value={lng['locale']} label={String(lng['locale']).toUpperCase()}>
+                            <div>{String(lng['locale']).toUpperCase()} - {t('self', { lng: lng['locale'] })}</div></Option>
+                        ))}
+                      </Select>
+                      <Button style={{ width: 41 }} type="link" icon={keyboardCollapse ? <ToTopOutlined style={{ fontSize: '150%' }} /> : <VerticalAlignBottomOutlined style={{ fontSize: '150%' }} />} onClick={() => { setKeyboardCollapse(!keyboardCollapse) }} />
+
+                    </>
+                  }
+                  zIndex={2000}
+                >
+                  <Keyboard
+                    keyboardRef={(r) => (keyboardRef.current = r)}
+                    layout={keyboardLayout}
+                    theme={activeInput.num ? "numericTheme" : "hg-theme-default"}
+                    layoutName={layout}
+                    onKeyPress={onKeyPress}
+                    onKeyReleased={onKeyReleased}
+                    physicalKeyboardHighlight={true}
+                    physicalKeyboardHighlightPress={true}
+                    onChange={(input) => {
+                      setBufferKeyboard(input);
+                      if (activeInput.form == 'login' && activeInput.id == 'name') {
+                        setActiveInput({ ...activeInput, input: input })
+                      }
+                    }}
+                    display={activeInput.num ? { '-': '+/-', '{bksp}': '🠔', '{enter}': '⤶', '{lock}': '⇧', '{space}': '﹈', } : { '{bksp}': '🠔', '{enter}': '⤶', '{lock}': '⇧', '{space}': '﹈', }}
+                    excludeFromLayout={{
+                      default: [".com", "{tab}", "{shift}"], shift: [".com", "{tab}", "{shift}"]
+                    }}
+                    inputName={activeInput.pattern}
+                    inputPattern={{
+                      'default': /.*/,
+                      'shift': /^.{1,2}$/,
+                      'username': /^[\p{L}\s]*$/gu,
+                      'phonenumber': /^[0-9]{1,15}$/,
+                      'email': /^[a-zA-Z0-9.!@#$%&’*+/=?^_`{|}~-]*$/,
+                      'float': /[+-]?([0-9\s\.\,])+/,
+                      'ip': /^[0-9\.]{1,15}$/,
+                      'dec-': /^-?(0|[1-9][\d\s]*)$/,
+                      'dec+': /^(0|[1-9\s][\d\s]*)$/,
+                    }
+                    }
+                  />
+                </Drawer>
+              </div>
+            </Content>
+            <Footer style={{ textAlign: 'center', margin: '0px', padding: '3px', color: 'rgba(0, 0, 0, 0.45)' }}>{t('footer')}</Footer>
+          </div>
+        </Layout>
       </ConfigProvider>
     </div >
   )

@@ -16,6 +16,7 @@ type Props = {
   shift: any;
   token: any;
   tags: any;
+  pieces: any;
   modeCode: { val: Number, updated: any };
   reminders: any;
   setUpdatedReminders: (val: boolean) => void;
@@ -26,6 +27,7 @@ const Overview: React.FC<Props> = ({
   shift,
   token,
   tags,
+  pieces,
   modeCode,
   reminders,
   setUpdatedReminders
@@ -37,7 +39,7 @@ const Overview: React.FC<Props> = ({
   //const [tags, setTags] = useState({ data: [] as any })
   const [loading, setLoading] = useState(true)
   const [userInfo, setUserInfo] = useState()
-  const [pieces, setPieces] = useState()
+  //const [pieces, setPieces] = useState()
   const [userDonut, setUserDonut] = useState([] as any)
   const [userDonutSel, setUserDonutSel] = useState({ run: true, other: true, button: true, warp: true, weft: true, tool: true, fabric: true } as any)
   const [shiftDonut, setShiftDonut] = useState([] as any)
@@ -119,17 +121,6 @@ const Overview: React.FC<Props> = ({
     catch (error) { /*console.log(error);*/ }
   };
 
-  const fetchPieces = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/logs/getRolls');
-      if (!response.ok) { /*throw Error(response.statusText);*/ }
-      const json = await response.json();
-      setPieces(json);
-
-    }
-    catch (error) { /*console.log(error);*/ }
-  }
-
   const getTag = (tagName: string) => {
     let obj = tags.find((o: any) => o['tag']['name'] == tagName)
     if (obj) { return { ...obj['tag'], link: obj['link'] }; }
@@ -151,14 +142,12 @@ const Overview: React.FC<Props> = ({
   useEffect(() => {
     (async () => {
       await Promise.all([
-        //fetchTags(),
         fetchUserStatInfo(),
-        fetchPieces()
       ]);
       setLoading(false);
     })();
     return () => { }
-  }, [modeCode.val, (modeCode.val == 1) && (dayjs().second() % 1 == 0)])
+  }, [dayjs().second()])
 
   useEffect(() => {
     (async () => {
