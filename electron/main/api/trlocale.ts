@@ -180,6 +180,11 @@ const locale = {
     "editsubmit": "DÜZENLE",
     "regsubmit": "KAYDOLUN"
   },
+  "period": {
+    "shift": "vardiya",
+    "day": "gün",
+    "month": "ay"
+  },
   "confirm": {
     "ok": "EVET",
     "descr": "Gerçekten değişiklik yapmak istiyor musunuz?",

@@ -180,6 +180,11 @@ const locale = {
     "editsubmit": "EDIT",
     "regsubmit": "REGISTER"
   },
+  "period": {
+    "shift": "shift",
+    "day": "day",
+    "month": "month"
+  },
   "confirm": {
     "ok": "YES",
     "descr": "Do you really want to make changes?",

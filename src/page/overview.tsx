@@ -1,6 +1,6 @@
 import { Button, Display, Donut } from '@/components';
-import { Alert, Badge, Card, Carousel, Col, Descriptions, Form, Modal, Result, Row, Skeleton, Space } from 'antd';
-import { CheckOutlined, ToolOutlined, QuestionCircleOutlined, LoginOutlined, IdcardOutlined, RiseOutlined, PieChartOutlined, SyncOutlined, ClockCircleOutlined, ScheduleOutlined, DashboardOutlined, AimOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { Alert, Badge, Card, Carousel, Col, Descriptions, Form, Modal, Result, Row, Segmented, Skeleton, Space } from 'antd';
+import { CheckOutlined, ToolOutlined, QuestionCircleOutlined, LoginOutlined, IdcardOutlined, RiseOutlined, PieChartOutlined, SyncOutlined, ClockCircleOutlined, ScheduleOutlined, DashboardOutlined, AimOutlined, ExclamationCircleOutlined, HistoryOutlined, ReconciliationOutlined, CalendarOutlined, FieldTimeOutlined } from '@ant-design/icons';
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
@@ -20,6 +20,8 @@ type Props = {
   modeCode: { val: Number, updated: any };
   reminders: any;
   setUpdatedReminders: (val: boolean) => void;
+  period: any;
+  setPeriod: (val: string) => void;
 };
 
 const Overview: React.FC<Props> = ({
@@ -30,7 +32,9 @@ const Overview: React.FC<Props> = ({
   pieces,
   modeCode,
   reminders,
-  setUpdatedReminders
+  setUpdatedReminders,
+  period,
+  setPeriod
 }) => {
   const [formShift] = Form.useForm();
   const [formWeaver] = Form.useForm();
@@ -147,7 +151,7 @@ const Overview: React.FC<Props> = ({
       setLoading(false);
     })();
     return () => { }
-  }, [dayjs().second()])
+  }, [modeCode.val || dayjs().hour()])
 
   useEffect(() => {
     (async () => {
@@ -181,7 +185,7 @@ const Overview: React.FC<Props> = ({
           <div style={contentStyle}>
             <div className='wrapper'>
               <Row gutter={[8, 8]} style={{ flex: '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
-                <Col span={((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) || shift.name ? 12 : 24} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
+                <Col span={12} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
                   <Row style={{ marginBottom: '8px', flex: '1 1 40%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
                     <Card title={t('panel.main')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
                       <Skeleton loading={loading} round active>
@@ -216,9 +220,14 @@ const Overview: React.FC<Props> = ({
                     </Card>
                   </Row>
                 </Col>
-                <Col span={((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) || shift.name ? 12 : 0} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
-                  {shift['name'] && <Row style={{ marginBottom: '8px', flex: ((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
-                    <Card title={t('shift.shift')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
+                <Col span={12} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
+                  <Row style={{ marginBottom: '8px', flex: ((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
+                    <Card title={period ? (period == 'day' || ((!shift.start || !shift.end) && period == 'shift')) ? t('period.day') : period == 'shift' ? t('period.shift') : period == 'month' ? t('period.month') : t('period.day') : t('period.day')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}
+                      extra={<Segmented size='large' value={period} onChange={(value) => { setPeriod(value.toString()); }}
+                        options={[{ label: t('period.shift'), value: 'shift', icon: <ScheduleOutlined /> },
+                        { label: t('period.day'), value: 'day', icon: <HistoryOutlined /> },
+                        { label: t('period.month'), value: 'month', icon: <ReconciliationOutlined /> }]} />
+                      }>
                       <Skeleton loading={loading} round active>
                         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
                           <Form
@@ -232,14 +241,14 @@ const Overview: React.FC<Props> = ({
                           >
                             <Form.Item label={<ScheduleOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
                               <Form.Item style={{ display: 'inline-block' }} >
-                                <span style={{ fontSize: '24px' }}>{t('shift.shift') + ' ' + shift['name']}</span>
+                                <span style={{ fontSize: '24px' }}>{period ? (period == 'day' || ((!shift.start || !shift.end) && period == 'shift')) ? dayjs().format('LL') : period == 'shift' ? t('shift.shift') + ' ' + shift['name'] : period == 'month' ? dayjs().format('MMMM YYYY') : dayjs().format('LL') : dayjs().format('LL')}</span>
                               </Form.Item>
                               <Form.Item label={<RiseOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }}>
                                 <span style={{ fontSize: '24px' }}>{Number(Number(shift['efficiency']).toFixed(shift['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + ' ' + t('tags.efficiency.eng')}</span>
                               </Form.Item>
                             </Form.Item>
                             <Form.Item label={<ClockCircleOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{dayjs(shift['start']).format('LL LT') + ' - ' + dayjs(shift['end']).format('LL LT') + ', ' + duration2text(dayjs.duration(shift['duration'])) + ''}</span>
+                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{(period ? (period == 'day' || ((!shift.start || !shift.end) && period == 'shift')) ? dayjs().format('LL LT') : period == 'shift' ? dayjs(shift['start']).format('LL LT') : period == 'month' ? dayjs().startOf('month').format('LL LT') : dayjs().startOf('day').format('LL LT') : dayjs().startOf('day').format('LL LT')) + ' - ' + (period ? (period == 'shift' && shift.start && shift.end) ? dayjs(shift['end']).format('LL LT') : dayjs().format('LL LT') : dayjs().format('LL LT')) + ((period == 'shift' && shift.start && shift.end) ? (', ' + duration2text(dayjs.duration(shift['duration']))) : '')}</span>
                             </Form.Item>
                             <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ marginBottom: 0 }} >
                               <Form.Item style={{ display: 'inline-block' }} >
@@ -269,9 +278,14 @@ const Overview: React.FC<Props> = ({
                           </div></div>
                       </Skeleton>
                     </Card>
-                  </Row>}
+                  </Row>
                   {((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) && <Row style={{ flex: shift['name'] ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex', marginBottom: '2px', }}>
-                    <Card title={t('user.weaver')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
+                    <Card title={t('user.weaver')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}
+                      extra={<Segmented size='large' value={period} onChange={(value) => { setPeriod(value.toString()); }}
+                        options={[{ label: t('period.shift'), value: 'shift', icon: <ScheduleOutlined /> },
+                        { label: t('period.day'), value: 'day', icon: <HistoryOutlined /> },
+                        { label: t('period.month'), value: 'month', icon: <ReconciliationOutlined /> }]} />
+                      }>
                       <Skeleton loading={loading} round active>
                         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
                           <Form

@@ -134,7 +134,8 @@ const App: React.FC = () => {
   const [userDialogVisible, setUserDialogVisible] = useState(false)
   const [layout, setLayout] = useState('default')
   const [tags, setTags] = useState<any[]>([])
-  const [shift, setShift] = useState({ name: '', start: '', end: '', duration: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: '', stops: {} })
+  const [period, setPeriod] = useState('shift')
+  const [shift, setShift] = useState({ name: '', start: '', end: '', duration: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: {}, stops: {} })
   const [updated, setUpdated] = useState(false)
   const [updatedReminders, setUpdatedReminders] = useState(false)
   const [openKeys, setOpenKeys] = useState(['']);
@@ -291,17 +292,15 @@ const App: React.FC = () => {
   };
   const fetchStatInfo = async () => {
     try {
-      if (shift.start && shift.end) {
         const response = await fetch('http://localhost:3000/shifts/getstatinfo', {
           method: 'POST',
           headers: { 'content-type': 'application/json;charset=UTF-8', },
-          body: JSON.stringify({ start: shift.start, end: new Date() }),
+          body: JSON.stringify({ start: period ? (period == 'day' || ((!shift.start || !shift.end) && period=='shift')) ? dayjs().startOf('day') : period == 'shift' ? shift.start : period == 'month' ? dayjs().startOf('month') : dayjs().startOf('day') : dayjs().startOf('day'), end: new Date() }),
         });
         if (!response.ok) { /*throw Error(response.statusText);*/ }
         const json = await response.json();
         setShift({ ...shift, picks: json[0]['picks'] || 0, meters: json[0]['meters'] || 0, rpm: json[0]['rpm'] || 0, mph: json[0]['mph'] || 0, efficiency: json[0]['efficiency'] || 0, starts: json[0]['starts'] || 0, runtime: json[0]['runtime'] || '', stops: json[0]['stops'] || {} });
-        setUpdated(false);
-      }
+
     }
     catch (error) { /*console.log(error);*/ }
   };
@@ -365,6 +364,13 @@ const App: React.FC = () => {
     }
   }, [mon]);
 
+  useEffect(() => {
+    if (modeCode.val==1) {
+      setShift({ ...shift, runtime:dayjs.duration(shift['runtime']).add(1, 'second')})
+    }
+
+    return () => { }
+  }, [dayjs().second()])
   /*
     useEffect(() => {
       const source = new EventSource('http://localhost:3000/tags/events');
@@ -419,7 +425,7 @@ const App: React.FC = () => {
       ]);
     })();
     return () => { }
-  }, [dayjs().second()]) //modeCode.val, (modeCode.val == 1) && (dayjs().second() % 1 == 0
+  }, [modeCode.val || dayjs().day()]) //modeCode.val, (modeCode.val == 1) && (dayjs().second() % 1 == 0
 
   useEffect(() => {
     (async () => {
@@ -519,7 +525,7 @@ const App: React.FC = () => {
               </div>
               <div className="site-layout-content">
                 <Routes>
-                  <Route index element={<Overview pieces={pieces} tags={tags} token={token} modeCode={modeCode} shift={shift} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
+                  <Route index element={<Overview period={period} setPeriod={setPeriod} pieces={pieces} tags={tags} token={token} modeCode={modeCode} shift={shift} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
                   <Route path={'/machineInfo'} element={<MachineInfo />} />
                   <Route path={'/reminders'} element={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Reminders activeInput={activeInput} setActiveInput={setActiveInput} setUpdatedReminders={setUpdatedReminders} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                   <Route path={'/reports'} element={<MonthReport token={token} />} />
