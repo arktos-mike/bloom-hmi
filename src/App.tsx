@@ -138,7 +138,7 @@ const App: React.FC = () => {
   const [layout, setLayout] = useState('default')
   const [tags, setTags] = useState<any[]>([])
   const [period, setPeriod] = useState('shift')
-  const [shift, setShift] = useState({ name: '', start: '', end: '', duration: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: {}, stops: {} })
+  const [shift, setShift] = useState({ name: '', start: '', end: '', duration: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} })
   const [updated, setUpdated] = useState(false)
   const [updatedReminders, setUpdatedReminders] = useState(false)
   const [openKeys, setOpenKeys] = useState(['']);
@@ -295,14 +295,14 @@ const App: React.FC = () => {
   };
   const fetchStatInfo = async () => {
     try {
-        const response = await fetch('http://localhost:3000/shifts/getstatinfo', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json;charset=UTF-8', },
-          body: JSON.stringify({ start: period ? (period == 'day' || ((!shift.start || !shift.end) && period=='shift')) ? dayjs().startOf('day') : period == 'shift' ? shift.start : period == 'month' ? dayjs().startOf('month') : dayjs().startOf('day') : dayjs().startOf('day'), end: new Date() }),
-        });
-        if (!response.ok) { /*throw Error(response.statusText);*/ }
-        const json = await response.json();
-        setShift({ ...shift, picks: json[0]['picks'] || 0, meters: json[0]['meters'] || 0, rpm: json[0]['rpm'] || 0, mph: json[0]['mph'] || 0, efficiency: json[0]['efficiency'] || 0, starts: json[0]['starts'] || 0, runtime: json[0]['runtime'] || '', stops: json[0]['stops'] || {} });
+      const response = await fetch('http://localhost:3000/shifts/getstatinfo', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json;charset=UTF-8', },
+        body: JSON.stringify({ start: period ? (period == 'day' || ((!shift.start || !shift.end) && period == 'shift')) ? dayjs().startOf('day') : period == 'shift' ? shift.start : period == 'month' ? dayjs().startOf('month') : dayjs().startOf('day') : dayjs().startOf('day'), end: new Date() }),
+      });
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
+      const json = await response.json();
+      setShift({ ...shift, picks: json[0]['picks'] || 0, meters: json[0]['meters'] || 0, rpm: json[0]['rpm'] || 0, mph: json[0]['mph'] || 0, efficiency: json[0]['efficiency'] || 0, starts: json[0]['starts'] || 0, runtime: json[0]['runtime'] || '', stops: json[0]['stops'] || {} });
 
     }
     catch (error) { /*console.log(error);*/ }
@@ -335,7 +335,7 @@ const App: React.FC = () => {
     return () => { }
   }, [])
 
-  useEffect(()=>{
+  useEffect(() => {
     dayjs.locale(i18n.language == 'en' ? 'en-gb' : i18n.language)
     return () => { }
   }, [i18n.language])
@@ -372,15 +372,6 @@ const App: React.FC = () => {
     }
   }, [mon]);
 
-  useEffect(() => {
-    if (modeCode.val==1) {
-
-      console.log(dayjs.duration(shift['runtime']).add(1, 'second'))
-      setShift({ ...shift, runtime:dayjs.duration(shift['runtime']).add(1, 'second')})
-    }
-
-    return () => { }
-  }, [dayjs().second()])
   /*
     useEffect(() => {
       const source = new EventSource('http://localhost:3000/tags/events');
