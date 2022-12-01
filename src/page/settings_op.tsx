@@ -5,7 +5,7 @@ import { DesktopOutlined, WifiOutlined, GlobalOutlined, CalendarOutlined, ClockC
 import { DatePicker, TimePicker, Button, InputNumber, } from '../components';
 import format from 'dayjs';
 import dayjs from 'dayjs';
-
+import 'dayjs/locale/en-gb';
 const cardStyle = { background: "whitesmoke", width: '100%', display: 'flex', flexDirection: 'column' as 'column' }
 const cardHeadStyle = { background: "#1890ff", color: "white" }
 const cardBodyStyle = { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' as 'column' }
@@ -27,7 +27,7 @@ const SettingsOp: React.FC<Props> = ({
   const lngChange = async (lang: string) => {
     try {
       i18n.changeLanguage(lang)
-      dayjs.locale(lang)
+      dayjs.locale(lang == 'en' ? 'en-gb' : lang)
       await fetch('http://localhost:3000/locales/' + lang, {
         method: 'PATCH',
       });
@@ -137,7 +137,7 @@ const SettingsOp: React.FC<Props> = ({
       await fetchLngs();
       await fetchIP();
       clock();
-      dayjs.locale(i18n.language)
+      dayjs.locale(i18n.language == 'en' ? 'en-gb' : i18n.language)
     })();
     return () => { }
   }, [])

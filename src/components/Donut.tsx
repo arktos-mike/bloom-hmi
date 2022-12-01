@@ -60,7 +60,7 @@ const Component: React.FC<any> = memo(
     );
   },
   (pre, next) => {
-    return isEqual(pre?.data, next?.data);
+    return isEqual(pre?.data, next?.data) && isEqual(pre?.selected, next?.selected) && isEqual(pre?.text, next?.text);
   }
 );
 

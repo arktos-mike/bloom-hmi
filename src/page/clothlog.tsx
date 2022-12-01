@@ -5,6 +5,7 @@ import { FilterValue, SorterResult } from 'antd/es/table/interface';
 import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
+import 'dayjs/locale/en-gb';
 import duration from 'dayjs/plugin/duration';
 import { Button, RangePicker } from '@/components';
 dayjs.extend(duration);
@@ -169,7 +170,7 @@ const ClothLog: React.FC<Props> = ({
   }, [pagination])
 
   useEffect(() => {
-    dayjs.locale(i18n.language)
+    dayjs.locale(i18n.language == 'en' ? 'en-gb' : i18n.language)
     fetchData();
     return () => { }
   }, [period]);

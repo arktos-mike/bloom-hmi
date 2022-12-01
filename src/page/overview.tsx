@@ -4,7 +4,7 @@ import { CheckOutlined, ToolOutlined, QuestionCircleOutlined, LoginOutlined, Idc
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
-
+import 'dayjs/locale/en-gb';
 import { FabricFullIcon, ButtonIcon, WeftIcon, FabricPieceIcon, FabricPieceLengthIcon, WarpBeamIcon, WarpBeamsIcon } from '@/components/Icons';
 
 const cardStyle = { background: "whitesmoke", width: '100%', display: 'flex', flexDirection: 'column' as 'column' }
@@ -54,6 +54,10 @@ const Overview: React.FC<Props> = ({
   const duration2text = (diff: any) => {
     if (diff == null) return null
     return (diff.days() > 0 ? diff.days() + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + t('shift.secs') : "")
+  }
+
+  const capitalizeFirstLetter = (string: string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1);
   }
 
   const stopObj = (reason: string, enable: boolean) => {
@@ -148,18 +152,23 @@ const Overview: React.FC<Props> = ({
       await Promise.all([
         fetchUserStatInfo(),
       ]);
-      setLoading(false);
+
     })();
     return () => { }
-  }, [modeCode.val || dayjs().hour()])
+  }, [modeCode.val, dayjs().hour()])
+
+  useEffect(() => {
+      setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
+    return () => { }
+  }, [])
 
   useEffect(() => {
     (async () => {
-      setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
       await fetchUserStatInfo();
+      shadowUser && setLoading(false)
     })();
     return () => { }
-  }, [])
+  }, [period, shadowUser])
 
   useEffect(() => {
     let obj = []
@@ -171,10 +180,10 @@ const Overview: React.FC<Props> = ({
       setShiftDonut(obj);
     }
     return () => { }
-  }, [shift])
+  }, [shift, period])
 
   useEffect(() => {
-    dayjs.locale(i18n.language)
+    dayjs.locale(i18n.language == 'en' ? 'en-gb' : i18n.language)
     return () => { }
   }, [i18n.language])
 
@@ -222,8 +231,8 @@ const Overview: React.FC<Props> = ({
                 </Col>
                 <Col span={12} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
                   <Row style={{ marginBottom: '8px', flex: ((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
-                    <Card title={period ? (period == 'day' || ((!shift.start || !shift.end) && period == 'shift')) ? t('period.day') : period == 'shift' ? t('period.shift') : period == 'month' ? t('period.month') : t('period.day') : t('period.day')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}
-                      extra={<Segmented size='large' value={period} onChange={(value) => { setPeriod(value.toString()); }}
+                    <Card title={period ? (period == 'day' || ((!shift.start || !shift.end) && period == 'shift')) ? capitalizeFirstLetter(t('period.day')) : period == 'shift' ? capitalizeFirstLetter(t('period.shift')) : period == 'month' ? capitalizeFirstLetter(t('period.month')) : capitalizeFirstLetter(t('period.day')) : capitalizeFirstLetter(t('period.day'))} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}
+                      extra={<Segmented size='middle' value={period} onChange={(value) => { setPeriod(value.toString()); }}
                         options={[{ label: t('period.shift'), value: 'shift', icon: <ScheduleOutlined /> },
                         { label: t('period.day'), value: 'day', icon: <HistoryOutlined /> },
                         { label: t('period.month'), value: 'month', icon: <ReconciliationOutlined /> }]} />
@@ -274,18 +283,13 @@ const Overview: React.FC<Props> = ({
                             </Form.Item>
                           </Form>
                           <div style={{ width: '20%', height: height && height / 4 }}>
-                            <Donut data={shiftDonut} selected={shiftDonutSel} text={t('shift.shift') + ' ' + shift['name'] + '\n' + (Number(Number(shift['efficiency']).toFixed(shift['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng'))} />
+                            <Donut data={shiftDonut} selected={shiftDonutSel} text={(Number(Number(shift['efficiency']).toFixed(shift['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng'))} />
                           </div></div>
                       </Skeleton>
                     </Card>
                   </Row>
                   {((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) && <Row style={{ flex: shift['name'] ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex', marginBottom: '2px', }}>
-                    <Card title={t('user.weaver')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}
-                      extra={<Segmented size='large' value={period} onChange={(value) => { setPeriod(value.toString()); }}
-                        options={[{ label: t('period.shift'), value: 'shift', icon: <ScheduleOutlined /> },
-                        { label: t('period.day'), value: 'day', icon: <HistoryOutlined /> },
-                        { label: t('period.month'), value: 'month', icon: <ReconciliationOutlined /> }]} />
-                      }>
+                    <Card title={t('user.weaver')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
                       <Skeleton loading={loading} round active>
                         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
                           <Form

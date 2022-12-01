@@ -4,6 +4,7 @@ import { ShoppingCartOutlined, BarcodeOutlined, FieldNumberOutlined, HistoryOutl
 import { FabricPieceIcon } from "../components/Icons"
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
+import 'dayjs/locale/en-gb';
 import duration from 'dayjs/plugin/duration';
 dayjs.extend(duration);
 
@@ -34,7 +35,7 @@ const MachineInfo: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      dayjs.locale(i18n.language)
+      dayjs.locale(i18n.language == 'en' ? 'en-gb' : i18n.language)
       await fetchData()
     })();
     return () => { }
