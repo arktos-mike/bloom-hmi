@@ -36,13 +36,16 @@ import eslayout from "simple-keyboard-layouts/build/layouts/spanish";
 import numeric from "./components/numeric";
 
 import dayjs from 'dayjs';
+import 'dayjs/locale/en-gb';
+
 import duration from 'dayjs/plugin/duration';
 dayjs.extend(duration);
 import isBetween from 'dayjs/plugin/isBetween';
+dayjs.extend(isBetween);
 import SettingsTech from './page/settings_tech';
 import { Breadcrumb } from './components';
 import Reminders from './page/reminders';
-dayjs.extend(isBetween);
+
 import { differenceWith, isEqual } from 'lodash-es';
 
 import type { InputRef } from 'antd';
@@ -321,16 +324,21 @@ const App: React.FC = () => {
       await Promise.all([
         clock(),
         fetchLngs(),
-        fetchTags(),
         fetchStatInfo(),
         fetchShift(),
         checkLogin(),
-        fetchReminders()
+        fetchReminders(),
+        fetchTags()
       ]);
       setUpdated(true);
     })();
     return () => { }
   }, [])
+
+  useEffect(()=>{
+    dayjs.locale(i18n.language == 'en' ? 'en-gb' : i18n.language)
+    return () => { }
+  }, [i18n.language])
 
   const mon = useSSE(
     'tags',
@@ -366,6 +374,8 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (modeCode.val==1) {
+
+      console.log(dayjs.duration(shift['runtime']).add(1, 'second'))
       setShift({ ...shift, runtime:dayjs.duration(shift['runtime']).add(1, 'second')})
     }
 
@@ -425,7 +435,7 @@ const App: React.FC = () => {
       ]);
     })();
     return () => { }
-  }, [modeCode.val || dayjs().day()]) //modeCode.val, (modeCode.val == 1) && (dayjs().second() % 1 == 0
+  }, [modeCode.val, dayjs().day(), period]) //modeCode.val, (modeCode.val == 1) && (dayjs().second() % 1 == 0
 
   useEffect(() => {
     (async () => {
@@ -502,7 +512,7 @@ const App: React.FC = () => {
             <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={location.pathname == '/' ? ['overview'] : [location.pathname.split("/").slice(-1)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? smallItemsMan : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? smallItemsFix : smallItems : smallItems} />
             <div className="speed"><Spin wrapperClassName="speed" spinning={modeCode.val == 1 ? !getTagLink('speedMainDrive') : !getTagLink('stopAngle')}>{modeCode.val == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode.val == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}<div className="sub">{modeCode.val == 1 ? t('tags.speedMainDrive.eng') : '°'}</div></Spin></div>
             <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode.val).color }}><Spin wrapperClassName="mode" spinning={!getTagLink('modeCode')}>{modeCodeObj(modeCode.val).text + ' '}{modeCodeObj(modeCode.val).icon}<div className='stopwatch'>{stopwatch(modeCode.updated)}</div></Spin></div>
-            {shift.name && <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{t('shift.shift') + ' ' + shift.name}<div className="percent">{Number(Number(shift.efficiency).toFixed(shift.efficiency < 10 ? 2 : 1).toString()).toLocaleString(i18n.language) + '%'}</div></Space></div><div className="progress"><Progress percent={shift.efficiency} showInfo={false} size="small" /></div></div>}
+            <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{period ? (period == 'day' || ((!shift.start || !shift.end) && period == 'shift')) ? dayjs().format('L') : period == 'shift' ? t('shift.shift') + ' ' + shift['name'] : period == 'month' ? dayjs().format('MMM YY') : dayjs().format('L') : dayjs().format('L')}<div className="percent">{Number(Number(shift.efficiency).toFixed(shift.efficiency < 10 ? 2 : 1).toString()).toLocaleString(i18n.language) + '%'}</div></Space></div><div className="progress"><Progress percent={shift.efficiency} showInfo={false} size="small" /></div></div>
             <div className="user">
               <div className="user" onClick={() => { !visible && showUserDialog() }}>
                 <Avatar.Group size='large'>
