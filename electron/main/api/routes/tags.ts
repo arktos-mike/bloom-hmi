@@ -24,7 +24,7 @@ setInterval(async () => {
     rows[0] && rows[0]['stops'].map((row: any) => {
       row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
     });
-    sse.send(rows[0], 'userInfo', '');
+    sse.send(rows[0], 'userInfo', user.rows[0].name);
   }
 
 }, 1000);

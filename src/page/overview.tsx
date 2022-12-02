@@ -2,6 +2,7 @@ import { Button, Display, Donut } from '@/components';
 import { Alert, Badge, Card, Carousel, Col, Descriptions, Form, Modal, Result, Row, Segmented, Skeleton, Space } from 'antd';
 import { CheckOutlined, ToolOutlined, QuestionCircleOutlined, LoginOutlined, IdcardOutlined, RiseOutlined, PieChartOutlined, SyncOutlined, ClockCircleOutlined, ScheduleOutlined, DashboardOutlined, AimOutlined, ExclamationCircleOutlined, HistoryOutlined, ReconciliationOutlined, CalendarOutlined, FieldTimeOutlined } from '@ant-design/icons';
 import React, { useState, useEffect, useRef } from 'react'
+import { useSSE } from 'react-hooks-sse';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import 'dayjs/locale/en-gb';
@@ -151,14 +152,22 @@ const Overview: React.FC<Props> = ({
     else { return '' };
   }
 
+  const usermon = useSSE(
+    'userInfo',
+
+      { workdur: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} }
+    ,
+    {
+      parser(input: string) {
+        return JSON.parse(input);
+      },
+    }
+  );
+
   useEffect(() => {
-    (async () => {
-      await Promise.all([
-        fetchUserStatInfo(),
-      ]);
-    })();
+    setUserInfo(usermon)
     return () => { }
-  }, [modeCode.val, dayjs().second() % 10 == 0])
+  }, [usermon])
 
   useEffect(() => {
     setModeUser({ val: modeCode.val, updated: dayjs() })
