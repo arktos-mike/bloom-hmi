@@ -158,7 +158,7 @@ const Overview: React.FC<Props> = ({
       ]);
     })();
     return () => { }
-  }, [modeCode.val])
+  }, [modeCode.val, dayjs().second() % 10 == 0])
 
   useEffect(() => {
     setModeUser({ val: modeCode.val, updated: dayjs() })
@@ -283,7 +283,7 @@ const Overview: React.FC<Props> = ({
                               </Form.Item>
                             </Form.Item>
                             <Form.Item label={<ClockCircleOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{(period ? (period == 'day' || ((!shift.start || !shift.end) && period == 'shift')) ? dayjs().format('LL LT') : period == 'shift' ? dayjs(shift['start']).format('LL LT') : period == 'month' ? dayjs().startOf('month').format('LL LT') : dayjs().startOf('day').format('LL LT') : dayjs().startOf('day').format('LL LT')) + ' - ' + (period ? (period == 'shift' && shift.start && shift.end) ? dayjs(shift['end']).format('LL LT') : dayjs().format('LL LT') : dayjs().format('LL LT')) + ((period == 'shift' && shift.start && shift.end) ? (', ' + duration2text(dayjs.duration(shift['duration']))) : '')}</span>
+                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{(period ? (period == 'day' || ((!shift.start || !shift.end) && period == 'shift')) ? dayjs().startOf('day').format('LL LT') : period == 'shift' ? dayjs(shift['start']).format('LL LT') : period == 'month' ? dayjs().startOf('month').format('LL LT') : dayjs().startOf('day').format('LL LT') : dayjs().startOf('day').format('LL LT')) + ' - ' + (period ? (period == 'shift' && shift.start && shift.end) ? dayjs(shift['end']).format('LL LT') : dayjs().format('LL LT') : dayjs().format('LL LT')) + ((period == 'shift' && shift.start && shift.end) ? (', ' + duration2text(dayjs.duration(shift['duration']))) : '')}</span>
                             </Form.Item>
                             <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ marginBottom: 0 }} >
                               <Form.Item style={{ display: 'inline-block' }} >

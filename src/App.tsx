@@ -431,7 +431,7 @@ const App: React.FC = () => {
       ]);
     })();
     return () => { }
-  }, [modeCode.val, dayjs().day(), period]) //modeCode.val, (modeCode.val == 1) && (dayjs().second() % 1 == 0
+  }, [modeCode.val, period, dayjs().second() % 10 == 0]) //modeCode.val, (modeCode.val == 1) && (dayjs().second() % 1 == 0
 
   useEffect(() => {
     (async () => {
