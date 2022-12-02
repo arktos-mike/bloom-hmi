@@ -1,4 +1,5 @@
 import PromiseRouter from 'express-promise-router'
+import parseInterval from 'postgres-interval'
 import SSE from "express-sse";
 export const sse = new SSE();
 import db from '../../db'
@@ -16,6 +17,16 @@ setInterval(async () => {
   //sse.updateInit(["array", "containing", "new", "content"]);
   //sse.serialize(["array", "to", "be", "sent", "as", "serialized", "events"]);
   // All options for sending a message:
+  const user = await db.query(`SELECT id, name, lower(timestamp) as logintime FROM userlog WHERE upper_inf(timestamp) AND role=$1`, ['weaver']);
+  if (user.rows[0]) {
+    sse.send(user.rows[0], 'weaver', user.rows[0].name);
+    const { rows } = await db.query(`SELECT * FROM getuserstatinfo($1,$2,$3)`, [user.rows[0].id, user.rows[0].logintime, new Date()]);
+    rows[0] && rows[0]['stops'].map((row: any) => {
+      row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+    });
+    sse.send(rows[0], 'userInfo', '');
+  }
+
 }, 1000);
 
 router.get('/', async (req, res) => {
