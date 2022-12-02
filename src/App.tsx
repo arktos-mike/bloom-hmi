@@ -336,6 +336,11 @@ const App: React.FC = () => {
   }, [])
 
   useEffect(() => {
+    fetchTags();
+  }, [location]);
+
+
+  useEffect(() => {
     dayjs.locale(i18n.language == 'en' ? 'en-gb' : i18n.language)
     return () => { }
   }, [i18n.language])

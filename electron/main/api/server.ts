@@ -284,7 +284,7 @@ const writeModbusData = async function (tagName, val) {
           await client.writeRegisters(tag.addr, buffer);
           port.mbsState = MBS_STATE_GOOD_WRITE;
           mbsStatus = "success";
-          console.log("[" + port.path + "]" + "[#" + slave.sId + "][WRITE]" + tag.name + " = " + val);
+          //console.log("[" + port.path + "]" + "[#" + slave.sId + "][WRITE]" + tag.name + " = " + val);
         } catch (e) {
           port.mbsState = MBS_STATE_FAIL_WRITE;
           //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
