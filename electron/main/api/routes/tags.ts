@@ -10,7 +10,7 @@ const router = PromiseRouter();
 
 router.get('/events', sse.init);
 setInterval(async () => {
-  const mon = await db.query('SELECT tag, val, updated, link FROM tags WHERE tag->>$1=$2', ['group', 'monitoring']);
+  const mon = await db.query('SELECT tag, val, updated, link FROM tags WHERE tag->>$1=$2 or link=false', ['group', 'monitoring']);
   // Sends message to all connected clients!
   sse.send(mon.rows, 'tags', 'monitoring');
   //sse.updateInit(["array", "containing", "new", "content"]);
