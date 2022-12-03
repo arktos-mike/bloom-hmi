@@ -1040,5 +1040,94 @@ end;
 
 $function$
 ;
+CREATE OR REPLACE FUNCTION getcurrentinfo(OUT tags jsonb, OUT rolls numeric, OUT shift jsonb, OUT lifetime jsonb, OUT weaver jsonb, OUT userinfo jsonb, OUT shiftinfo jsonb, OUT dayinfo jsonb, OUT monthinfo jsonb)
+ RETURNS record
+ LANGUAGE plpgsql
+AS $function$
+  begin
+
+  tags :=(
+select
+	jsonb_agg(e)
+from
+	(
+	select
+		tag,
+		val,
+		updated,
+		link
+	from
+		tags
+	where
+		tag->>'group' = 'monitoring'
+		or link = false) e);
+
+rolls :=(
+select
+	count(*)
+from
+	clothlog
+where
+	not upper_inf(timestamp)
+		and timestamp && tstzrange(lower((select timestamp from clothlog where upper_inf(timestamp) and event = 0)),
+		current_timestamp(3),
+		'[)')
+			and event = 1);
+
+shift :=(select row_to_json(e)::jsonb from (select * from shiftdetect(current_timestamp)) e);
+
+lifetime :=(select row_to_json(e)::jsonb from (select * from lifetime) e);
+
+weaver :=(
+select
+	row_to_json(e)::jsonb
+from
+	(
+	select
+		id,
+		name,
+		lower(timestamp) as logintime
+	from
+		userlog
+	where
+		upper_inf(timestamp)
+		and role = 'weaver') e);
+
+userinfo :=(
+select
+	row_to_json(e)::jsonb
+from
+	(
+	select
+		*
+	from
+		getuserstatinfo((weaver->>'id')::numeric,
+		(weaver->>'logintime')::timestamptz,
+		current_timestamp)) e);
+
+if (shift->>'shiftname' = '') is not false then
+  	shiftinfo := null;
+else
+  	shiftinfo :=(select row_to_json(e)::jsonb|| json_build_object('start', (shift->>'shiftstart')::timestamptz , 'end', current_timestamp)::jsonb  from (select * from getstatinfo((shift->>'shiftstart')::timestamptz, current_timestamp)) e);
+end if;
+
+dayinfo :=(
+select
+	row_to_json(e)::jsonb || json_build_object('start', date_trunc('day', current_timestamp) , 'end', current_timestamp)::jsonb
+from
+	(
+	select
+		*
+	from
+		getstatinfo(date_trunc('day', current_timestamp),
+		current_timestamp)) e );
+
+monthinfo := (select row_to_json(e)::jsonb || json_build_object('start', date_trunc('month', current_timestamp) , 'end', current_timestamp)::jsonb  from (select * from getstatinfo(date_trunc('month', current_timestamp), current_timestamp)) e);
+
+end;
+
+$function$
+;
+
 `
 export default createTableText
