@@ -14,7 +14,8 @@ const cardBodyStyle = { flex: 1, display: 'flex', alignItems: 'center', justifyC
 
 type Props = {
   shadowUser: any;
-  shift: any;
+  periodInfo: any;
+  userInfo: any;
   token: any;
   tags: any;
   pieces: any;
@@ -27,7 +28,8 @@ type Props = {
 
 const Overview: React.FC<Props> = ({
   shadowUser,
-  shift,
+  periodInfo,
+  userInfo,
   token,
   tags,
   pieces,
@@ -44,8 +46,6 @@ const Overview: React.FC<Props> = ({
   const [mode, setMode] = useState(modeCode)
   const [modeUser, setModeUser] = useState(modeCode)
   const [loading, setLoading] = useState(true)
-  const [userInfo, setUserInfo] = useState({ workdur: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} })
-  //const [pieces, setPieces] = useState()
   const [userDonut, setUserDonut] = useState([] as any)
   const [userDonutSel, setUserDonutSel] = useState({ run: true, other: true, button: true, warp: true, weft: true, tool: true, fabric: true } as any)
   const [shiftDonut, setShiftDonut] = useState([] as any)
@@ -120,20 +120,6 @@ const Overview: React.FC<Props> = ({
     return parseFloat(out.join("."));
   }
 
-  const fetchUserStatInfo = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/shifts/getuserstatinfo', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json;charset=UTF-8', },
-        body: JSON.stringify({ id: ((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id : shadowUser.id), start: shadowUser.logintime, end: dayjs() }),
-      });
-      if (!response.ok) { /*throw Error(response.statusText);*/ }
-      const json = await response.json();
-      setUserInfo(json[0]);
-    }
-    catch (error) { /*console.log(error);*/ }
-  };
-
   const getTag = (tagName: string) => {
     let obj = tags.find((o: any) => o['tag']['name'] == tagName)
     if (obj) { return { ...obj['tag'], link: obj['link'] }; }
@@ -152,23 +138,6 @@ const Overview: React.FC<Props> = ({
     else { return '' };
   }
 
-  const usermon = useSSE(
-    'userInfo',
-
-      { workdur: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} }
-    ,
-    {
-      parser(input: string) {
-        return JSON.parse(input);
-      },
-    }
-  );
-
-  useEffect(() => {
-    setUserInfo(usermon)
-    return () => { }
-  }, [usermon])
-
   useEffect(() => {
     setModeUser({ val: modeCode.val, updated: dayjs() })
     return () => { }
@@ -177,7 +146,7 @@ const Overview: React.FC<Props> = ({
   useEffect(() => {
     setMode({ val: modeCode.val, updated: dayjs() })
     return () => { }
-  }, [shift.starts, shift.stops])
+  }, [periodInfo.starts, periodInfo.stops])
 
 
   useEffect(() => {
@@ -186,24 +155,16 @@ const Overview: React.FC<Props> = ({
   }, [])
 
   useEffect(() => {
-    (async () => {
-      await fetchUserStatInfo();
-      shadowUser && setLoading(false)
-    })();
-    return () => { }
-  }, [period, shadowUser])
-
-  useEffect(() => {
-    if (Array.isArray(shift['stops'])) {
+    if (Array.isArray(periodInfo['stops'])) {
       let obj = []
-      obj.push({ reason: 'run', value: dayjs.duration(shift['runtime'] || 0).asMilliseconds(), count: Number(shift['starts']) })
-      for (let stop of shift['stops']) {
+      obj.push({ reason: 'run', value: dayjs.duration(periodInfo['runtime'] || 0).asMilliseconds(), count: Number(periodInfo['starts']) })
+      for (let stop of periodInfo['stops']) {
         obj.push({ reason: Object.keys(stop)[0], value: dayjs.duration(stop[Object.keys(stop)[0]]['dur']).asMilliseconds(), count: stop[Object.keys(stop)[0]]['total'] })
       }
       setShiftDonut(obj);
     }
     return () => { }
-  }, [shift.runtime, shift.stops, period])
+  }, [periodInfo.runtime, periodInfo.stops, period])
 
   useEffect(() => {
     if (userInfo && Array.isArray(userInfo['stops'])) {
@@ -214,8 +175,9 @@ const Overview: React.FC<Props> = ({
       }
       setUserDonut(obj);
     }
+    setLoading(false)
     return () => { }
-  }, [userInfo?.runtime, userInfo?.stops, period])
+  }, [userInfo.runtime, userInfo.stops, period])
 
   useEffect(() => {
     dayjs.locale(i18n.language == 'en' ? 'en-gb' : i18n.language)
@@ -266,7 +228,7 @@ const Overview: React.FC<Props> = ({
                 </Col>
                 <Col span={12} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
                   <Row style={{ marginBottom: '8px', flex: ((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
-                    <Card title={period ? (period == 'day' || ((!shift.start || !shift.end) && period == 'shift')) ? capitalizeFirstLetter(t('period.day')) : period == 'shift' ? capitalizeFirstLetter(t('period.shift')) : period == 'month' ? capitalizeFirstLetter(t('period.month')) : capitalizeFirstLetter(t('period.day')) : capitalizeFirstLetter(t('period.day'))} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}
+                    <Card title={capitalizeFirstLetter(t('period.' + period))} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}
                       extra={<Segmented size='middle' value={period} onChange={(value) => { setPeriod(value.toString()); }}
                         options={[{ label: t('period.shift'), value: 'shift', icon: <ScheduleOutlined /> },
                         { label: t('period.day'), value: 'day', icon: <HistoryOutlined /> },
@@ -285,30 +247,30 @@ const Overview: React.FC<Props> = ({
                           >
                             <Form.Item label={<ScheduleOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
                               <Form.Item style={{ display: 'inline-block' }} >
-                                <span style={{ fontSize: '24px' }}>{period ? (period == 'day' || ((!shift.start || !shift.end) && period == 'shift')) ? dayjs().format('LL') : period == 'shift' ? t('shift.shift') + ' ' + shift['name'] : period == 'month' ? dayjs().format('MMMM YYYY') : dayjs().format('LL') : dayjs().format('LL')}</span>
+                                <span style={{ fontSize: '24px' }}>{periodInfo.name}</span>
                               </Form.Item>
                               <Form.Item label={<RiseOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }}>
-                                <span style={{ fontSize: '24px' }}>{Number(Number(shift['efficiency']).toFixed(shift['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + ' ' + t('tags.efficiency.eng')}</span>
+                                <span style={{ fontSize: '24px' }}>{Number(Number(periodInfo['efficiency']).toFixed(periodInfo['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + ' ' + t('tags.efficiency.eng')}</span>
                               </Form.Item>
                             </Form.Item>
                             <Form.Item label={<ClockCircleOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{(period ? (period == 'day' || ((!shift.start || !shift.end) && period == 'shift')) ? dayjs().startOf('day').format('LL LT') : period == 'shift' ? dayjs(shift['start']).format('LL LT') : period == 'month' ? dayjs().startOf('month').format('LL LT') : dayjs().startOf('day').format('LL LT') : dayjs().startOf('day').format('LL LT')) + ' - ' + (period ? (period == 'shift' && shift.start && shift.end) ? dayjs(shift['end']).format('LL LT') : dayjs().format('LL LT') : dayjs().format('LL LT')) + ((period == 'shift' && shift.start && shift.end) ? (', ' + duration2text(dayjs.duration(shift['duration']))) : '')}</span>
+                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{dayjs(periodInfo.start).format('LL LT') + ' - ' + dayjs(periodInfo.end).format('LL LT') + (periodInfo.duration && (', ' + duration2text(dayjs.duration(periodInfo.duration))) )}</span>
                             </Form.Item>
                             <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ marginBottom: 0 }} >
                               <Form.Item style={{ display: 'inline-block' }} >
-                                <span style={{ fontSize: '16px' }}>{Number(shift['picks']) + ' ' + t('tags.picksLastRun.eng') + ', ' + Number(Number(shift['meters']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.clothMeters.eng')}</span>
+                                <span style={{ fontSize: '16px' }}>{Number(periodInfo['picks']) + ' ' + t('tags.picksLastRun.eng') + ', ' + Number(Number(periodInfo['meters']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.clothMeters.eng')}</span>
                               </Form.Item>
                               <Form.Item label={<DashboardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }} >
-                                <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{Number(Number(shift['rpm']).toFixed(1)).toLocaleString(i18n.language) + ' ' + t('tags.speedMainDrive.eng') + ', ' + Number(Number(shift['mph']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.speedCloth.eng')}</span>
+                                <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{Number(Number(periodInfo['rpm']).toFixed(1)).toLocaleString(i18n.language) + ' ' + t('tags.speedMainDrive.eng') + ', ' + Number(Number(periodInfo['mph']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.speedCloth.eng')}</span>
                               </Form.Item>
                             </Form.Item>
                             <Form.Item label={<PieChartOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
                               <Space direction="horizontal" style={{ width: '100%', justifyContent: 'start', alignItems: 'start' }} wrap>
-                                {shift['starts'] > 0 && <div onClick={() => setShiftDonutSel({ ...shiftDonutSel, run: !shiftDonutSel.run })} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
-                                  count={shift['starts']} overflowCount={999}
+                                {periodInfo['starts'] > 0 && <div onClick={() => setShiftDonutSel({ ...shiftDonutSel, run: !shiftDonutSel.run })} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
+                                  count={periodInfo['starts']} overflowCount={999}
                                   style={{ backgroundColor: shiftDonutSel['run'] ? '#52c41aFF' : '#8c8c8c' }}
-                                /><SyncOutlined style={{ fontSize: '130%', color: shiftDonutSel['run'] ? '#52c41aFF' : '#8c8c8c', paddingInline: 5 }} />{mode.val == 1 ? duration2text(dayjs.duration(shift['runtime']).add(dayjs().diff(mode.updated))) : duration2text(dayjs.duration(shift['runtime']))}</div>}
-                                {Array.isArray(shift['stops']) && shift['stops'].map((stop: any) => (
+                                /><SyncOutlined style={{ fontSize: '130%', color: shiftDonutSel['run'] ? '#52c41aFF' : '#8c8c8c', paddingInline: 5 }} />{mode.val == 1 ? duration2text(dayjs.duration(periodInfo['runtime']).add(dayjs().diff(mode.updated))) : duration2text(dayjs.duration(periodInfo['runtime']))}</div>}
+                                {Array.isArray(periodInfo['stops']) && periodInfo['stops'].map((stop: any) => (
                                   stop[Object.keys(stop)[0]]['total'] > 0 && <div onClick={() => setShiftDonutSel({ ...shiftDonutSel, [Object.keys(stop)[0]]: !shiftDonutSel[Object.keys(stop)[0]] })} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
                                     count={stop[Object.keys(stop)[0]]['total']} overflowCount={999}
                                     style={{ backgroundColor: stopObj(Object.keys(stop)[0], shiftDonutSel[Object.keys(stop)[0]]).color }}
@@ -318,12 +280,12 @@ const Overview: React.FC<Props> = ({
                             </Form.Item>
                           </Form>
                           <div style={{ width: '20%', height: height && height / 4 }}>
-                            <Donut data={shiftDonut} selected={shiftDonutSel} text={(Number(Number(shift['efficiency']).toFixed(shift['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng'))} />
+                            <Donut data={shiftDonut} selected={shiftDonutSel} text={(Number(Number(periodInfo['efficiency']).toFixed(periodInfo['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng'))} />
                           </div></div>
                       </Skeleton>
                     </Card>
                   </Row>
-                  {((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) && <Row style={{ flex: shift['name'] ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex', marginBottom: '2px', }}>
+                  {((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) && <Row style={{ flex: periodInfo['name'] ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex', marginBottom: '2px', }}>
                     <Card title={t('user.weaver')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
                       <Skeleton loading={loading} round active>
                         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
@@ -338,14 +300,14 @@ const Overview: React.FC<Props> = ({
                           >
                             <Form.Item label={<IdcardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
                               <Form.Item style={{ display: 'inline-block' }} >
-                                <span style={{ fontSize: '24px' }}>{token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : shadowUser.name}</span>
+                                <span style={{ fontSize: '24px' }}>{userInfo.name}</span>
                               </Form.Item>
                               <Form.Item label={<RiseOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }}>
                                 <span style={{ fontSize: '24px' }}>{userInfo && (Number(Number(userInfo['efficiency']).toFixed(userInfo['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + ' ' + t('tags.efficiency.eng'))}</span>
                               </Form.Item>
                             </Form.Item>
                             <Form.Item label={<LoginOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{dayjs(shadowUser.logintime).format('LL LTS') + ', ' + (userInfo && duration2text(dayjs.duration(userInfo['workdur'])))}</span>
+                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{dayjs(userInfo.start).format('LL LT') + ', ' + (userInfo && duration2text(dayjs.duration(userInfo['duration'])))}</span>
                             </Form.Item>
                             <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ marginBottom: 0 }} >
                               <Form.Item style={{ display: 'inline-block' }} >

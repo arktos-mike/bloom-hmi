@@ -138,7 +138,8 @@ const App: React.FC = () => {
   const [layout, setLayout] = useState('default')
   const [tags, setTags] = useState<any[]>([])
   const [period, setPeriod] = useState('shift')
-  const [shift, setShift] = useState({ name: '', start: '', end: '', duration: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} })
+  const [periodInfo, setPeriodInfo] = useState({ name: '', start: '', end: '', duration: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} })
+  const [userInfo, setUserInfo] = useState({ name: '', start: '', end: '', duration: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} })
   const [updated, setUpdated] = useState(false)
   const [updatedReminders, setUpdatedReminders] = useState(false)
   const [openKeys, setOpenKeys] = useState(['']);
@@ -283,31 +284,6 @@ const App: React.FC = () => {
     else { return null };
   }
 
-  const fetchShift = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/shifts/currentshift');
-      if (!response.ok) { /*throw Error(response.statusText);*/ }
-      const json = await response.json();
-      setShift({ ...shift, name: json[0]['shiftname'], start: json[0]['shiftstart'], end: json[0]['shiftend'], duration: json[0]['shiftdur'] });
-      setUpdated(false);
-    }
-    catch (error) { /*console.log(error);*/ }
-  };
-  const fetchStatInfo = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/shifts/getstatinfo', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json;charset=UTF-8', },
-        body: JSON.stringify({ start: period ? (period == 'day' || ((!shift.start || !shift.end) && period == 'shift')) ? dayjs().startOf('day') : period == 'shift' ? shift.start : period == 'month' ? dayjs().startOf('month') : dayjs().startOf('day') : dayjs().startOf('day'), end: new Date() }),
-      });
-      if (!response.ok) { /*throw Error(response.statusText);*/ }
-      const json = await response.json();
-      setShift({ ...shift, picks: json[0]['picks'] || 0, meters: json[0]['meters'] || 0, rpm: json[0]['rpm'] || 0, mph: json[0]['mph'] || 0, efficiency: json[0]['efficiency'] || 0, starts: json[0]['starts'] || 0, runtime: json[0]['runtime'] || '', stops: json[0]['stops'] || {} });
-
-    }
-    catch (error) { /*console.log(error);*/ }
-  };
-
   const fetchReminders = async () => {
     try {
       const response = await fetch('http://localhost:3000/reminders/active');
@@ -324,8 +300,6 @@ const App: React.FC = () => {
       await Promise.all([
         clock(),
         fetchLngs(),
-        fetchStatInfo(),
-        fetchShift(),
         checkLogin(),
         fetchReminders(),
         fetchTags()
@@ -345,6 +319,26 @@ const App: React.FC = () => {
     return () => { }
   }, [i18n.language])
 
+  const info = useSSE(
+    'info',
+    {
+      tags: [],
+      rolls: null,
+      shift: { shiftname: '', shiftstart: '', shiftend: '', shiftdur: '' },
+      lifetime: { type: '', serialno: '', mfgdate: '', picks: 0, cloth: 0, motor: '' },
+      weaver: { id: '', name: '', logintime: '' },
+      userinfo: { workdur: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} },
+      shiftinfo: { start: '', end: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} } || null,
+      dayinfo: { start: '', end: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} },
+      monthinfo: { start: '', end: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} }
+    },
+    {
+      parser(input: string) {
+        return JSON.parse(input);
+      },
+    }
+  );
+
   const mon = useSSE(
     'tags',
     [{
@@ -360,10 +354,24 @@ const App: React.FC = () => {
     }
   );
 
-  const pieces = useSSE(
-    'rolls',
-    ''
-  );
+  useEffect(() => {
+    if (tags.length > 0) {
+      const updatedTags = tags.map(obj => info.tags.find((o: any) => o['tag']!['name'] === obj['tag']['name']) || obj);
+      updatedTags.map((tag: any) => (
+        tag && (tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec']).toString())
+      ));
+      setTags(updatedTags);
+
+      if (period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) setPeriodInfo({ name: dayjs(info.dayinfo['start']).format('LL'), start: info.dayinfo['start'], end: info.dayinfo['end'], duration: '', picks: info.dayinfo['picks'], meters: info.dayinfo['meters'], rpm: info.dayinfo['rpm'], mph: info.dayinfo['mph'], efficiency: info.dayinfo['efficiency'], starts: info.dayinfo['starts'], runtime: info.dayinfo['runtime'], stops: info.dayinfo['stops'] });
+      else if (period == 'shift') setPeriodInfo({ name: t('shift.shift') + ' ' + info.shift['shiftname'], start: info.shift['shiftstart'], end: info.shift['shiftend'], duration: info.shift['shiftdur'], picks: info.shiftinfo['picks'], meters: info.shiftinfo['meters'], rpm: info.shiftinfo['rpm'], mph: info.shiftinfo['mph'], efficiency: info.shiftinfo['efficiency'], starts: info.shiftinfo['starts'], runtime: info.shiftinfo['runtime'], stops: info.shiftinfo['stops'] });
+      else if (period == 'month') setPeriodInfo({ name: dayjs(info.monthinfo['start']).format('MMMM YYYY'), start: info.monthinfo['start'], end: info.monthinfo['end'], duration: '', picks: info.monthinfo['picks'], meters: info.monthinfo['meters'], rpm: info.monthinfo['rpm'], mph: info.monthinfo['mph'], efficiency: info.monthinfo['efficiency'], starts: info.monthinfo['starts'], runtime: info.monthinfo['runtime'], stops: info.monthinfo['stops'] });
+      //else setPeriodInfo({ name: dayjs(info.dayinfo['start']).format('LL'), start: info.dayinfo['start'], end: info.dayinfo['end'], duration: '', picks: info.dayinfo['picks'], meters: info.dayinfo['meters'], rpm: info.dayinfo['rpm'], mph: info.dayinfo['mph'], efficiency: info.dayinfo['efficiency'], starts: info.dayinfo['starts'], runtime: info.dayinfo['runtime'], stops: info.dayinfo['stops'] });
+
+      setUserInfo({ name: info.weaver.name, start: info.weaver.logintime, end: info.dayinfo['end'], duration: info.userinfo['workdur'] , picks: info.userinfo['picks'], meters: info.userinfo['meters'], rpm: info.userinfo['rpm'], mph: info.userinfo['mph'], efficiency: info.userinfo['efficiency'], starts: info.userinfo['starts'], runtime: info.userinfo['runtime'], stops: info.userinfo['stops'] });
+
+      setUpdated(false);
+    }
+  }, [info, period]);
 
   useEffect(() => {
     if (tags.length > 0) {
@@ -423,22 +431,6 @@ const App: React.FC = () => {
       openNotificationWithIcon('info', note['title'], 0, note['id'], note['descr'], { backgroundColor: '#e6f7ff', border: '2px solid #91d5ff' })));
     return () => { }
   }, [remindersFilter])
-
-  useEffect(() => {
-    (async () => {
-      Promise.all([
-        fetchStatInfo()
-      ]);
-    })();
-    return () => { }
-  }, [modeCode.val, period, dayjs().second() % 10 == 0]) //modeCode.val, (modeCode.val == 1) && (dayjs().second() % 1 == 0
-
-  useEffect(() => {
-    (async () => {
-      await fetchShift();
-    })();
-    return () => { }
-  }, [updated, shift.end && dayjs().isAfter(shift.end)])
 
   useEffect(() => {
     (async () => {
@@ -508,7 +500,7 @@ const App: React.FC = () => {
             <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={location.pathname == '/' ? ['overview'] : [location.pathname.split("/").slice(-1)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? smallItemsMan : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? smallItemsFix : smallItems : smallItems} />
             <div className="speed"><Spin wrapperClassName="speed" spinning={modeCode.val == 1 ? !getTagLink('speedMainDrive') : !getTagLink('stopAngle')}>{modeCode.val == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode.val == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}<div className="sub">{modeCode.val == 1 ? t('tags.speedMainDrive.eng') : '°'}</div></Spin></div>
             <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode.val).color }}><Spin wrapperClassName="mode" spinning={!getTagLink('modeCode')}>{modeCodeObj(modeCode.val).text + ' '}{modeCodeObj(modeCode.val).icon}<div className='stopwatch'>{stopwatch(modeCode.updated)}</div></Spin></div>
-            <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{period ? (period == 'day' || ((!shift.start || !shift.end) && period == 'shift')) ? dayjs().format('L') : period == 'shift' ? t('shift.shift') + ' ' + shift['name'] : period == 'month' ? dayjs().format('MMM YY') : dayjs().format('L') : dayjs().format('L')}<div className="percent">{Number(Number(shift.efficiency).toFixed(shift.efficiency < 10 ? 2 : 1).toString()).toLocaleString(i18n.language) + '%'}</div></Space></div><div className="progress"><Progress percent={shift.efficiency} showInfo={false} size="small" /></div></div>
+            <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{(period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) ? dayjs().format('L') : period == 'shift' ? periodInfo['name'] : period == 'month' ? dayjs().format('MMM YY') :''}<div className="percent">{Number(Number(periodInfo.efficiency).toFixed(periodInfo.efficiency < 10 ? 2 : 1).toString()).toLocaleString(i18n.language) + '%'}</div></Space></div><div className="progress"><Progress percent={periodInfo.efficiency} showInfo={false} size="small" /></div></div>
             <div className="user">
               <div className="user" onClick={() => { !visible && showUserDialog() }}>
                 <Avatar.Group size='large'>
@@ -531,8 +523,8 @@ const App: React.FC = () => {
               </div>
               <div className="site-layout-content">
                 <Routes>
-                  <Route index element={<Overview period={period} setPeriod={setPeriod} pieces={pieces} tags={tags} token={token} modeCode={modeCode} shift={shift} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
-                  <Route path={'/machineInfo'} element={<MachineInfo />} />
+                  <Route index element={<Overview period={period} setPeriod={setPeriod} pieces={info.rolls} tags={tags} token={token} modeCode={modeCode} periodInfo={periodInfo} userInfo={userInfo} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
+                  <Route path={'/machineInfo'} element={<MachineInfo lifetime={info.lifetime} />} />
                   <Route path={'/reminders'} element={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Reminders activeInput={activeInput} setActiveInput={setActiveInput} setUpdatedReminders={setUpdatedReminders} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                   <Route path={'/reports'} element={<MonthReport token={token} />} />
                   <Route path={'/reports/monthReport'} element={<MonthReport token={token} />} />

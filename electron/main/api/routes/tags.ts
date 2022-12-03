@@ -11,21 +11,32 @@ const router = PromiseRouter();
 
 router.get('/events', sse.init);
 setInterval(async () => {
-  const mon = await db.query('SELECT tag, val, updated, link FROM tags WHERE tag->>$1=$2 or link=false', ['group', 'monitoring']);
+  const info = await db.query('SELECT * FROM getcurrentinfo();');
+  info.rows[0] && info.rows[0]['userinfo']['stops'].map((row: any) => {
+    row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+  });
+  info.rows[0] && info.rows[0]['shiftinfo']['stops'].map((row: any) => {
+    row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+  });
+  info.rows[0] && info.rows[0]['dayinfo']['stops'].map((row: any) => {
+    row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+  });
+  info.rows[0] && info.rows[0]['monthinfo']['stops'].map((row: any) => {
+    row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+  });
+  info.rows[0] && (info.rows[0]['shift']['shiftdur'] = parseInterval(info.rows[0]['shift']['shiftdur']))
+  info.rows[0] && (info.rows[0]['userinfo']['runtime'] = parseInterval(info.rows[0]['userinfo']['runtime']))
+  info.rows[0] && (info.rows[0]['userinfo']['workdur'] = parseInterval(info.rows[0]['userinfo']['workdur']))
+  info.rows[0] && (info.rows[0]['shiftinfo']['runtime'] = parseInterval(info.rows[0]['shiftinfo']['runtime']))
+  info.rows[0] && (info.rows[0]['dayinfo']['runtime'] = parseInterval(info.rows[0]['dayinfo']['runtime']))
+  info.rows[0] && (info.rows[0]['monthinfo']['runtime'] = parseInterval(info.rows[0]['monthinfo']['runtime']))
+  info.rows[0] && (info.rows[0]['lifetime']['motor'] = parseInterval(info.rows[0]['lifetime']['motor']))
   // Sends message to all connected clients!
-  sse.send(mon.rows, 'tags', 'monitoring');
+  //sse.send(info.rows[0]['tags'], 'tags', 'monitoring');
+  sse.send(info.rows[0], 'info', 'all');
   //sse.updateInit(["array", "containing", "new", "content"]);
   //sse.serialize(["array", "to", "be", "sent", "as", "serialized", "events"]);
   // All options for sending a message:
-  const user = await db.query(`SELECT id, name, lower(timestamp) as logintime FROM userlog WHERE upper_inf(timestamp) AND role=$1`, ['weaver']);
-  if (user.rows[0]) {
-    sse.send(user.rows[0], 'weaver', user.rows[0].name);
-    const { rows } = await db.query(`SELECT * FROM getuserstatinfo($1,$2,$3)`, [user.rows[0].id, user.rows[0].logintime, new Date()]);
-    rows[0] && rows[0]['stops'].map((row: any) => {
-      row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
-    });
-    sse.send(rows[0], 'userInfo', user.rows[0].name);
-  }
 
 }, 1000);
 
