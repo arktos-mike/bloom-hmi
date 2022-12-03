@@ -12,16 +12,16 @@ const router = PromiseRouter();
 router.get('/events', sse.init);
 setInterval(async () => {
   const info = await db.query('SELECT * FROM getcurrentinfo();');
-  info.rows[0] && info.rows[0]['userinfo']['stops'].map((row: any) => {
+  info.rows[0] && await info.rows[0]['userinfo']['stops'].map((row: any) => {
     row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
   });
-  info.rows[0] && info.rows[0]['shiftinfo']['stops'].map((row: any) => {
+  info.rows[0] && await info.rows[0]['shiftinfo']['stops'].map((row: any) => {
     row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
   });
-  info.rows[0] && info.rows[0]['dayinfo']['stops'].map((row: any) => {
+  info.rows[0] && await info.rows[0]['dayinfo']['stops'].map((row: any) => {
     row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
   });
-  info.rows[0] && info.rows[0]['monthinfo']['stops'].map((row: any) => {
+  info.rows[0] && await info.rows[0]['monthinfo']['stops'].map((row: any) => {
     row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
   });
   info.rows[0] && (info.rows[0]['shift']['shiftdur'] = parseInterval(info.rows[0]['shift']['shiftdur']))
@@ -33,7 +33,7 @@ setInterval(async () => {
   info.rows[0] && (info.rows[0]['lifetime']['motor'] = parseInterval(info.rows[0]['lifetime']['motor']))
   // Sends message to all connected clients!
   //sse.send(info.rows[0]['tags'], 'tags', 'monitoring');
-  sse.send(info.rows[0], 'info', 'all');
+  await sse.send(info.rows[0], 'fullinfo', 'all');
   //sse.updateInit(["array", "containing", "new", "content"]);
   //sse.serialize(["array", "to", "be", "sent", "as", "serialized", "events"]);
   // All options for sending a message:

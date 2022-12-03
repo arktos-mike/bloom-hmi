@@ -234,7 +234,7 @@ const App: React.FC = () => {
       const timer = setInterval(() => { // Creates an interval which will update the current data every minute
         // This will trigger a rerender every component that uses the useDate hook.
         setDate(new Date());
-      }, 60000);
+      }, 1000);
       return () => {
         clearInterval(timer); // Return a funtion to clear the timer so that it will stop being called on unmount
       }
@@ -339,6 +339,26 @@ const App: React.FC = () => {
     }
   );
 
+  const fullinfo = useSSE(
+    'fullinfo',
+    {
+      tags: [],
+      rolls: null,
+      shift: { shiftname: '', shiftstart: '', shiftend: '', shiftdur: '' },
+      lifetime: { type: '', serialno: '', mfgdate: '', picks: 0, cloth: 0, motor: '' },
+      weaver: { id: '', name: '', logintime: '' },
+      userinfo: { workdur: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} },
+      shiftinfo: { start: '', end: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} } || null,
+      dayinfo: { start: '', end: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} },
+      monthinfo: { start: '', end: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} }
+    },
+    {
+      parser(input: string) {
+        return JSON.parse(input);
+      },
+    }
+  );
+
   const mon = useSSE(
     'tags',
     [{
@@ -361,17 +381,37 @@ const App: React.FC = () => {
         tag && (tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec']).toString())
       ));
       setTags(updatedTags);
+    }
+  }, [info.tags[0]['updated'] && dayjs().second()]);
 
+  useEffect(() => {
+    if (tags.length > 0) {
+      const updatedTags = tags.map(obj => info.tags.find((o: any) => o['tag']!['name'] === obj['tag']['name']) || obj);
+      updatedTags.map((tag: any) => (
+        tag && (tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec']).toString())
+      ));
+      setTags(updatedTags);
       if (period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) setPeriodInfo({ name: dayjs(info.dayinfo['start']).format('LL'), start: info.dayinfo['start'], end: info.dayinfo['end'], duration: '', picks: info.dayinfo['picks'], meters: info.dayinfo['meters'], rpm: info.dayinfo['rpm'], mph: info.dayinfo['mph'], efficiency: info.dayinfo['efficiency'], starts: info.dayinfo['starts'], runtime: info.dayinfo['runtime'], stops: info.dayinfo['stops'] });
       else if (period == 'shift') setPeriodInfo({ name: t('shift.shift') + ' ' + info.shift['shiftname'], start: info.shift['shiftstart'], end: info.shift['shiftend'], duration: info.shift['shiftdur'], picks: info.shiftinfo['picks'], meters: info.shiftinfo['meters'], rpm: info.shiftinfo['rpm'], mph: info.shiftinfo['mph'], efficiency: info.shiftinfo['efficiency'], starts: info.shiftinfo['starts'], runtime: info.shiftinfo['runtime'], stops: info.shiftinfo['stops'] });
       else if (period == 'month') setPeriodInfo({ name: dayjs(info.monthinfo['start']).format('MMMM YYYY'), start: info.monthinfo['start'], end: info.monthinfo['end'], duration: '', picks: info.monthinfo['picks'], meters: info.monthinfo['meters'], rpm: info.monthinfo['rpm'], mph: info.monthinfo['mph'], efficiency: info.monthinfo['efficiency'], starts: info.monthinfo['starts'], runtime: info.monthinfo['runtime'], stops: info.monthinfo['stops'] });
-      //else setPeriodInfo({ name: dayjs(info.dayinfo['start']).format('LL'), start: info.dayinfo['start'], end: info.dayinfo['end'], duration: '', picks: info.dayinfo['picks'], meters: info.dayinfo['meters'], rpm: info.dayinfo['rpm'], mph: info.dayinfo['mph'], efficiency: info.dayinfo['efficiency'], starts: info.dayinfo['starts'], runtime: info.dayinfo['runtime'], stops: info.dayinfo['stops'] });
 
       setUserInfo({ name: info.weaver.name, start: info.weaver.logintime, end: info.dayinfo['end'], duration: info.userinfo['workdur'] , picks: info.userinfo['picks'], meters: info.userinfo['meters'], rpm: info.userinfo['rpm'], mph: info.userinfo['mph'], efficiency: info.userinfo['efficiency'], starts: info.userinfo['starts'], runtime: info.userinfo['runtime'], stops: info.userinfo['stops'] });
 
       setUpdated(false);
     }
-  }, [info, period]);
+  }, [fullinfo, period]);
+
+  useEffect(() => {
+      if (period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) setPeriodInfo({ ...periodInfo, name: dayjs(info.dayinfo['start']).format('LL'), start: info.dayinfo['start'], end: info.dayinfo['end'], picks: info.dayinfo['picks'], meters: info.dayinfo['meters'], rpm: info.dayinfo['rpm'], mph: info.dayinfo['mph'], efficiency: info.dayinfo['efficiency'] });
+      else if (period == 'shift') setPeriodInfo({ ...periodInfo, name: t('shift.shift') + ' ' + info.shift['shiftname'], start: info.shift['shiftstart'], end: info.shift['shiftend'], picks: info.shiftinfo['picks'], meters: info.shiftinfo['meters'], rpm: info.shiftinfo['rpm'], mph: info.shiftinfo['mph'], efficiency: info.shiftinfo['efficiency'] });
+      else if (period == 'month') setPeriodInfo({ ...periodInfo, name: dayjs(info.monthinfo['start']).format('MMMM YYYY'), start: info.monthinfo['start'], end: info.monthinfo['end'], picks: info.monthinfo['picks'], meters: info.monthinfo['meters'], rpm: info.monthinfo['rpm'], mph: info.monthinfo['mph'], efficiency: info.monthinfo['efficiency']  });
+  }, [info.dayinfo.end, period]);
+
+  useEffect(() => {
+    setUserInfo({...userInfo, name: info.weaver.name, start: info.weaver.logintime, end: info.dayinfo['end'], picks: info.userinfo['picks'], meters: info.userinfo['meters'], rpm: info.userinfo['rpm'], mph: info.userinfo['mph'], efficiency: info.userinfo['efficiency'] });
+    setUpdated(false);
+}, [info.userinfo.efficiency, period, info.weaver.logintime]);
+
 
   useEffect(() => {
     if (tags.length > 0) {
@@ -383,7 +423,7 @@ const App: React.FC = () => {
       let obj = mon.find(o => o['tag']!['name'] == 'modeCode')
       obj && setModeCode({ val: obj['val'], updated: dayjs(obj['updated']) })
     }
-  }, [mon]);
+  }, [mon[0].updated]);
 
   /*
     useEffect(() => {
@@ -523,7 +563,7 @@ const App: React.FC = () => {
               </div>
               <div className="site-layout-content">
                 <Routes>
-                  <Route index element={<Overview period={period} setPeriod={setPeriod} pieces={info.rolls} tags={tags} token={token} modeCode={modeCode} periodInfo={periodInfo} userInfo={userInfo} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
+                  <Route index element={<Overview period={period} setPeriod={setPeriod} pieces={fullinfo.rolls} tags={tags} token={token} modeCode={modeCode} periodInfo={periodInfo} userInfo={userInfo} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
                   <Route path={'/machineInfo'} element={<MachineInfo lifetime={info.lifetime} />} />
                   <Route path={'/reminders'} element={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Reminders activeInput={activeInput} setActiveInput={setActiveInput} setUpdatedReminders={setUpdatedReminders} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                   <Route path={'/reports'} element={<MonthReport token={token} />} />

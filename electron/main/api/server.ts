@@ -14,6 +14,7 @@ import trlocale from './trlocale'
 import eslocale from './eslocale'
 import network from 'network'
 import { SerialPort } from 'serialport'
+import parseInterval from 'postgres-interval'
 import ModbusRTU from 'modbus-serial'
 const client1 = new ModbusRTU();
 const client2 = new ModbusRTU();
@@ -411,7 +412,30 @@ const readModbusData = async function (client, port, slave) {
               }
               const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND ( (round(val::numeric,(tag->>$6)::integer)) IS DISTINCT FROM (round($1::numeric,(tag->>$6)::integer)) OR link=false) RETURNING *;', [val, 'dev', slave.name, 'name', tag.name, 'dec']);
               if (rows[0] && rows[0]['tag']['group'] == 'event') {
-                sse.send(rows, 'tags', tag.name);
+                if (tag.name == 'modeCode') {
+                  const info = await db.query('SELECT * FROM getcurrentinfo();');
+                  info.rows[0] && await info.rows[0]['userinfo']['stops'].map((row: any) => {
+                    row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+                  });
+                  info.rows[0] && await info.rows[0]['shiftinfo']['stops'].map((row: any) => {
+                    row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+                  });
+                  info.rows[0] && await info.rows[0]['dayinfo']['stops'].map((row: any) => {
+                    row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+                  });
+                  info.rows[0] && await info.rows[0]['monthinfo']['stops'].map((row: any) => {
+                    row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+                  });
+                  info.rows[0] && (info.rows[0]['shift']['shiftdur'] = parseInterval(info.rows[0]['shift']['shiftdur']))
+                  info.rows[0] && (info.rows[0]['userinfo']['runtime'] = parseInterval(info.rows[0]['userinfo']['runtime']))
+                  info.rows[0] && (info.rows[0]['userinfo']['workdur'] = parseInterval(info.rows[0]['userinfo']['workdur']))
+                  info.rows[0] && (info.rows[0]['shiftinfo']['runtime'] = parseInterval(info.rows[0]['shiftinfo']['runtime']))
+                  info.rows[0] && (info.rows[0]['dayinfo']['runtime'] = parseInterval(info.rows[0]['dayinfo']['runtime']))
+                  info.rows[0] && (info.rows[0]['monthinfo']['runtime'] = parseInterval(info.rows[0]['monthinfo']['runtime']))
+                  info.rows[0] && (info.rows[0]['lifetime']['motor'] = parseInterval(info.rows[0]['lifetime']['motor']))
+                  await sse.send(info.rows[0], 'info', 'all');
+                }
+                await sse.send(rows, 'tags', tag.name);
               }
               //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
               if (count > 1) { count--; await process(slave.tags[count - 1]); }

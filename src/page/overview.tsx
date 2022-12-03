@@ -43,8 +43,6 @@ const Overview: React.FC<Props> = ({
   const [formWeaver] = Form.useForm();
   const { t, i18n } = useTranslation();
   const [height, setHeight] = useState<number | undefined>(0)
-  const [mode, setMode] = useState(modeCode)
-  const [modeUser, setModeUser] = useState(modeCode)
   const [loading, setLoading] = useState(true)
   const [userDonut, setUserDonut] = useState([] as any)
   const [userDonutSel, setUserDonutSel] = useState({ run: true, other: true, button: true, warp: true, weft: true, tool: true, fabric: true } as any)
@@ -137,17 +135,6 @@ const Overview: React.FC<Props> = ({
     }
     else { return '' };
   }
-
-  useEffect(() => {
-    setModeUser({ val: modeCode.val, updated: dayjs() })
-    return () => { }
-  }, [userInfo?.starts, userInfo?.stops])
-
-  useEffect(() => {
-    setMode({ val: modeCode.val, updated: dayjs() })
-    return () => { }
-  }, [periodInfo.starts, periodInfo.stops])
-
 
   useEffect(() => {
     setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
@@ -269,12 +256,12 @@ const Overview: React.FC<Props> = ({
                                 {periodInfo['starts'] > 0 && <div onClick={() => setShiftDonutSel({ ...shiftDonutSel, run: !shiftDonutSel.run })} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
                                   count={periodInfo['starts']} overflowCount={999}
                                   style={{ backgroundColor: shiftDonutSel['run'] ? '#52c41aFF' : '#8c8c8c' }}
-                                /><SyncOutlined style={{ fontSize: '130%', color: shiftDonutSel['run'] ? '#52c41aFF' : '#8c8c8c', paddingInline: 5 }} />{mode.val == 1 ? duration2text(dayjs.duration(periodInfo['runtime']).add(dayjs().diff(mode.updated))) : duration2text(dayjs.duration(periodInfo['runtime']))}</div>}
+                                /><SyncOutlined style={{ fontSize: '130%', color: shiftDonutSel['run'] ? '#52c41aFF' : '#8c8c8c', paddingInline: 5 }} />{modeCode.val == 1 ? duration2text(dayjs.duration(periodInfo['runtime']).add(dayjs().diff(modeCode.updated))) : duration2text(dayjs.duration(periodInfo['runtime']))}</div>}
                                 {Array.isArray(periodInfo['stops']) && periodInfo['stops'].map((stop: any) => (
                                   stop[Object.keys(stop)[0]]['total'] > 0 && <div onClick={() => setShiftDonutSel({ ...shiftDonutSel, [Object.keys(stop)[0]]: !shiftDonutSel[Object.keys(stop)[0]] })} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
                                     count={stop[Object.keys(stop)[0]]['total']} overflowCount={999}
                                     style={{ backgroundColor: stopObj(Object.keys(stop)[0], shiftDonutSel[Object.keys(stop)[0]]).color }}
-                                  />{stopObj(Object.keys(stop)[0], shiftDonutSel[Object.keys(stop)[0]]).icon}{mode.val == stopNum(Object.keys(stop)[0]) ? duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']).add(dayjs().diff(mode.updated))) : duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
+                                  />{stopObj(Object.keys(stop)[0], shiftDonutSel[Object.keys(stop)[0]]).icon}{modeCode.val == stopNum(Object.keys(stop)[0]) ? duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']).add(dayjs().diff(modeCode.updated))) : duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
                                 }
                               </Space>
                             </Form.Item>
@@ -307,7 +294,7 @@ const Overview: React.FC<Props> = ({
                               </Form.Item>
                             </Form.Item>
                             <Form.Item label={<LoginOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{dayjs(userInfo.start).format('LL LT') + ', ' + (userInfo && duration2text(dayjs.duration(userInfo['duration'])))}</span>
+                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{dayjs(userInfo.start).format('LL LT') + ', ' + (userInfo && duration2text(dayjs.duration(dayjs().diff(dayjs(userInfo.start)))))}</span>
                             </Form.Item>
                             <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ marginBottom: 0 }} >
                               <Form.Item style={{ display: 'inline-block' }} >
@@ -322,12 +309,12 @@ const Overview: React.FC<Props> = ({
                                 {userInfo['starts'] > 0 && <div onClick={() => setUserDonutSel({ ...userDonutSel, run: !userDonutSel.run })} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
                                   count={userInfo['starts']} overflowCount={999}
                                   style={{ backgroundColor: userDonutSel['run'] ? '#52c41aFF' : '#8c8c8c' }}
-                                /><SyncOutlined style={{ fontSize: '130%', color: userDonutSel['run'] ? '#52c41aFF' : '#8c8c8c', paddingInline: 5 }} />{modeUser.val == 1 ? duration2text(dayjs.duration(userInfo['runtime']).add(dayjs().diff(modeUser.updated))) : duration2text(dayjs.duration(userInfo['runtime']))}</div>}
+                                /><SyncOutlined style={{ fontSize: '130%', color: userDonutSel['run'] ? '#52c41aFF' : '#8c8c8c', paddingInline: 5 }} />{modeCode.val == 1 ? duration2text(dayjs.duration(userInfo['runtime']).add(dayjs().diff(modeCode.updated))) : duration2text(dayjs.duration(userInfo['runtime']))}</div>}
                                 {Array.isArray(userInfo['stops']) && (userInfo['stops'] as []).map((stop: any) => (
                                   stop[Object.keys(stop)[0]]['total'] > 0 && <div onClick={() => setUserDonutSel({ ...userDonutSel, [Object.keys(stop)[0]]: !userDonutSel[Object.keys(stop)[0]] })} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
                                     count={stop[Object.keys(stop)[0]]['total']} overflowCount={999}
                                     style={{ backgroundColor: stopObj(Object.keys(stop)[0], userDonutSel[Object.keys(stop)[0]]).color }}
-                                  />{stopObj(Object.keys(stop)[0], userDonutSel[Object.keys(stop)[0]]).icon}{modeUser.val == stopNum(Object.keys(stop)[0]) ? duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']).add(dayjs().diff(modeUser.updated))) : duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
+                                  />{stopObj(Object.keys(stop)[0], userDonutSel[Object.keys(stop)[0]]).icon}{modeCode.val == stopNum(Object.keys(stop)[0]) ? duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']).add(dayjs().diff(modeCode.updated))) : duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
                                 }
                               </Space>}
                             </Form.Item>
