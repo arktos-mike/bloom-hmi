@@ -14,8 +14,8 @@ const cardBodyStyle = { flex: 1, display: 'flex', alignItems: 'center', justifyC
 
 type Props = {
   shadowUser: any;
-  periodInfo: any;
-  userInfo: any;
+  info: any;
+  fullinfo: any;
   token: any;
   tags: any;
   pieces: any;
@@ -28,8 +28,8 @@ type Props = {
 
 const Overview: React.FC<Props> = ({
   shadowUser,
-  periodInfo,
-  userInfo,
+  info,
+  fullinfo,
   token,
   tags,
   pieces,
@@ -44,6 +44,8 @@ const Overview: React.FC<Props> = ({
   const { t, i18n } = useTranslation();
   const [height, setHeight] = useState<number | undefined>(0)
   const [loading, setLoading] = useState(true)
+  const [periodInfo, setPeriodInfo] = useState({ name: '', start: '', end: '', duration: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} })
+  const [userInfo, setUserInfo] = useState({ name: '', start: '', end: '', duration: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} })
   const [userDonut, setUserDonut] = useState([] as any)
   const [userDonutSel, setUserDonutSel] = useState({ run: true, other: true, button: true, warp: true, weft: true, tool: true, fabric: true } as any)
   const [shiftDonut, setShiftDonut] = useState([] as any)
@@ -140,6 +142,23 @@ const Overview: React.FC<Props> = ({
     setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
     return () => { }
   }, [])
+
+  useEffect(() => {
+    if (period == 'day' || ((!fullinfo.shift.shiftstart || !fullinfo.shift.shiftend) && period == 'shift')) setPeriodInfo({ name: dayjs(fullinfo.dayinfo['start']).format('LL'), start: fullinfo.dayinfo['start'], end: fullinfo.dayinfo['end'], duration: '', picks: fullinfo.dayinfo['picks'], meters: fullinfo.dayinfo['meters'], rpm: fullinfo.dayinfo['rpm'], mph: fullinfo.dayinfo['mph'], efficiency: fullinfo.dayinfo['efficiency'], starts: fullinfo.dayinfo['starts'], runtime: fullinfo.dayinfo['runtime'], stops: fullinfo.dayinfo['stops'] });
+    else if (period == 'shift') setPeriodInfo({ name: t('shift.shift') + ' ' + fullinfo.shift['shiftname'], start: fullinfo.shift['shiftstart'], end: fullinfo.shift['shiftend'], duration: fullinfo.shift['shiftdur'], picks: fullinfo.shiftinfo['picks'], meters: fullinfo.shiftinfo['meters'], rpm: fullinfo.shiftinfo['rpm'], mph: fullinfo.shiftinfo['mph'], efficiency: fullinfo.shiftinfo['efficiency'], starts: fullinfo.shiftinfo['starts'], runtime: fullinfo.shiftinfo['runtime'], stops: fullinfo.shiftinfo['stops'] });
+    else if (period == 'month') setPeriodInfo({ name: dayjs(fullinfo.monthinfo['start']).format('MMMM YYYY'), start: fullinfo.monthinfo['start'], end: fullinfo.monthinfo['end'], duration: '', picks: fullinfo.monthinfo['picks'], meters: fullinfo.monthinfo['meters'], rpm: fullinfo.monthinfo['rpm'], mph: fullinfo.monthinfo['mph'], efficiency: fullinfo.monthinfo['efficiency'], starts: fullinfo.monthinfo['starts'], runtime: fullinfo.monthinfo['runtime'], stops: fullinfo.monthinfo['stops'] });
+    setUserInfo({ name: fullinfo.weaver.name, start: fullinfo.weaver.logintime, end: fullinfo.dayinfo['end'], duration: fullinfo.userinfo['workdur'], picks: fullinfo.userinfo['picks'], meters: fullinfo.userinfo['meters'], rpm: fullinfo.userinfo['rpm'], mph: fullinfo.userinfo['mph'], efficiency: fullinfo.userinfo['efficiency'], starts: fullinfo.userinfo['starts'], runtime: fullinfo.userinfo['runtime'], stops: fullinfo.userinfo['stops'] });
+  }, [fullinfo]);
+
+  useEffect(() => {
+    if (period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) setPeriodInfo({ ...periodInfo, name: dayjs(info.dayinfo['start']).format('LL'), start: info.dayinfo['start'], end: info.dayinfo['end'], picks: info.dayinfo['picks'], meters: info.dayinfo['meters'], rpm: info.dayinfo['rpm'], mph: info.dayinfo['mph'], efficiency: info.dayinfo['efficiency'] });
+    else if (period == 'shift') setPeriodInfo({ ...periodInfo, name: t('shift.shift') + ' ' + info.shift['shiftname'], start: info.shift['shiftstart'], end: info.shift['shiftend'], picks: info.shiftinfo['picks'], meters: info.shiftinfo['meters'], rpm: info.shiftinfo['rpm'], mph: info.shiftinfo['mph'], efficiency: info.shiftinfo['efficiency'] });
+    else if (period == 'month') setPeriodInfo({ ...periodInfo, name: dayjs(info.monthinfo['start']).format('MMMM YYYY'), start: info.monthinfo['start'], end: info.monthinfo['end'], picks: info.monthinfo['picks'], meters: info.monthinfo['meters'], rpm: info.monthinfo['rpm'], mph: info.monthinfo['mph'], efficiency: info.monthinfo['efficiency'] });
+  }, [info.dayinfo?.end, period]);
+
+  useEffect(() => {
+    setUserInfo({ ...userInfo, name: info.weaver.name, start: info.weaver.logintime, end: info.dayinfo['end'], picks: info.userinfo['picks'], meters: info.userinfo['meters'], rpm: info.userinfo['rpm'], mph: info.userinfo['mph'], efficiency: info.userinfo['efficiency'] });
+  }, [info.userinfo?.efficiency, info.weaver.id && period, info.weaver?.logintime]);
 
   useEffect(() => {
     if (Array.isArray(periodInfo['stops'])) {
@@ -241,7 +260,7 @@ const Overview: React.FC<Props> = ({
                               </Form.Item>
                             </Form.Item>
                             <Form.Item label={<ClockCircleOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{dayjs(periodInfo.start).format('LL LT') + ' - ' + dayjs(periodInfo.end).format('LL LT') + (periodInfo.duration && (', ' + duration2text(dayjs.duration(periodInfo.duration))) )}</span>
+                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{dayjs(periodInfo.start).format('LL LT') + ' - ' + dayjs(periodInfo.end).format('LL LT') + (periodInfo.duration && (', ' + duration2text(dayjs.duration(periodInfo.duration))))}</span>
                             </Form.Item>
                             <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ marginBottom: 0 }} >
                               <Form.Item style={{ display: 'inline-block' }} >

@@ -346,7 +346,7 @@ const readModbusData = async function (client, port, slave) {
                 default:
                   break;
               }
-              const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND ( (round(val::numeric,(tag->>$6)::integer)) IS DISTINCT FROM (round($1::numeric,(tag->>$6)::integer)) OR link=false) RETURNING *;', [val, 'dev', slave.name, 'name', tag.name, 'dec']);
+              const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND ( (round(val::numeric,(tag->>$6)::integer)) IS DISTINCT FROM (round($1::numeric,(tag->>$6)::integer)) OR link=false) RETURNING tag, (round(val::numeric,(tag->>$6)::integer)) as val, updated, link;', [val, 'dev', slave.name, 'name', tag.name, 'dec']);
               if (rows[0] && rows[0]['tag']['group'] == 'event') {
                 sse.send(rows, 'tags', tag.name);
               }
@@ -356,7 +356,7 @@ const readModbusData = async function (client, port, slave) {
               port.mbsState = MBS_STATE_FAIL_READ;
               //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
               //console.log(mbsStatus);
-              const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *;', ['dev', slave.name, 'name', tag.name]);
+              const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING tag, (round(val::numeric,(tag->>$5)::integer)) as val, updated, link;', ['dev', slave.name, 'name', tag.name, 'dec']);
               if (rows[0]) {
                 sse.send(rows, 'tags', tag.name);
               }
@@ -410,7 +410,7 @@ const readModbusData = async function (client, port, slave) {
                 default:
                   break;
               }
-              const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND ( (round(val::numeric,(tag->>$6)::integer)) IS DISTINCT FROM (round($1::numeric,(tag->>$6)::integer)) OR link=false) RETURNING *;', [val, 'dev', slave.name, 'name', tag.name, 'dec']);
+              const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND ( (round(val::numeric,(tag->>$6)::integer)) IS DISTINCT FROM (round($1::numeric,(tag->>$6)::integer)) OR link=false) RETURNING tag, (round(val::numeric,(tag->>$6)::integer)) as val, updated, link;', [val, 'dev', slave.name, 'name', tag.name, 'dec']);
               if (rows[0] && rows[0]['tag']['group'] == 'event') {
                 if (tag.name == 'modeCode') {
                   const info = await db.query('SELECT * FROM getcurrentinfo();');
@@ -433,7 +433,7 @@ const readModbusData = async function (client, port, slave) {
                   info.rows[0] && (info.rows[0]['dayinfo']['runtime'] = parseInterval(info.rows[0]['dayinfo']['runtime']))
                   info.rows[0] && (info.rows[0]['monthinfo']['runtime'] = parseInterval(info.rows[0]['monthinfo']['runtime']))
                   info.rows[0] && (info.rows[0]['lifetime']['motor'] = parseInterval(info.rows[0]['lifetime']['motor']))
-                  await sse.send(info.rows[0], 'info', 'all');
+                  await sse.send(info.rows[0], 'fullinfo', 'all');
                 }
                 await sse.send(rows, 'tags', tag.name);
               }
@@ -450,7 +450,7 @@ const readModbusData = async function (client, port, slave) {
                 }
               }
               else {
-                const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *;', ['dev', slave.name, 'name', tag.name]);
+                const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING tag, (round(val::numeric,(tag->>$5)::integer)) as val, updated, link;', ['dev', slave.name, 'name', tag.name, 'dec']);
                 if (rows[0]) {
                   sse.send(rows, 'tags', tag.name);
                 }

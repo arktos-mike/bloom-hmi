@@ -138,8 +138,8 @@ const App: React.FC = () => {
   const [layout, setLayout] = useState('default')
   const [tags, setTags] = useState<any[]>([])
   const [period, setPeriod] = useState('shift')
-  const [periodInfo, setPeriodInfo] = useState({ name: '', start: '', end: '', duration: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} })
-  const [userInfo, setUserInfo] = useState({ name: '', start: '', end: '', duration: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} })
+  const [efficiency, setEfficiency] = useState<number>()
+  const [periodName, setPeriodName] = useState<string>('')
   const [updated, setUpdated] = useState(false)
   const [updatedReminders, setUpdatedReminders] = useState(false)
   const [openKeys, setOpenKeys] = useState(['']);
@@ -323,14 +323,13 @@ const App: React.FC = () => {
     'info',
     {
       tags: [],
-      rolls: null,
       shift: { shiftname: '', shiftstart: '', shiftend: '', shiftdur: '' },
       lifetime: { type: '', serialno: '', mfgdate: '', picks: 0, cloth: 0, motor: '' },
       weaver: { id: '', name: '', logintime: '' },
-      userinfo: { workdur: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} },
-      shiftinfo: { start: '', end: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} } || null,
-      dayinfo: { start: '', end: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} },
-      monthinfo: { start: '', end: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} }
+      userinfo: { picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0 },
+      shiftinfo: { start: '', end: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0 } || null,
+      dayinfo: { start: '', end: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0 },
+      monthinfo: { start: '', end: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0 }
     },
     {
       parser(input: string) {
@@ -377,53 +376,31 @@ const App: React.FC = () => {
   useEffect(() => {
     if (tags.length > 0) {
       const updatedTags = tags.map(obj => info.tags.find((o: any) => o['tag']!['name'] === obj['tag']['name']) || obj);
-      updatedTags.map((tag: any) => (
-        tag && (tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec']).toString())
-      ));
       setTags(updatedTags);
     }
-  }, [info.tags[0]['updated'] && dayjs().second()]);
+  }, [info.tags]);
 
   useEffect(() => {
     if (tags.length > 0) {
-      const updatedTags = tags.map(obj => info.tags.find((o: any) => o['tag']!['name'] === obj['tag']['name']) || obj);
-      updatedTags.map((tag: any) => (
-        tag && (tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec']).toString())
-      ));
+      const updatedTags = tags.map(obj => fullinfo.tags.find((o: any) => o['tag']!['name'] === obj['tag']['name']) || obj);
       setTags(updatedTags);
-      if (period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) setPeriodInfo({ name: dayjs(info.dayinfo['start']).format('LL'), start: info.dayinfo['start'], end: info.dayinfo['end'], duration: '', picks: info.dayinfo['picks'], meters: info.dayinfo['meters'], rpm: info.dayinfo['rpm'], mph: info.dayinfo['mph'], efficiency: info.dayinfo['efficiency'], starts: info.dayinfo['starts'], runtime: info.dayinfo['runtime'], stops: info.dayinfo['stops'] });
-      else if (period == 'shift') setPeriodInfo({ name: t('shift.shift') + ' ' + info.shift['shiftname'], start: info.shift['shiftstart'], end: info.shift['shiftend'], duration: info.shift['shiftdur'], picks: info.shiftinfo['picks'], meters: info.shiftinfo['meters'], rpm: info.shiftinfo['rpm'], mph: info.shiftinfo['mph'], efficiency: info.shiftinfo['efficiency'], starts: info.shiftinfo['starts'], runtime: info.shiftinfo['runtime'], stops: info.shiftinfo['stops'] });
-      else if (period == 'month') setPeriodInfo({ name: dayjs(info.monthinfo['start']).format('MMMM YYYY'), start: info.monthinfo['start'], end: info.monthinfo['end'], duration: '', picks: info.monthinfo['picks'], meters: info.monthinfo['meters'], rpm: info.monthinfo['rpm'], mph: info.monthinfo['mph'], efficiency: info.monthinfo['efficiency'], starts: info.monthinfo['starts'], runtime: info.monthinfo['runtime'], stops: info.monthinfo['stops'] });
-
-      setUserInfo({ name: info.weaver.name, start: info.weaver.logintime, end: info.dayinfo['end'], duration: info.userinfo['workdur'] , picks: info.userinfo['picks'], meters: info.userinfo['meters'], rpm: info.userinfo['rpm'], mph: info.userinfo['mph'], efficiency: info.userinfo['efficiency'], starts: info.userinfo['starts'], runtime: info.userinfo['runtime'], stops: info.userinfo['stops'] });
-
-      setUpdated(false);
     }
-  }, [fullinfo, period]);
+  }, [fullinfo.tags]);
 
   useEffect(() => {
-      if (period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) setPeriodInfo({ ...periodInfo, name: dayjs(info.dayinfo['start']).format('LL'), start: info.dayinfo['start'], end: info.dayinfo['end'], picks: info.dayinfo['picks'], meters: info.dayinfo['meters'], rpm: info.dayinfo['rpm'], mph: info.dayinfo['mph'], efficiency: info.dayinfo['efficiency'] });
-      else if (period == 'shift') setPeriodInfo({ ...periodInfo, name: t('shift.shift') + ' ' + info.shift['shiftname'], start: info.shift['shiftstart'], end: info.shift['shiftend'], picks: info.shiftinfo['picks'], meters: info.shiftinfo['meters'], rpm: info.shiftinfo['rpm'], mph: info.shiftinfo['mph'], efficiency: info.shiftinfo['efficiency'] });
-      else if (period == 'month') setPeriodInfo({ ...periodInfo, name: dayjs(info.monthinfo['start']).format('MMMM YYYY'), start: info.monthinfo['start'], end: info.monthinfo['end'], picks: info.monthinfo['picks'], meters: info.monthinfo['meters'], rpm: info.monthinfo['rpm'], mph: info.monthinfo['mph'], efficiency: info.monthinfo['efficiency']  });
-  }, [info.dayinfo.end, period]);
-
-  useEffect(() => {
-    setUserInfo({...userInfo, name: info.weaver.name, start: info.weaver.logintime, end: info.dayinfo['end'], picks: info.userinfo['picks'], meters: info.userinfo['meters'], rpm: info.userinfo['rpm'], mph: info.userinfo['mph'], efficiency: info.userinfo['efficiency'] });
-    setUpdated(false);
-}, [info.userinfo.efficiency, period, info.weaver.logintime]);
-
+    if (period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) { setPeriodName(dayjs(info.dayinfo['start']).format('LL')); setEfficiency(info.dayinfo['efficiency']); }
+    else if (period == 'shift') { setPeriodName(t('shift.shift') + ' ' + info.shift['shiftname']); setEfficiency(info.shiftinfo['efficiency']); }
+    else if (period == 'month') { setPeriodName(dayjs(info.monthinfo['start']).format('MMMM YYYY')); setEfficiency(info.monthinfo['efficiency']); }
+  }, [info.dayinfo?.end, period]);
 
   useEffect(() => {
     if (tags.length > 0) {
       const updatedTags = tags.map(obj => mon.find((o: any) => o['tag']!['name'] === obj['tag']['name']) || obj);
-      updatedTags.map((tag: any) => (
-        tag && (tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec']).toString())
-      ));
       setTags(updatedTags);
-      let obj = mon.find(o => o['tag']!['name'] == 'modeCode')
-      obj && setModeCode({ val: obj['val'], updated: dayjs(obj['updated']) })
+      let object = mon.find(o => o['tag']!['name'] == 'modeCode')
+      object && setModeCode({ val: object['val'], updated: dayjs(object['updated']) })
     }
-  }, [mon[0].updated]);
+  }, [mon]);
 
   /*
     useEffect(() => {
@@ -540,7 +517,7 @@ const App: React.FC = () => {
             <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={location.pathname == '/' ? ['overview'] : [location.pathname.split("/").slice(-1)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? smallItemsMan : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? smallItemsFix : smallItems : smallItems} />
             <div className="speed"><Spin wrapperClassName="speed" spinning={modeCode.val == 1 ? !getTagLink('speedMainDrive') : !getTagLink('stopAngle')}>{modeCode.val == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode.val == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}<div className="sub">{modeCode.val == 1 ? t('tags.speedMainDrive.eng') : '°'}</div></Spin></div>
             <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode.val).color }}><Spin wrapperClassName="mode" spinning={!getTagLink('modeCode')}>{modeCodeObj(modeCode.val).text + ' '}{modeCodeObj(modeCode.val).icon}<div className='stopwatch'>{stopwatch(modeCode.updated)}</div></Spin></div>
-            <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{(period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) ? dayjs().format('L') : period == 'shift' ? periodInfo['name'] : period == 'month' ? dayjs().format('MMM YY') :''}<div className="percent">{Number(Number(periodInfo.efficiency).toFixed(periodInfo.efficiency < 10 ? 2 : 1).toString()).toLocaleString(i18n.language) + '%'}</div></Space></div><div className="progress"><Progress percent={periodInfo.efficiency} showInfo={false} size="small" /></div></div>
+            <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{(period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) ? dayjs().format('L') : period == 'shift' ? periodName : period == 'month' ? dayjs().format('MMM YY') : ''}<div className="percent">{Number(Number(efficiency).toFixed((efficiency && (efficiency < 10)) ? 2 : 1).toString()).toLocaleString(i18n.language) + '%'}</div></Space></div><div className="progress"><Progress percent={efficiency? efficiency:0} showInfo={false} size="small" /></div></div>
             <div className="user">
               <div className="user" onClick={() => { !visible && showUserDialog() }}>
                 <Avatar.Group size='large'>
@@ -563,7 +540,7 @@ const App: React.FC = () => {
               </div>
               <div className="site-layout-content">
                 <Routes>
-                  <Route index element={<Overview period={period} setPeriod={setPeriod} pieces={fullinfo.rolls} tags={tags} token={token} modeCode={modeCode} periodInfo={periodInfo} userInfo={userInfo} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
+                  <Route index element={<Overview period={period} setPeriod={setPeriod} pieces={fullinfo.rolls} tags={tags} token={token} modeCode={modeCode} info={info} fullinfo={fullinfo} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
                   <Route path={'/machineInfo'} element={<MachineInfo lifetime={info.lifetime} />} />
                   <Route path={'/reminders'} element={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Reminders activeInput={activeInput} setActiveInput={setActiveInput} setUpdatedReminders={setUpdatedReminders} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                   <Route path={'/reports'} element={<MonthReport token={token} />} />

@@ -1053,7 +1053,7 @@ from
 	(
 	select
 		tag,
-		val,
+		(round(val::numeric,(tag->>'dec')::integer)) as val,
 		updated,
 		link
 	from
