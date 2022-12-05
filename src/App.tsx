@@ -263,10 +263,10 @@ const App: React.FC = () => {
       const response = await fetch('http://localhost:3000/tags');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
-      json.map((tag: any) => (
-        tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec']).toString()
-      )
-      );
+      //json.map((tag: any) => (
+      //  tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec']).toString()
+      //)
+      //);
       setTags(json);
       let obj = json.find((o: any) => o['tag']['name'] == 'modeCode')
       obj && setModeCode({ val: obj['val'], updated: dayjs(obj['updated']) })
