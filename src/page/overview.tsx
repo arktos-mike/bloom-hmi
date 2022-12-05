@@ -371,7 +371,8 @@ const Overview: React.FC<Props> = ({
             }
           </div>
         </div>
-        <div>
+        {/*
+       <div>
           <div style={{ ...contentStyle, maxHeight: '100%', overflowY: 'auto' }}>
             <div >
               <Skeleton loading={loading} round active>
@@ -388,6 +389,7 @@ const Overview: React.FC<Props> = ({
             </div>
           </div>
         </div>
+         */}
       </Carousel >
     </div >
   )

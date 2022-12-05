@@ -3,7 +3,7 @@ import type { ColumnsType, TableProps } from 'antd/es/table';
 import { ScheduleOutlined, ReconciliationOutlined, TeamOutlined, MinusCircleTwoTone, PlusCircleTwoTone, ToolOutlined, QuestionCircleOutlined, ExclamationCircleOutlined, DeleteOutlined, BarChartOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "../components/Icons"
 import { FilterValue, SorterResult } from 'antd/es/table/interface';
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import 'dayjs/locale/en-gb';
@@ -137,6 +137,7 @@ const MonthReport: React.FC<Props> = ({
       key: 'shiftname',
       ellipsis: true,
       width: '16%',
+      shouldCellUpdate: () => false,
       render: (_, record) => <><b>{t('shift.shift') + ' ' + record.shiftname}</b><br />{dayjs(record.starttime).format('L LTS')}<br />{dayjs(record.endtime).format('L LTS')}</>
     },
     {
@@ -147,6 +148,7 @@ const MonthReport: React.FC<Props> = ({
       sortOrder: sortedInfo.columnKey === 'picks' ? sortedInfo.order : null,
       ellipsis: true,
       width: '10%',
+      shouldCellUpdate: () => false,
       render: (_, record) => record.picks,
     },
     {
@@ -155,6 +157,7 @@ const MonthReport: React.FC<Props> = ({
       key: 'meters',
       ellipsis: true,
       width: '8%',
+      shouldCellUpdate: () => false,
       render: (_, record) => record?.meters && (Number(record?.meters).toFixed(2) + " " + t('tags.clothMeters.eng'))
     },
     {
@@ -163,6 +166,7 @@ const MonthReport: React.FC<Props> = ({
       key: 'rpm',
       ellipsis: true,
       width: '10%',
+      shouldCellUpdate: () => false,
       render: (_, record) => record?.rpm && (Number(record?.rpm).toFixed(1) + " " + t('tags.speedMainDrive.eng'))
     },
     {
@@ -171,6 +175,7 @@ const MonthReport: React.FC<Props> = ({
       key: 'mph',
       ellipsis: true,
       width: '8%',
+      shouldCellUpdate: () => false,
       render: (_, record) => record?.mph && (Number(record?.mph).toFixed(2) + " " + t('tags.speedCloth.eng'))
     },
     {
@@ -181,6 +186,7 @@ const MonthReport: React.FC<Props> = ({
       sortOrder: sortedInfo.columnKey === 'efficiency' ? sortedInfo.order : null,
       ellipsis: true,
       width: '10%',
+      shouldCellUpdate: () => false,
       render: (_, record) => <b>{record?.efficiency && (Number(record?.efficiency).toFixed(2) + " %")}</b>
     },
     {
@@ -188,6 +194,7 @@ const MonthReport: React.FC<Props> = ({
       dataIndex: 'starts',
       key: 'starts',
       ellipsis: true,
+      shouldCellUpdate: () => false,
       render: (_, record) => <div><Badge
         count={record.starts} overflowCount={999}
         style={{ backgroundColor: '#52c41a' }}
@@ -199,6 +206,7 @@ const MonthReport: React.FC<Props> = ({
       dataIndex: 'stops',
       key: 'stops',
       ellipsis: true,
+      shouldCellUpdate: () => false,
       render: (_, record) => <div><Badge
         count={stopsAgg(record?.stops).total} overflowCount={999}
         style={{ backgroundColor: '#1890ff' }}
@@ -213,6 +221,7 @@ const MonthReport: React.FC<Props> = ({
       key: 'userid',
       ellipsis: true,
       width: '16%',
+      shouldCellUpdate: () => false,
       render: (_, record) => <><b>{(users?.filter((item: any) => item.id == record.userid))[0]['name']}</b><br />{period[0] && dayjs(period[0]).format('MMMM YYYY')}<br />{duration2text(dayjs.duration(record.workdur))}</>
     },
     {
@@ -223,6 +232,7 @@ const MonthReport: React.FC<Props> = ({
       sortOrder: sortedInfo.columnKey === 'picks' ? sortedInfo.order : null,
       ellipsis: true,
       width: '10%',
+      shouldCellUpdate: () => false,
       render: (_, record) => record.picks,
     },
     {
@@ -231,6 +241,7 @@ const MonthReport: React.FC<Props> = ({
       key: 'meters',
       ellipsis: true,
       width: '8%',
+      shouldCellUpdate: () => false,
       render: (_, record) => record?.meters && (Number(record?.meters).toFixed(2) + " " + t('tags.clothMeters.eng'))
     },
     {
@@ -239,6 +250,7 @@ const MonthReport: React.FC<Props> = ({
       key: 'rpm',
       ellipsis: true,
       width: '10%',
+      shouldCellUpdate: () => false,
       render: (_, record) => record?.rpm && (Number(record?.rpm).toFixed(1) + " " + t('tags.speedMainDrive.eng'))
     },
     {
@@ -247,6 +259,7 @@ const MonthReport: React.FC<Props> = ({
       key: 'mph',
       ellipsis: true,
       width: '8%',
+      shouldCellUpdate: () => false,
       render: (_, record) => record?.mph && (Number(record?.mph).toFixed(2) + " " + t('tags.speedCloth.eng'))
     },
     {
@@ -257,6 +270,7 @@ const MonthReport: React.FC<Props> = ({
       sortOrder: sortedInfo.columnKey === 'efficiency' ? sortedInfo.order : null,
       ellipsis: true,
       width: '10%',
+      shouldCellUpdate: () => false,
       render: (_, record) => <b>{record?.efficiency && (Number(record?.efficiency).toFixed(2) + " %")}</b>
     },
     {
@@ -264,6 +278,7 @@ const MonthReport: React.FC<Props> = ({
       dataIndex: 'starts',
       key: 'starts',
       ellipsis: true,
+      shouldCellUpdate: () => false,
       render: (_, record) => <div><Badge
         count={record.starts} overflowCount={999}
         style={{ backgroundColor: '#52c41a' }}
@@ -275,6 +290,7 @@ const MonthReport: React.FC<Props> = ({
       dataIndex: 'stops',
       key: 'stops',
       ellipsis: true,
+      shouldCellUpdate: () => false,
       render: (_, record) => <div><Badge
         count={stopsAgg(record?.stops).total} overflowCount={999}
         style={{ backgroundColor: '#1890ff' }}
@@ -289,6 +305,7 @@ const MonthReport: React.FC<Props> = ({
       key: 'starttime',
       ellipsis: true,
       width: '16%',
+      shouldCellUpdate: () => false,
       render: (_, record) => dayjs(record.starttime).format('LL')
     },
     {
@@ -299,6 +316,7 @@ const MonthReport: React.FC<Props> = ({
       sortOrder: sortedInfo.columnKey === 'picks' ? sortedInfo.order : null,
       ellipsis: true,
       width: '10%',
+      shouldCellUpdate: () => false,
       render: (_, record) => record.picks,
     },
     {
@@ -307,6 +325,7 @@ const MonthReport: React.FC<Props> = ({
       key: 'meters',
       ellipsis: true,
       width: '8%',
+      shouldCellUpdate: () => false,
       render: (_, record) => record?.meters && (Number(record?.meters).toFixed(2) + " " + t('tags.clothMeters.eng'))
     },
     {
@@ -315,6 +334,7 @@ const MonthReport: React.FC<Props> = ({
       key: 'rpm',
       ellipsis: true,
       width: '10%',
+      shouldCellUpdate: () => false,
       render: (_, record) => record?.rpm && (Number(record?.rpm).toFixed(1) + " " + t('tags.speedMainDrive.eng'))
     },
     {
@@ -323,6 +343,7 @@ const MonthReport: React.FC<Props> = ({
       key: 'mph',
       ellipsis: true,
       width: '8%',
+      shouldCellUpdate: () => false,
       render: (_, record) => record?.mph && (Number(record?.mph).toFixed(2) + " " + t('tags.speedCloth.eng'))
     },
     {
@@ -333,6 +354,7 @@ const MonthReport: React.FC<Props> = ({
       sortOrder: sortedInfo.columnKey === 'efficiency' ? sortedInfo.order : null,
       ellipsis: true,
       width: '10%',
+      shouldCellUpdate: () => false,
       render: (_, record) => <b>{record?.efficiency && (Number(record?.efficiency).toFixed(2) + " %")}</b>
     },
     {
@@ -340,6 +362,7 @@ const MonthReport: React.FC<Props> = ({
       dataIndex: 'starts',
       key: 'starts',
       ellipsis: true,
+      shouldCellUpdate: () => false,
       render: (_, record) => <div><Badge
         count={record.starts} overflowCount={999}
         style={{ backgroundColor: '#52c41a' }}
@@ -351,6 +374,7 @@ const MonthReport: React.FC<Props> = ({
       dataIndex: 'stops',
       key: 'stops',
       ellipsis: true,
+      shouldCellUpdate: () => false,
       render: (_, record) => <div><Badge
         count={stopsAgg(record?.stops).total} overflowCount={999}
         style={{ backgroundColor: '#1890ff' }}
@@ -431,7 +455,7 @@ const MonthReport: React.FC<Props> = ({
         if (!response.ok) { /*throw Error(response.statusText);*/ }
         const json = await response.json();
         setShiftData(json);
-
+        setLoading(false);
       }
     }
     catch (error) { /*console.log(error);*/ }
@@ -443,19 +467,19 @@ const MonthReport: React.FC<Props> = ({
     return () => { }
   }, []);
 
-  useEffect(()=>{
+  useEffect(() => {
     dayjs.locale(i18n.language == 'en' ? 'en-gb' : i18n.language)
     return () => { }
   }, [i18n.language])
 
   useEffect(() => {
     Promise.all([
-    fetchStatInfo(),
-    fetchData(),
-    fetchUserData(),
-    fetchShiftData()
+      fetchStatInfo(),
+      fetchData(),
+      fetchUserData(),
+      fetchShiftData()
     ])
-    setLoading(false);
+
     return () => { }
   }, [period]);
 
