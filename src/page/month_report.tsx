@@ -431,7 +431,7 @@ const MonthReport: React.FC<Props> = ({
         if (!response.ok) { /*throw Error(response.statusText);*/ }
         const json = await response.json();
         setShiftData(json);
-        setLoading(false);
+
       }
     }
     catch (error) { /*console.log(error);*/ }
@@ -449,10 +449,13 @@ const MonthReport: React.FC<Props> = ({
   }, [i18n.language])
 
   useEffect(() => {
-    fetchStatInfo();
-    fetchData();
-    fetchUserData();
-    fetchShiftData();
+    Promise.all([
+    fetchStatInfo(),
+    fetchData(),
+    fetchUserData(),
+    fetchShiftData()
+    ])
+    setLoading(false);
     return () => { }
   }, [period]);
 

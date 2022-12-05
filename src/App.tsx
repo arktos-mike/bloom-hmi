@@ -49,6 +49,7 @@ import Reminders from './page/reminders';
 import { differenceWith, isEqual } from 'lodash-es';
 
 import type { InputRef } from 'antd';
+import e from 'express';
 
 const { Header, Content, Footer } = Layout;
 const { Option } = Select;
@@ -120,24 +121,25 @@ const App: React.FC = () => {
   const { t, i18n } = useTranslation();
 
   const [inputWidth, setInputWidth] = useState<number | undefined>(0)
-  const [modeCode, setModeCode] = useState({ val: 0, updated: {} });
+  const [period, setPeriod] = useState('shift')
+  const [all, setAll] = useState<any>()
+  const [tags, setTags] = useState<any[]>([])
+  const [modeCode, setModeCode] = useState<any>();
   const [activeInput, setActiveInput] = useState({ form: '', id: '', num: false, showInput: true, input: '', showKeyboard: false, descr: '', pattern: 'default' })
   const [keyboardLayout, setKeyboardLayout] = useState(enlayout.layout)
-  const [keyboardLng, setKeyboardLng] = useState('en')
+  const [keyboardLng, setKeyboardLng] = useState(i18n.language)
   const [keyboardCollapse, setKeyboardCollapse] = useState(false)
   const [bufferKeyboard, setBufferKeyboard] = useState('')
   const [bufferTemp, setBufferTemp] = useState('')
   const [lngs, setLngs] = useState({ data: [] })
   const [token, setToken] = useState<string | null>(null)
-  const [shadowUser, setShadowUser] = useState({ id: null, name: null, logintime: null })
+  const [shadowUser, setShadowUser] = useState(all?.weaver)
   const [remember, setRemember] = useState(true)
   const [control, setControl] = useState(false)
   const [today, setDate] = useState(new Date())
   const [visible, setVisible] = useState(false)
   const [userDialogVisible, setUserDialogVisible] = useState(false)
   const [layout, setLayout] = useState('default')
-  const [tags, setTags] = useState<any[]>([])
-  const [period, setPeriod] = useState('shift')
   const [efficiency, setEfficiency] = useState<number>()
   const [periodName, setPeriodName] = useState<string>('')
   const [updated, setUpdated] = useState(false)
@@ -266,8 +268,19 @@ const App: React.FC = () => {
       )
       );
       setTags(json);
-      let obj = tags.find(o => o['tag']['name'] == 'modeCode')
+      let obj = json.find((o: any) => o['tag']['name'] == 'modeCode')
       obj && setModeCode({ val: obj['val'], updated: dayjs(obj['updated']) })
+      postMessage({ payload: 'removeLoading' }, '*')
+    }
+    catch (error) { /*console.log(error);*/ }
+  }
+
+  const fetchAll = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/tags/full');
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
+      const json = await response.json();
+      setAll(json);
     }
     catch (error) { /*console.log(error);*/ }
   }
@@ -302,7 +315,8 @@ const App: React.FC = () => {
         fetchLngs(),
         checkLogin(),
         fetchReminders(),
-        fetchTags()
+        fetchTags(),
+        fetchAll()
       ]);
       setUpdated(true);
     })();
@@ -312,7 +326,6 @@ const App: React.FC = () => {
   useEffect(() => {
     fetchTags();
   }, [location]);
-
 
   useEffect(() => {
     dayjs.locale(i18n.language == 'en' ? 'en-gb' : i18n.language)
@@ -324,7 +337,6 @@ const App: React.FC = () => {
     {
       tags: [],
       shift: { shiftname: '', shiftstart: '', shiftend: '', shiftdur: '' },
-      lifetime: { type: '', serialno: '', mfgdate: '', picks: 0, cloth: 0, motor: '' },
       weaver: { id: '', name: '', logintime: '' },
       userinfo: { picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0 },
       shiftinfo: { start: '', end: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0 } || null,
@@ -373,6 +385,16 @@ const App: React.FC = () => {
     }
   );
 
+  const pieces = useSSE(
+    'rolls',
+    '',
+    {
+      parser(input: string) {
+        return JSON.parse(input);
+      },
+    }
+  );
+
   useEffect(() => {
     if (tags.length > 0) {
       const updatedTags = tags.map(obj => info.tags.find((o: any) => o['tag']!['name'] === obj['tag']['name']) || obj);
@@ -402,33 +424,6 @@ const App: React.FC = () => {
     }
   }, [mon]);
 
-  /*
-    useEffect(() => {
-      const source = new EventSource('http://localhost:3000/tags/events');
-      source.addEventListener('tags', (e) => {
-
-        const json = JSON.parse(e.data);
-        if (tags.length) {
-          const updatedTags = tags.map(item => {
-            if (item['tag']['name'] == json['tag']['name']) {
-              return { ...(item as object), ...json };
-            }
-            return item;
-          });
-          setTags(updatedTags);
-        }
-        if (e.lastEventId == 'modeCode') {
-          setModeCode({ val: json['val'], updated: dayjs(json['updated']) })
-        }
-      });
-      source.addEventListener('error', (e) => {
-        // console.error('Error: ',  e);
-      });
-      return () => {
-        source.close();
-      };
-    }, []);
-  */
   useEffect(() => {
     (async () => {
       await fetchReminders();
@@ -515,13 +510,13 @@ const App: React.FC = () => {
               <img src={logo} className="applogo" alt=""></img>
             </div>
             <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={location.pathname == '/' ? ['overview'] : [location.pathname.split("/").slice(-1)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? smallItemsMan : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? smallItemsFix : smallItems : smallItems} />
-            <div className="speed"><Spin wrapperClassName="speed" spinning={modeCode.val == 1 ? !getTagLink('speedMainDrive') : !getTagLink('stopAngle')}>{modeCode.val == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode.val == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}<div className="sub">{modeCode.val == 1 ? t('tags.speedMainDrive.eng') : '°'}</div></Spin></div>
-            <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode.val).color }}><Spin wrapperClassName="mode" spinning={!getTagLink('modeCode')}>{modeCodeObj(modeCode.val).text + ' '}{modeCodeObj(modeCode.val).icon}<div className='stopwatch'>{stopwatch(modeCode.updated)}</div></Spin></div>
-            <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{(period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) ? dayjs().format('L') : period == 'shift' ? periodName : period == 'month' ? dayjs().format('MMM YY') : ''}<div className="percent">{Number(Number(efficiency).toFixed((efficiency && (efficiency < 10)) ? 2 : 1).toString()).toLocaleString(i18n.language) + '%'}</div></Space></div><div className="progress"><Progress percent={efficiency? efficiency:0} showInfo={false} size="small" /></div></div>
+            <div className="speed"><Spin wrapperClassName="speed" spinning={modeCode?.val == 1 ? !getTagLink('speedMainDrive') : !getTagLink('stopAngle')}>{modeCode?.val == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode?.val == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}<div className="sub">{modeCode?.val == 1 ? t('tags.speedMainDrive.eng') : '°'}</div></Spin></div>
+            <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode?.val).color }}><Spin wrapperClassName="mode" spinning={!getTagLink('modeCode')}>{modeCodeObj(modeCode?.val).text + ' '}{modeCodeObj(modeCode?.val).icon}<div className='stopwatch'>{stopwatch(modeCode?.updated)}</div></Spin></div>
+            <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{(period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) ? dayjs().format('L') : period == 'shift' ? periodName : period == 'month' ? dayjs().format('MMM YY') : ''}<div className="percent">{Number(Number(efficiency).toFixed((efficiency && (efficiency < 10)) ? 2 : 1).toString()).toLocaleString(i18n.language) + '%'}</div></Space></div><div className="progress"><Progress percent={efficiency ? efficiency : 0} showInfo={false} size="small" /></div></div>
             <div className="user">
               <div className="user" onClick={() => { !visible && showUserDialog() }}>
                 <Avatar.Group size='large'>
-                  {shadowUser['name'] && <Tooltip title={shadowUser['name']} placement="bottom">
+                  {shadowUser?.name && <Tooltip title={shadowUser?.name} placement="bottom">
                     <Avatar style={{ backgroundColor: "#87d068" }} icon={<UserOutlined />} />
                   </Tooltip>}
                   <Avatar size={50} style={{ backgroundColor: avatarColor() }} icon={<UserOutlined />} />
@@ -540,8 +535,8 @@ const App: React.FC = () => {
               </div>
               <div className="site-layout-content">
                 <Routes>
-                  <Route index element={<Overview period={period} setPeriod={setPeriod} pieces={fullinfo.rolls} tags={tags} token={token} modeCode={modeCode} info={info} fullinfo={fullinfo} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
-                  <Route path={'/machineInfo'} element={<MachineInfo lifetime={info.lifetime} />} />
+                  <Route index element={<Overview period={period} setPeriod={setPeriod} pieces={pieces ? pieces : fullinfo.rolls ? fullinfo.rolls : all?.rolls} tags={tags} token={token} modeCode={modeCode} info={info} fullinfo={fullinfo.lifetime.mfgdate ? fullinfo : all} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
+                  <Route path={'/machineInfo'} element={<MachineInfo lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} tags={tags} modeCode={modeCode} />} />
                   <Route path={'/reminders'} element={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Reminders activeInput={activeInput} setActiveInput={setActiveInput} setUpdatedReminders={setUpdatedReminders} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                   <Route path={'/reports'} element={<MonthReport token={token} />} />
                   <Route path={'/reports/monthReport'} element={<MonthReport token={token} />} />

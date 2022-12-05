@@ -14,17 +14,27 @@ const cardBodyStyle = { flex: 1, display: 'flex', alignItems: 'center', justifyC
 
 type Props = {
   lifetime: any;
+  tags: any;
+  modeCode: any;
 };
 const MachineInfo: React.FC<Props> = ({
-  lifetime
+  lifetime,
+  tags,
+  modeCode
 }) => {
 
   const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(true)
 
-  const duration2text = (int: any) => {
-    let diff = dayjs.duration(int);
+  const duration2text = (diff: any) => {
+    //let diff = dayjs.duration(int);
     return (diff.days() > 0 ? diff.days() + " " + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + " " + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + " " + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + " " + t('shift.secs') : "")
+  }
+
+  const getTagVal = (tagName: string) => {
+    let obj = tags.find((o: any) => o['tag']['name'] == tagName)
+    if (obj) { return Number(obj['val']); }
+    else { return null };
   }
 
   useEffect(() => {
@@ -43,22 +53,22 @@ const MachineInfo: React.FC<Props> = ({
             <Form labelCol={{ span: 8 }} wrapperCol={{ span: 16 }} size='large' style={{ width: '50%' }} colon={false}>
               <Skeleton loading={loading} round avatar active>
                 <Form.Item label={<BarcodeOutlined style={{ fontSize: '150%', color: "#1890ff" }} />} >
-                  <span style={{ fontSize: '24px' }}>{lifetime['type']}</span>
+                  <span style={{ fontSize: '24px' }}>{lifetime?.type}</span>
                 </Form.Item>
                 <Form.Item label={<FieldNumberOutlined style={{ fontSize: '200%', color: "#1890ff" }} />} >
-                  <span style={{ fontSize: '24px' }}>{lifetime['serialno']}</span>
+                  <span style={{ fontSize: '24px' }}>{lifetime?.serialno}</span>
                 </Form.Item>
                 <Form.Item label={<ShoppingCartOutlined style={{ fontSize: '200%', color: "#1890ff" }} />} >
-                  <span style={{ fontSize: '24px' }}>{lifetime['mfgdate'] && dayjs(lifetime['mfgdate']).format("LL")}</span>
+                  <span style={{ fontSize: '24px' }}>{lifetime?.mfgdate && dayjs(lifetime?.mfgdate).format("LL")}</span>
                 </Form.Item>
                 <Form.Item label={<SyncOutlined style={{ fontSize: '200%', color: "#1890ff" }} />} >
-                  <span style={{ fontSize: '24px' }}>{lifetime['picks'] > 0 && (lifetime['picks'] + ' ' + t('tags.planClothDensity.eng').split('/')[0])}</span>
+                  <span style={{ fontSize: '24px' }}>{lifetime?.picks > 0 && ((lifetime?.picks + ((modeCode?.val == 1) ? getTagVal('picksLastRun') : 0)) + ' ' + t('tags.planClothDensity.eng').split('/')[0])}</span>
                 </Form.Item>
                 <Form.Item label={<FabricPieceIcon style={{ fontSize: '220%', color: "#1890ff" }} />} >
-                  <span style={{ fontSize: '24px' }}>{lifetime['cloth'] > 0 && (Number(Number(lifetime['cloth']).toFixed(2).toString()).toLocaleString(i18n.language) + ' ' + t('tags.planClothDensity.eng')?.split('/')[1]?.slice(-1))}</span>
+                  <span style={{ fontSize: '24px' }}>{lifetime?.cloth > 0 && (Number(Number((modeCode?.val == 1) ? lifetime?.cloth + Number(getTagVal('picksLastRun')) / (100 * Number(getTagVal('planClothDensity'))) : lifetime?.cloth).toFixed(2).toString()).toLocaleString(i18n.language) + ' ' + t('tags.planClothDensity.eng')?.split('/')[1]?.slice(-1))}</span>
                 </Form.Item>
                 <Form.Item label={<HistoryOutlined style={{ fontSize: '200%', color: "#1890ff" }} />} >
-                  <span style={{ fontSize: '24px' }}>{duration2text(lifetime['motor'])}</span>
+                  <span style={{ fontSize: '24px' }}>{duration2text((modeCode?.val == 1) ? dayjs.duration(lifetime?.motor).add(dayjs().diff(modeCode?.updated)) : dayjs.duration(lifetime?.motor))}</span>
                 </Form.Item>
               </Skeleton>
             </Form>

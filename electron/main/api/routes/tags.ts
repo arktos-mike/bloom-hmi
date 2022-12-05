@@ -11,12 +11,16 @@ const router = PromiseRouter();
 
 router.get('/events', sse.init);
 setInterval(async () => {
-  const info = await db.query('SELECT * FROM getcurrentinfo();');
+  const info = await db.query('SELECT * FROM getpartialinfo();');
+  info.rows[0]['shift'] && info.rows[0] && (info.rows[0]['shift']['shiftdur'] = parseInterval(info.rows[0]['shift']['shiftdur']))
+  await sse.send(info.rows[0], 'info', 'all');
+  //sse.updateInit(["array", "containing", "new", "content"]);
+  //sse.serialize(["array", "to", "be", "sent", "as", "serialized", "events"]);
+ }, 1000);
 
-  //info.rows[0] && await info.rows[0]['tags'].map((tag: any) => (
-  //  tag && (tag['val'] = Number(tag['val']).toFixed(tag['tag']['dec']).toString())
-  //));
-  info.rows[0] && await info.rows[0]['userinfo']['stops'].map((row: any) => {
+router.get('/full', async (req, res) => {
+  const info = await db.query('SELECT * FROM getcurrentinfo();');
+  info.rows[0]['userinfo'] && await info.rows[0]['userinfo']['stops'].map((row: any) => {
     row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
   });
   info.rows[0] && await info.rows[0]['shiftinfo']['stops'].map((row: any) => {
@@ -28,38 +32,18 @@ setInterval(async () => {
   info.rows[0] && await info.rows[0]['monthinfo']['stops'].map((row: any) => {
     row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
   });
-  delete info.rows[0].rolls;
-  delete info.rows[0]['userinfo']['runtime'];
-  delete info.rows[0]['userinfo']['starts'];
-  delete info.rows[0]['userinfo']['stops'];
-  delete info.rows[0]['userinfo']['workdur'];
-  delete info.rows[0]['shiftinfo']['runtime'];
-  delete info.rows[0]['shiftinfo']['starts'];
-  delete info.rows[0]['shiftinfo']['stops'];
-  delete info.rows[0]['dayinfo']['runtime'];
-  delete info.rows[0]['dayinfo']['starts'];
-  delete info.rows[0]['dayinfo']['stops'];
-  delete info.rows[0]['monthinfo']['runtime'];
-  delete info.rows[0]['monthinfo']['starts'];
-  delete info.rows[0]['monthinfo']['stops'];
-  info.rows[0] && (info.rows[0]['shift']['shiftdur'] = parseInterval(info.rows[0]['shift']['shiftdur']))
-  //info.rows[0] && (info.rows[0]['userinfo']['runtime'] = parseInterval(info.rows[0]['userinfo']['runtime']))
-  //info.rows[0] && (info.rows[0]['userinfo']['workdur'] = parseInterval(info.rows[0]['userinfo']['workdur']))
-  //info.rows[0] && (info.rows[0]['shiftinfo']['runtime'] = parseInterval(info.rows[0]['shiftinfo']['runtime']))
-  //info.rows[0] && (info.rows[0]['dayinfo']['runtime'] = parseInterval(info.rows[0]['dayinfo']['runtime']))
-  //info.rows[0] && (info.rows[0]['monthinfo']['runtime'] = parseInterval(info.rows[0]['monthinfo']['runtime']))
+  info.rows[0]['shift'] && (info.rows[0]['shift']['shiftdur'] = parseInterval(info.rows[0]['shift']['shiftdur']))
+  info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['runtime'] = parseInterval(info.rows[0]['userinfo']['runtime']))
+  info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['workdur'] = parseInterval(info.rows[0]['userinfo']['workdur']))
+  info.rows[0]['shift'] && (info.rows[0]['shiftinfo']['runtime'] = parseInterval(info.rows[0]['shiftinfo']['runtime']))
+  info.rows[0] && (info.rows[0]['dayinfo']['runtime'] = parseInterval(info.rows[0]['dayinfo']['runtime']))
+  info.rows[0] && (info.rows[0]['monthinfo']['runtime'] = parseInterval(info.rows[0]['monthinfo']['runtime']))
   info.rows[0] && (info.rows[0]['lifetime']['motor'] = parseInterval(info.rows[0]['lifetime']['motor']))
-  // Sends message to all connected clients!
-  //sse.send(info.rows[0]['tags'], 'tags', 'monitoring');
-  await sse.send(info.rows[0], 'info', 'all');
-  //sse.updateInit(["array", "containing", "new", "content"]);
-  //sse.serialize(["array", "to", "be", "sent", "as", "serialized", "events"]);
-  // All options for sending a message:
-
-}, 1000);
+  res.status(200).send(info.rows[0])
+})
 
 router.get('/', async (req, res) => {
-  const { rows } = await db.query('SELECT tag, (round(val::numeric,(tag->>$2)::integer)) as val, updated, link FROM tags ORDER BY tag->>$1', ['name','dec']);
+  const { rows } = await db.query('SELECT tag, (round(val::numeric,(tag->>$2)::integer)) as val, updated, link FROM tags ORDER BY tag->>$1', ['name', 'dec']);
   res.status(200).send(rows)
 })
 
@@ -93,7 +77,7 @@ router.post('/writeTag', async (req, res) => {
 router.post('/filter', async (req, res) => {
   const filter = req.body;
   try {
-    const data = await db.query(`SELECT tag, (round(val::numeric,(tag->>$2)::integer)) as val, updated, link FROM tags WHERE tag->>$1 = ANY ('{${filter[Object.keys(filter)[0]]}}') ORDER BY tag->>$1`, [Object.keys(filter)[0],'dec']);
+    const data = await db.query(`SELECT tag, (round(val::numeric,(tag->>$2)::integer)) as val, updated, link FROM tags WHERE tag->>$1 = ANY ('{${filter[Object.keys(filter)[0]]}}') ORDER BY tag->>$1`, [Object.keys(filter)[0], 'dec']);
     const arr = data.rows;
     if (arr.length == 0) {
       return res.status(400).json({

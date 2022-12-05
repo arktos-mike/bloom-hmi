@@ -2,6 +2,8 @@ import PromiseRouter from 'express-promise-router'
 import parseTimestampTz from 'postgres-date'
 import range from 'postgres-range'
 import db from '../../db'
+import { sse } from './'
+
 // create a new express-promise-router
 // this has the same API as the normal express router except
 // it allows you to use async functions as route handlers
@@ -21,6 +23,8 @@ router.post('/clothlogchange', async (req, res) => {
     res.status(200).json({
       message: "notifications.confupdate",
     });
+    const { rows } = await db.query(`SELECT count(*) FROM clothlog WHERE not upper_inf(timestamp) and timestamp && tstzrange(lower((SELECT timestamp FROM clothlog WHERE upper_inf(timestamp) and event=0)),current_timestamp(3),'[)') AND event=$1`, [1]);
+    await sse.send(rows[0].count, 'rolls', 'pieces');
   } catch (err) {
     /*console.log(err);*/
     res.status(500).json({

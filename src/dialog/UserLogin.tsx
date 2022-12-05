@@ -156,10 +156,10 @@ const UserLogin: React.FC<Props> = ({
           >
             <span className="text" style={{ color: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "" }}>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</span>
           </Form.Item>
-          {shadowUser.name && <Form.Item
+          {shadowUser?.name && <Form.Item
             label={t('user.weaver')}
           >
-            <span className="text" style={{ color: "#87d068" }}>{shadowUser.name}</span>
+            <span className="text" style={{ color: "#87d068" }}>{shadowUser?.name}</span>
           </Form.Item>}
           <Form.Item
             label={t('user.user')}

@@ -2,7 +2,6 @@ import { Button, Display, Donut } from '@/components';
 import { Alert, Badge, Card, Carousel, Col, Descriptions, Form, Modal, Result, Row, Segmented, Skeleton, Space } from 'antd';
 import { CheckOutlined, ToolOutlined, QuestionCircleOutlined, LoginOutlined, IdcardOutlined, RiseOutlined, PieChartOutlined, SyncOutlined, ClockCircleOutlined, ScheduleOutlined, DashboardOutlined, AimOutlined, ExclamationCircleOutlined, HistoryOutlined, ReconciliationOutlined, CalendarOutlined, FieldTimeOutlined } from '@ant-design/icons';
 import React, { useState, useEffect, useRef } from 'react'
-import { useSSE } from 'react-hooks-sse';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import 'dayjs/locale/en-gb';
@@ -44,8 +43,8 @@ const Overview: React.FC<Props> = ({
   const { t, i18n } = useTranslation();
   const [height, setHeight] = useState<number | undefined>(0)
   const [loading, setLoading] = useState(true)
-  const [periodInfo, setPeriodInfo] = useState({ name: '', start: '', end: '', duration: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} })
-  const [userInfo, setUserInfo] = useState({ name: '', start: '', end: '', duration: '', picks: 0, meters: 0, rpm: 0, mph: 0, efficiency: 0, starts: 0, runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 }, stops: {} })
+  const [periodInfo, setPeriodInfo] = useState<any>((period == 'day' || ((!fullinfo?.shift?.shiftstart || !fullinfo?.shift?.shiftend) && period == 'shift')) ? { name: dayjs(fullinfo?.dayinfo?.start).format('LL'), start: fullinfo?.dayinfo?.start, end: fullinfo?.dayinfo?.end, duration: '', picks: fullinfo?.dayinfo?.picks, meters: fullinfo?.dayinfo?.meters, rpm: fullinfo?.dayinfo?.rpm, mph: fullinfo?.dayinfo?.mph, efficiency: fullinfo?.dayinfo?.efficiency, starts: fullinfo?.dayinfo?.starts, runtime: fullinfo?.dayinfo?.runtime, stops: fullinfo?.dayinfo?.stops } : (period == 'shift') ? { name: t('shift.shift') + ' ' + fullinfo?.shift?.shiftname, start: fullinfo?.shift?.shiftstart, end: fullinfo?.shift?.shiftend, duration: fullinfo?.shift?.shiftdur, picks: fullinfo?.shiftinfo?.picks, meters: fullinfo?.shiftinfo?.meters, rpm: fullinfo?.shiftinfo?.rpm, mph: fullinfo?.shiftinfo?.mph, efficiency: fullinfo?.shiftinfo?.efficiency, starts: fullinfo?.shiftinfo?.starts, runtime: fullinfo?.shiftinfo?.runtime, stops: fullinfo?.shiftinfo?.stops } : (period == 'month') ? { name: dayjs(fullinfo?.monthinfo?.start).format('MMMM YYYY'), start: fullinfo?.monthinfo?.start, end: fullinfo?.monthinfo?.end, duration: '', picks: fullinfo?.monthinfo?.picks, meters: fullinfo?.monthinfo?.meters, rpm: fullinfo?.monthinfo?.rpm, mph: fullinfo?.monthinfo?.mph, efficiency: fullinfo?.monthinfo?.efficiency, starts: fullinfo?.monthinfo?.starts, runtime: fullinfo?.monthinfo?.runtime, stops: fullinfo?.monthinfo?.stops } : {})
+  const [userInfo, setUserInfo] = useState<any>({ name: fullinfo?.weaver?.name, start: fullinfo?.weaver?.logintime, end: fullinfo?.dayinfo?.end, duration: fullinfo?.userinfo?.workdur, picks: fullinfo?.userinfo?.picks, meters: fullinfo?.userinfo?.meters, rpm: fullinfo?.userinfo?.rpm, mph: fullinfo?.userinfo?.mph, efficiency: fullinfo?.userinfo?.efficiency, starts: fullinfo?.userinfo?.starts, runtime: fullinfo?.userinfo?.runtime, stops: fullinfo?.userinfo?.stops })
   const [userDonut, setUserDonut] = useState([] as any)
   const [userDonutSel, setUserDonutSel] = useState({ run: true, other: true, button: true, warp: true, weft: true, tool: true, fabric: true } as any)
   const [shiftDonut, setShiftDonut] = useState([] as any)
@@ -128,7 +127,7 @@ const Overview: React.FC<Props> = ({
   const getTagVal = (tagName: string): string => {
     let obj = tags.find((o: any) => o['tag']['name'] == tagName)
     if (obj) {
-      if (tagName == 'warpBeamLength' && modeCode.val == 1) {
+      if (tagName == 'warpBeamLength' && modeCode?.val == 1) {
         return Number((Number(obj['val']) - (localeParseFloat(getTagVal('picksLastRun')) / (100 * localeParseFloat(getTagVal('planClothDensity')) * (1 - 0.01 * localeParseFloat(getTagVal('warpShrinkage')))))).toFixed(obj['tag']['dec'])).toLocaleString(i18n.language);
       }
       else {
@@ -144,46 +143,46 @@ const Overview: React.FC<Props> = ({
   }, [])
 
   useEffect(() => {
-    if (period == 'day' || ((!fullinfo.shift.shiftstart || !fullinfo.shift.shiftend) && period == 'shift')) setPeriodInfo({ name: dayjs(fullinfo.dayinfo['start']).format('LL'), start: fullinfo.dayinfo['start'], end: fullinfo.dayinfo['end'], duration: '', picks: fullinfo.dayinfo['picks'], meters: fullinfo.dayinfo['meters'], rpm: fullinfo.dayinfo['rpm'], mph: fullinfo.dayinfo['mph'], efficiency: fullinfo.dayinfo['efficiency'], starts: fullinfo.dayinfo['starts'], runtime: fullinfo.dayinfo['runtime'], stops: fullinfo.dayinfo['stops'] });
-    else if (period == 'shift') setPeriodInfo({ name: t('shift.shift') + ' ' + fullinfo.shift['shiftname'], start: fullinfo.shift['shiftstart'], end: fullinfo.shift['shiftend'], duration: fullinfo.shift['shiftdur'], picks: fullinfo.shiftinfo['picks'], meters: fullinfo.shiftinfo['meters'], rpm: fullinfo.shiftinfo['rpm'], mph: fullinfo.shiftinfo['mph'], efficiency: fullinfo.shiftinfo['efficiency'], starts: fullinfo.shiftinfo['starts'], runtime: fullinfo.shiftinfo['runtime'], stops: fullinfo.shiftinfo['stops'] });
-    else if (period == 'month') setPeriodInfo({ name: dayjs(fullinfo.monthinfo['start']).format('MMMM YYYY'), start: fullinfo.monthinfo['start'], end: fullinfo.monthinfo['end'], duration: '', picks: fullinfo.monthinfo['picks'], meters: fullinfo.monthinfo['meters'], rpm: fullinfo.monthinfo['rpm'], mph: fullinfo.monthinfo['mph'], efficiency: fullinfo.monthinfo['efficiency'], starts: fullinfo.monthinfo['starts'], runtime: fullinfo.monthinfo['runtime'], stops: fullinfo.monthinfo['stops'] });
-    setUserInfo({ name: fullinfo.weaver.name, start: fullinfo.weaver.logintime, end: fullinfo.dayinfo['end'], duration: fullinfo.userinfo['workdur'], picks: fullinfo.userinfo['picks'], meters: fullinfo.userinfo['meters'], rpm: fullinfo.userinfo['rpm'], mph: fullinfo.userinfo['mph'], efficiency: fullinfo.userinfo['efficiency'], starts: fullinfo.userinfo['starts'], runtime: fullinfo.userinfo['runtime'], stops: fullinfo.userinfo['stops'] });
-  }, [fullinfo]);
+    if (period == 'day' || ((!fullinfo?.shift?.shiftstart || !fullinfo?.shift?.shiftend) && period == 'shift')) setPeriodInfo({ name: dayjs(fullinfo?.dayinfo?.start).format('LL'), start: fullinfo?.dayinfo?.start, end: fullinfo?.dayinfo?.end, duration: '', picks: fullinfo?.dayinfo?.picks, meters: fullinfo?.dayinfo?.meters, rpm: fullinfo?.dayinfo?.rpm, mph: fullinfo?.dayinfo?.mph, efficiency: fullinfo?.dayinfo?.efficiency, starts: fullinfo?.dayinfo?.starts, runtime: fullinfo?.dayinfo?.runtime, stops: fullinfo?.dayinfo?.stops });
+    else if (period == 'shift') setPeriodInfo({ name: t('shift.shift') + ' ' + fullinfo?.shift?.shiftname, start: fullinfo?.shift?.shiftstart, end: fullinfo?.shift?.shiftend, duration: fullinfo?.shift?.shiftdur, picks: fullinfo?.shiftinfo?.picks, meters: fullinfo?.shiftinfo?.meters, rpm: fullinfo?.shiftinfo?.rpm, mph: fullinfo?.shiftinfo?.mph, efficiency: fullinfo?.shiftinfo?.efficiency, starts: fullinfo?.shiftinfo?.starts, runtime: fullinfo?.shiftinfo?.runtime, stops: fullinfo?.shiftinfo?.stops });
+    else if (period == 'month') setPeriodInfo({ name: dayjs(fullinfo?.monthinfo?.start).format('MMMM YYYY'), start: fullinfo?.monthinfo?.start, end: fullinfo?.monthinfo?.end, duration: '', picks: fullinfo?.monthinfo?.picks, meters: fullinfo?.monthinfo?.meters, rpm: fullinfo?.monthinfo?.rpm, mph: fullinfo?.monthinfo?.mph, efficiency: fullinfo?.monthinfo?.efficiency, starts: fullinfo?.monthinfo?.starts, runtime: fullinfo?.monthinfo?.runtime, stops: fullinfo?.monthinfo?.stops });
+    setUserInfo({ name: fullinfo?.weaver?.name, start: fullinfo?.weaver?.logintime, end: fullinfo?.dayinfo?.end, duration: fullinfo?.userinfo?.workdur, picks: fullinfo?.userinfo?.picks, meters: fullinfo?.userinfo?.meters, rpm: fullinfo?.userinfo?.rpm, mph: fullinfo?.userinfo?.mph, efficiency: fullinfo?.userinfo?.efficiency, starts: fullinfo?.userinfo?.starts, runtime: fullinfo?.userinfo?.runtime, stops: fullinfo?.userinfo?.stops });
+  }, [fullinfo, period]);
 
   useEffect(() => {
-    if (period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) setPeriodInfo({ ...periodInfo, name: dayjs(info.dayinfo['start']).format('LL'), start: info.dayinfo['start'], end: info.dayinfo['end'], picks: info.dayinfo['picks'], meters: info.dayinfo['meters'], rpm: info.dayinfo['rpm'], mph: info.dayinfo['mph'], efficiency: info.dayinfo['efficiency'] });
-    else if (period == 'shift') setPeriodInfo({ ...periodInfo, name: t('shift.shift') + ' ' + info.shift['shiftname'], start: info.shift['shiftstart'], end: info.shift['shiftend'], picks: info.shiftinfo['picks'], meters: info.shiftinfo['meters'], rpm: info.shiftinfo['rpm'], mph: info.shiftinfo['mph'], efficiency: info.shiftinfo['efficiency'] });
-    else if (period == 'month') setPeriodInfo({ ...periodInfo, name: dayjs(info.monthinfo['start']).format('MMMM YYYY'), start: info.monthinfo['start'], end: info.monthinfo['end'], picks: info.monthinfo['picks'], meters: info.monthinfo['meters'], rpm: info.monthinfo['rpm'], mph: info.monthinfo['mph'], efficiency: info.monthinfo['efficiency'] });
-  }, [info.dayinfo?.end, period]);
+    if (period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) setPeriodInfo({ ...periodInfo, name: dayjs(info.dayinfo?.start).format('LL'), start: info.dayinfo?.start, end: info.dayinfo?.end, picks: info.dayinfo?.picks, meters: info.dayinfo?.meters, rpm: info.dayinfo?.rpm, mph: info.dayinfo?.mph, efficiency: info.dayinfo?.efficiency });
+    else if (period == 'shift') setPeriodInfo({ ...periodInfo, name: t('shift.shift') + ' ' + info.shift?.shiftname, start: info.shift?.shiftstart, end: info.shift?.shiftend, picks: info.shiftinfo?.picks, meters: info.shiftinfo?.meters, rpm: info.shiftinfo?.rpm, mph: info.shiftinfo?.mph, efficiency: info.shiftinfo?.efficiency });
+    else if (period == 'month') setPeriodInfo({ ...periodInfo, name: dayjs(info.monthinfo?.start).format('MMMM YYYY'), start: info.monthinfo?.start, end: info.monthinfo?.end, picks: info.monthinfo?.picks, meters: info.monthinfo?.meters, rpm: info.monthinfo?.rpm, mph: info.monthinfo?.mph, efficiency: info.monthinfo?.efficiency });
+  }, [info.dayinfo?.end]);
 
   useEffect(() => {
-    setUserInfo({ ...userInfo, name: info.weaver.name, start: info.weaver.logintime, end: info.dayinfo['end'], picks: info.userinfo['picks'], meters: info.userinfo['meters'], rpm: info.userinfo['rpm'], mph: info.userinfo['mph'], efficiency: info.userinfo['efficiency'] });
-  }, [info.userinfo?.efficiency, info.weaver.id && period, info.weaver?.logintime]);
+    setUserInfo({ ...userInfo, name: info.weaver?.name, start: info.weaver?.logintime, end: info.dayinfo?.end, picks: info.userinfo?.picks, meters: info.userinfo?.meters, rpm: info.userinfo?.rpm, mph: info.userinfo?.mph, efficiency: info.userinfo?.efficiency });
+  }, [info.userinfo?.efficiency, info.weaver?.id && period, info.weaver?.logintime]);
 
   useEffect(() => {
-    if (Array.isArray(periodInfo['stops'])) {
+    if (Array.isArray(periodInfo?.stops)) {
       let obj = []
-      obj.push({ reason: 'run', value: dayjs.duration(periodInfo['runtime'] || 0).asMilliseconds(), count: Number(periodInfo['starts']) })
-      for (let stop of periodInfo['stops']) {
+      obj.push({ reason: 'run', value: dayjs.duration(periodInfo?.runtime || 0).asMilliseconds(), count: Number(periodInfo?.starts) })
+      for (let stop of periodInfo?.stops) {
         obj.push({ reason: Object.keys(stop)[0], value: dayjs.duration(stop[Object.keys(stop)[0]]['dur']).asMilliseconds(), count: stop[Object.keys(stop)[0]]['total'] })
       }
       setShiftDonut(obj);
     }
     return () => { }
-  }, [periodInfo.runtime, periodInfo.stops, period])
+  }, [periodInfo?.runtime, periodInfo?.stops, period])
 
   useEffect(() => {
-    if (userInfo && Array.isArray(userInfo['stops'])) {
+    if (userInfo && Array.isArray(userInfo?.stops)) {
       let obj = []
-      obj.push({ reason: 'run', value: dayjs.duration(userInfo['runtime'] || 0).asMilliseconds(), count: Number(userInfo['starts']) })
-      for (let stop of userInfo['stops']) {
+      obj.push({ reason: 'run', value: dayjs.duration(userInfo?.runtime || 0).asMilliseconds(), count: Number(userInfo?.starts) })
+      for (let stop of userInfo?.stops) {
         obj.push({ reason: Object.keys(stop)[0], value: dayjs.duration(stop[Object.keys(stop)[0]]['dur']).asMilliseconds(), count: stop[Object.keys(stop)[0]]['total'] })
       }
       setUserDonut(obj);
     }
     setLoading(false)
     return () => { }
-  }, [userInfo.runtime, userInfo.stops, period])
+  }, [userInfo?.runtime, userInfo?.stops, period])
 
   useEffect(() => {
     dayjs.locale(i18n.language == 'en' ? 'en-gb' : i18n.language)
@@ -207,7 +206,7 @@ const Overview: React.FC<Props> = ({
                           <Display value={getTagVal('warpShrinkage')} tag={getTag('warpShrinkage')} />
                         </div>
                         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-                          <Display value={getTagVal(modeCode.val == 1 ? 'speedMainDrive' : 'stopAngle')} tag={getTag(modeCode.val == 1 ? 'speedMainDrive' : 'stopAngle')} icon={modeCode.val == 1 ? <DashboardOutlined style={{ color: '#1890ff' }} /> : <AimOutlined style={{ color: '#1890ff' }} />} />
+                          <Display value={getTagVal(modeCode?.val == 1 ? 'speedMainDrive' : 'stopAngle')} tag={getTag(modeCode?.val == 1 ? 'speedMainDrive' : 'stopAngle')} icon={modeCode?.val == 1 ? <DashboardOutlined style={{ color: '#1890ff' }} /> : <AimOutlined style={{ color: '#1890ff' }} />} />
                         </div>
                       </Skeleton>
                     </Card>
@@ -233,7 +232,7 @@ const Overview: React.FC<Props> = ({
                   </Row>
                 </Col>
                 <Col span={12} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
-                  <Row style={{ marginBottom: '8px', flex: ((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
+                  <Row style={{ marginBottom: '8px', flex: ((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser?.name) ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
                     <Card title={capitalizeFirstLetter(t('period.' + period))} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}
                       extra={<Segmented size='middle' value={period} onChange={(value) => { setPeriod(value.toString()); }}
                         options={[{ label: t('period.shift'), value: 'shift', icon: <ScheduleOutlined /> },
@@ -253,45 +252,45 @@ const Overview: React.FC<Props> = ({
                           >
                             <Form.Item label={<ScheduleOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
                               <Form.Item style={{ display: 'inline-block' }} >
-                                <span style={{ fontSize: '24px' }}>{periodInfo.name}</span>
+                                <span style={{ fontSize: '24px' }}>{periodInfo?.name}</span>
                               </Form.Item>
                               <Form.Item label={<RiseOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }}>
-                                <span style={{ fontSize: '24px' }}>{Number(Number(periodInfo['efficiency']).toFixed(periodInfo['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + ' ' + t('tags.efficiency.eng')}</span>
+                                <span style={{ fontSize: '24px' }}>{Number(Number(periodInfo?.efficiency).toFixed(periodInfo?.efficiency < 10 ? 2 : 1)).toLocaleString(i18n.language) + ' ' + t('tags.efficiency.eng')}</span>
                               </Form.Item>
                             </Form.Item>
                             <Form.Item label={<ClockCircleOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{dayjs(periodInfo.start).format('LL LT') + ' - ' + dayjs(periodInfo.end).format('LL LT') + (periodInfo.duration && (', ' + duration2text(dayjs.duration(periodInfo.duration))))}</span>
+                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{dayjs(periodInfo?.start).format('LL LT') + ' - ' + dayjs(periodInfo?.end).format('LL LT') + (periodInfo?.duration && (', ' + duration2text(dayjs.duration(periodInfo?.duration))))}</span>
                             </Form.Item>
                             <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ marginBottom: 0 }} >
                               <Form.Item style={{ display: 'inline-block' }} >
-                                <span style={{ fontSize: '16px' }}>{Number(periodInfo['picks']) + ' ' + t('tags.picksLastRun.eng') + ', ' + Number(Number(periodInfo['meters']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.clothMeters.eng')}</span>
+                                <span style={{ fontSize: '16px' }}>{Number(periodInfo?.picks) + ' ' + t('tags.picksLastRun.eng') + ', ' + Number(Number(periodInfo?.meters).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.clothMeters.eng')}</span>
                               </Form.Item>
                               <Form.Item label={<DashboardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }} >
-                                <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{Number(Number(periodInfo['rpm']).toFixed(1)).toLocaleString(i18n.language) + ' ' + t('tags.speedMainDrive.eng') + ', ' + Number(Number(periodInfo['mph']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.speedCloth.eng')}</span>
+                                <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{Number(Number(periodInfo?.rpm).toFixed(1)).toLocaleString(i18n.language) + ' ' + t('tags.speedMainDrive.eng') + ', ' + Number(Number(periodInfo?.mph).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.speedCloth.eng')}</span>
                               </Form.Item>
                             </Form.Item>
                             <Form.Item label={<PieChartOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
                               <Space direction="horizontal" style={{ width: '100%', justifyContent: 'start', alignItems: 'start' }} wrap>
-                                {periodInfo['starts'] > 0 && <div onClick={() => setShiftDonutSel({ ...shiftDonutSel, run: !shiftDonutSel.run })} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
-                                  count={periodInfo['starts']} overflowCount={999}
+                                {periodInfo?.starts > 0 && <div onClick={() => setShiftDonutSel({ ...shiftDonutSel, run: !shiftDonutSel.run })} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
+                                  count={periodInfo?.starts} overflowCount={999}
                                   style={{ backgroundColor: shiftDonutSel['run'] ? '#52c41aFF' : '#8c8c8c' }}
-                                /><SyncOutlined style={{ fontSize: '130%', color: shiftDonutSel['run'] ? '#52c41aFF' : '#8c8c8c', paddingInline: 5 }} />{modeCode.val == 1 ? duration2text(dayjs.duration(periodInfo['runtime']).add(dayjs().diff(modeCode.updated))) : duration2text(dayjs.duration(periodInfo['runtime']))}</div>}
-                                {Array.isArray(periodInfo['stops']) && periodInfo['stops'].map((stop: any) => (
+                                /><SyncOutlined style={{ fontSize: '130%', color: shiftDonutSel['run'] ? '#52c41aFF' : '#8c8c8c', paddingInline: 5 }} />{modeCode?.val == 1 ? duration2text(dayjs.duration(periodInfo?.runtime).add(dayjs().diff(modeCode?.updated))) : duration2text(dayjs.duration(periodInfo?.runtime))}</div>}
+                                {Array.isArray(periodInfo?.stops) && periodInfo?.stops.map((stop: any) => (
                                   stop[Object.keys(stop)[0]]['total'] > 0 && <div onClick={() => setShiftDonutSel({ ...shiftDonutSel, [Object.keys(stop)[0]]: !shiftDonutSel[Object.keys(stop)[0]] })} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
                                     count={stop[Object.keys(stop)[0]]['total']} overflowCount={999}
                                     style={{ backgroundColor: stopObj(Object.keys(stop)[0], shiftDonutSel[Object.keys(stop)[0]]).color }}
-                                  />{stopObj(Object.keys(stop)[0], shiftDonutSel[Object.keys(stop)[0]]).icon}{modeCode.val == stopNum(Object.keys(stop)[0]) ? duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']).add(dayjs().diff(modeCode.updated))) : duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
+                                  />{stopObj(Object.keys(stop)[0], shiftDonutSel[Object.keys(stop)[0]]).icon}{modeCode?.val == stopNum(Object.keys(stop)[0]) ? duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']).add(dayjs().diff(modeCode?.updated))) : duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
                                 }
                               </Space>
                             </Form.Item>
                           </Form>
                           <div style={{ width: '20%', height: height && height / 4 }}>
-                            <Donut data={shiftDonut} selected={shiftDonutSel} text={(Number(Number(periodInfo['efficiency']).toFixed(periodInfo['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng'))} />
+                            <Donut data={shiftDonut} selected={shiftDonutSel} text={(Number(Number(periodInfo?.efficiency).toFixed(periodInfo?.efficiency < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng'))} />
                           </div></div>
                       </Skeleton>
                     </Card>
                   </Row>
-                  {((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser.name) && <Row style={{ flex: periodInfo['name'] ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex', marginBottom: '2px', }}>
+                  {((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser?.name) && <Row style={{ flex: periodInfo?.name ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex', marginBottom: '2px', }}>
                     <Card title={t('user.weaver')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
                       <Skeleton loading={loading} round active>
                         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
@@ -306,40 +305,40 @@ const Overview: React.FC<Props> = ({
                           >
                             <Form.Item label={<IdcardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
                               <Form.Item style={{ display: 'inline-block' }} >
-                                <span style={{ fontSize: '24px' }}>{userInfo.name}</span>
+                                <span style={{ fontSize: '24px' }}>{userInfo?.name}</span>
                               </Form.Item>
                               <Form.Item label={<RiseOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }}>
-                                <span style={{ fontSize: '24px' }}>{userInfo && (Number(Number(userInfo['efficiency']).toFixed(userInfo['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + ' ' + t('tags.efficiency.eng'))}</span>
+                                <span style={{ fontSize: '24px' }}>{userInfo && (Number(Number(userInfo?.efficiency).toFixed(userInfo?.efficiency < 10 ? 2 : 1)).toLocaleString(i18n.language) + ' ' + t('tags.efficiency.eng'))}</span>
                               </Form.Item>
                             </Form.Item>
                             <Form.Item label={<LoginOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
-                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{dayjs(userInfo.start).format('LL LT') + ', ' + (userInfo && duration2text(dayjs.duration(dayjs().diff(dayjs(userInfo.start)))))}</span>
+                              <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{dayjs(userInfo?.start).format('LL LT') + ', ' + (userInfo && duration2text(dayjs.duration(dayjs().diff(dayjs(userInfo.start)))))}</span>
                             </Form.Item>
                             <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ marginBottom: 0 }} >
                               <Form.Item style={{ display: 'inline-block' }} >
-                                <span style={{ fontSize: '16px' }}>{userInfo && (Number(userInfo['picks']) + ' ' + t('tags.picksLastRun.eng') + ', ' + Number(Number(userInfo['meters']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.clothMeters.eng'))}</span>
+                                <span style={{ fontSize: '16px' }}>{userInfo && (Number(userInfo?.picks) + ' ' + t('tags.picksLastRun.eng') + ', ' + Number(Number(userInfo?.meters).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.clothMeters.eng'))}</span>
                               </Form.Item>
                               <Form.Item label={<DashboardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }} >
-                                <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{userInfo && (Number(Number(userInfo['rpm']).toFixed(1)).toLocaleString(i18n.language) + ' ' + t('tags.speedMainDrive.eng') + ', ' + Number(Number(userInfo['mph']).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.speedCloth.eng'))}</span>
+                                <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{userInfo && (Number(Number(userInfo?.rpm).toFixed(1)).toLocaleString(i18n.language) + ' ' + t('tags.speedMainDrive.eng') + ', ' + Number(Number(userInfo?.mph).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.speedCloth.eng'))}</span>
                               </Form.Item>
                             </Form.Item>
                             <Form.Item label={<PieChartOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
                               {userInfo && <Space direction="horizontal" style={{ width: '100%', justifyContent: 'start', alignItems: 'start' }} wrap>
-                                {userInfo['starts'] > 0 && <div onClick={() => setUserDonutSel({ ...userDonutSel, run: !userDonutSel.run })} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
-                                  count={userInfo['starts']} overflowCount={999}
+                                {userInfo?.starts > 0 && <div onClick={() => setUserDonutSel({ ...userDonutSel, run: !userDonutSel.run })} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
+                                  count={userInfo?.starts} overflowCount={999}
                                   style={{ backgroundColor: userDonutSel['run'] ? '#52c41aFF' : '#8c8c8c' }}
-                                /><SyncOutlined style={{ fontSize: '130%', color: userDonutSel['run'] ? '#52c41aFF' : '#8c8c8c', paddingInline: 5 }} />{modeCode.val == 1 ? duration2text(dayjs.duration(userInfo['runtime']).add(dayjs().diff(modeCode.updated))) : duration2text(dayjs.duration(userInfo['runtime']))}</div>}
-                                {Array.isArray(userInfo['stops']) && (userInfo['stops'] as []).map((stop: any) => (
+                                /><SyncOutlined style={{ fontSize: '130%', color: userDonutSel['run'] ? '#52c41aFF' : '#8c8c8c', paddingInline: 5 }} />{modeCode?.val == 1 ? duration2text(dayjs.duration(userInfo?.runtime).add(dayjs().diff(modeCode?.updated))) : duration2text(dayjs.duration(userInfo?.runtime))}</div>}
+                                {Array.isArray(userInfo?.stops) && (userInfo?.stops as []).map((stop: any) => (
                                   stop[Object.keys(stop)[0]]['total'] > 0 && <div onClick={() => setUserDonutSel({ ...userDonutSel, [Object.keys(stop)[0]]: !userDonutSel[Object.keys(stop)[0]] })} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
                                     count={stop[Object.keys(stop)[0]]['total']} overflowCount={999}
                                     style={{ backgroundColor: stopObj(Object.keys(stop)[0], userDonutSel[Object.keys(stop)[0]]).color }}
-                                  />{stopObj(Object.keys(stop)[0], userDonutSel[Object.keys(stop)[0]]).icon}{modeCode.val == stopNum(Object.keys(stop)[0]) ? duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']).add(dayjs().diff(modeCode.updated))) : duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
+                                  />{stopObj(Object.keys(stop)[0], userDonutSel[Object.keys(stop)[0]]).icon}{modeCode?.val == stopNum(Object.keys(stop)[0]) ? duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']).add(dayjs().diff(modeCode?.updated))) : duration2text(dayjs.duration(stop[Object.keys(stop)[0]]['dur']))}</div>))
                                 }
                               </Space>}
                             </Form.Item>
                           </Form>
                           <div style={{ width: '20%', height: height && height / 4 }}>
-                            <Donut data={userDonut} selected={userDonutSel} text={t('user.weaver') + '\n' + (userInfo && (Number(Number(userInfo['efficiency']).toFixed(userInfo['efficiency'] < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng')))} />
+                            <Donut data={userDonut} selected={userDonutSel} text={t('user.weaver') + '\n' + (userInfo && (Number(Number(userInfo?.efficiency).toFixed(userInfo?.efficiency < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng')))} />
                           </div></div>
                       </Skeleton>
                     </Card>

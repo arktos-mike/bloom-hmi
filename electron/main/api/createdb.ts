@@ -270,7 +270,7 @@ update
 set
 	picks = picks + picksLastRun,
 	cloth = cloth + (picksLastRun / (100 * density)),
-	motor = motor + clock
+	motor = justify_hours(motor + clock)
 where
 	serialno is not null;
 end if;
@@ -815,7 +815,7 @@ select
 		extract(epoch
 	from
 		sum(periods.runtime))/ 3600 ) ,
-	sum(periods.picks) * 6000 / sum(periods.picks * 6000 / periods.efficiency),
+	sum(periods.picks) * 6000 / sum(periods.picks * 6000 / NULLIF(periods.efficiency,0)),
 	sum(periods.starts),
 	sum(periods.runtime),
 	(
@@ -1128,6 +1128,79 @@ end;
 
 $function$
 ;
+CREATE OR REPLACE FUNCTION getpartialinfo(OUT tags jsonb, OUT shift jsonb, OUT weaver jsonb, OUT userinfo jsonb, OUT shiftinfo jsonb, OUT dayinfo jsonb, OUT monthinfo jsonb)
+ RETURNS record
+ LANGUAGE plpgsql
+AS $function$
+  begin
 
+  tags :=(
+select
+	jsonb_agg(e)
+from
+	(
+	select
+		tag,
+		(round(val::numeric,(tag->>'dec')::integer)) as val,
+		updated,
+		link
+	from
+		tags
+	where
+		tag->>'group' = 'monitoring'
+		or link = false) e);
+
+shift :=(select row_to_json(e)::jsonb from (select * from shiftdetect(current_timestamp)) e);
+
+weaver :=(
+select
+	row_to_json(e)::jsonb
+from
+	(
+	select
+		id,
+		name,
+		lower(timestamp) as logintime
+	from
+		userlog
+	where
+		upper_inf(timestamp)
+		and role = 'weaver') e);
+
+userinfo :=(
+select
+	row_to_json(e)::jsonb
+from
+	(
+	select
+		picks, meters, rpm, mph, efficiency
+	from
+		getuserstatinfo((weaver->>'id')::numeric,
+		(weaver->>'logintime')::timestamptz,
+		current_timestamp)) e);
+
+if (shift->>'shiftname' = '') is not false then
+  	shiftinfo := null;
+else
+  	shiftinfo :=(select row_to_json(e)::jsonb|| json_build_object('start', (shift->>'shiftstart')::timestamptz , 'end', current_timestamp)::jsonb  from (select picks, meters, rpm, mph, efficiency from getstatinfo((shift->>'shiftstart')::timestamptz, current_timestamp)) e);
+end if;
+
+dayinfo :=(
+select
+	row_to_json(e)::jsonb || json_build_object('start', date_trunc('day', current_timestamp) , 'end', current_timestamp)::jsonb
+from
+	(
+	select
+		picks, meters, rpm, mph, efficiency
+	from
+		getstatinfo(date_trunc('day', current_timestamp),
+		current_timestamp)) e );
+
+monthinfo := (select row_to_json(e)::jsonb || json_build_object('start', date_trunc('month', current_timestamp) , 'end', current_timestamp)::jsonb  from (select picks, meters, rpm, mph, efficiency from getstatinfo(date_trunc('month', current_timestamp), current_timestamp)) e);
+
+end;
+
+$function$
+;
 `
 export default createTableText

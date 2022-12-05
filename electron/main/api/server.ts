@@ -414,10 +414,10 @@ const readModbusData = async function (client, port, slave) {
               if (rows[0] && rows[0]['tag']['group'] == 'event') {
                 if (tag.name == 'modeCode') {
                   const info = await db.query('SELECT * FROM getcurrentinfo();');
-                  info.rows[0] && await info.rows[0]['userinfo']['stops'].map((row: any) => {
+                  info.rows[0]['userinfo'] && await info.rows[0]['userinfo']['stops'].map((row: any) => {
                     row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
                   });
-                  info.rows[0] && await info.rows[0]['shiftinfo']['stops'].map((row: any) => {
+                  info.rows[0]['shift'] && await info.rows[0]['shiftinfo']['stops'].map((row: any) => {
                     row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
                   });
                   info.rows[0] && await info.rows[0]['dayinfo']['stops'].map((row: any) => {
@@ -426,10 +426,10 @@ const readModbusData = async function (client, port, slave) {
                   info.rows[0] && await info.rows[0]['monthinfo']['stops'].map((row: any) => {
                     row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
                   });
-                  info.rows[0] && (info.rows[0]['shift']['shiftdur'] = parseInterval(info.rows[0]['shift']['shiftdur']))
-                  info.rows[0] && (info.rows[0]['userinfo']['runtime'] = parseInterval(info.rows[0]['userinfo']['runtime']))
-                  info.rows[0] && (info.rows[0]['userinfo']['workdur'] = parseInterval(info.rows[0]['userinfo']['workdur']))
-                  info.rows[0] && (info.rows[0]['shiftinfo']['runtime'] = parseInterval(info.rows[0]['shiftinfo']['runtime']))
+                  info.rows[0]['shift'] && (info.rows[0]['shift']['shiftdur'] = parseInterval(info.rows[0]['shift']['shiftdur']))
+                  info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['runtime'] = parseInterval(info.rows[0]['userinfo']['runtime']))
+                  info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['workdur'] = parseInterval(info.rows[0]['userinfo']['workdur']))
+                  info.rows[0]['shift'] && (info.rows[0]['shiftinfo']['runtime'] = parseInterval(info.rows[0]['shiftinfo']['runtime']))
                   info.rows[0] && (info.rows[0]['dayinfo']['runtime'] = parseInterval(info.rows[0]['dayinfo']['runtime']))
                   info.rows[0] && (info.rows[0]['monthinfo']['runtime'] = parseInterval(info.rows[0]['monthinfo']['runtime']))
                   info.rows[0] && (info.rows[0]['lifetime']['motor'] = parseInterval(info.rows[0]['lifetime']['motor']))
