@@ -3,12 +3,13 @@ import type { ColumnsType, TableProps } from 'antd/es/table';
 import { ScheduleOutlined, ReconciliationOutlined, TeamOutlined, MinusCircleTwoTone, PlusCircleTwoTone, ToolOutlined, QuestionCircleOutlined, ExclamationCircleOutlined, DeleteOutlined, BarChartOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "../components/Icons"
 import { FilterValue, SorterResult } from 'antd/es/table/interface';
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import 'dayjs/locale/en-gb';
 import duration from 'dayjs/plugin/duration';
 import { Button, ColumnPlot, DatePicker } from '@/components';
+import { isEqual } from 'lodash';
 dayjs.extend(duration);
 
 interface DataType {
@@ -55,7 +56,7 @@ type Props = {
   token: any;
 };
 
-const MonthReport: React.FC<Props> = ({
+const MonthReport: React.FC<Props>  = memo(({
   token
 }
 ) => {
@@ -638,6 +639,10 @@ const MonthReport: React.FC<Props> = ({
       <Tabs size='small' type='card' animated={{ inkBar: true, tabPane: true }} items={items} />
     </div>
   )
+},
+(pre, next) => {
+  return isEqual(pre, next);
 }
+);
 
 export default MonthReport

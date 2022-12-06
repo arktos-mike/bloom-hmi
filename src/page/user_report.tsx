@@ -3,12 +3,13 @@ import type { ColumnsType, TableProps } from 'antd/es/table';
 import { MinusCircleTwoTone, PlusCircleTwoTone, ToolOutlined, QuestionCircleOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "../components/Icons"
 import { FilterValue, SorterResult } from 'antd/es/table/interface';
-import React, { useEffect, useRef, useState } from 'react'
+import React, { memo, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import 'dayjs/locale/en-gb';
 import duration from 'dayjs/plugin/duration';
 import { Button, DatePicker, Select } from '@/components';
+import { isEqual } from 'lodash';
 dayjs.extend(duration);
 
 interface DataType {
@@ -29,7 +30,7 @@ type Props = {
   shadowUser: any;
 };
 
-const UserReport: React.FC<Props> = ({
+const UserReport: React.FC<Props> = memo(({
   token,
   shadowUser
 }
@@ -221,7 +222,7 @@ const UserReport: React.FC<Props> = ({
     return () => { }
   }, []);
 
-  useEffect(()=>{
+  useEffect(() => {
     dayjs.locale(i18n.language == 'en' ? 'en-gb' : i18n.language)
     return () => { }
   }, [i18n.language])
@@ -337,6 +338,9 @@ const UserReport: React.FC<Props> = ({
 
     </div>
   )
-}
-
+},
+  (pre, next) => {
+    return isEqual(pre, next);
+  }
+);
 export default UserReport

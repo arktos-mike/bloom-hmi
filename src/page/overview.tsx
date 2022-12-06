@@ -1,11 +1,12 @@
 import { Button, Display, Donut } from '@/components';
 import { Alert, Badge, Card, Carousel, Col, Descriptions, Form, Modal, Result, Row, Segmented, Skeleton, Space } from 'antd';
 import { CheckOutlined, ToolOutlined, QuestionCircleOutlined, LoginOutlined, IdcardOutlined, RiseOutlined, PieChartOutlined, SyncOutlined, ClockCircleOutlined, ScheduleOutlined, DashboardOutlined, AimOutlined, ExclamationCircleOutlined, HistoryOutlined, ReconciliationOutlined, CalendarOutlined, FieldTimeOutlined } from '@ant-design/icons';
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, memo } from 'react'
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import 'dayjs/locale/en-gb';
 import { FabricFullIcon, ButtonIcon, WeftIcon, FabricPieceIcon, FabricPieceLengthIcon, WarpBeamIcon, WarpBeamsIcon } from '@/components/Icons';
+import { isEqual } from 'lodash';
 
 const cardStyle = { background: "whitesmoke", width: '100%', display: 'flex', flexDirection: 'column' as 'column' }
 const cardHeadStyle = { background: "#1890ff", color: "white" }
@@ -25,7 +26,7 @@ type Props = {
   setPeriod: (val: string) => void;
 };
 
-const Overview: React.FC<Props> = ({
+const Overview: React.FC<Props> = memo(({
   shadowUser,
   info,
   fullinfo,
@@ -393,6 +394,9 @@ const Overview: React.FC<Props> = ({
       </Carousel >
     </div >
   )
-}
-
+},
+  (pre, next) => {
+    return isEqual(pre, next);
+  }
+);
 export default Overview
