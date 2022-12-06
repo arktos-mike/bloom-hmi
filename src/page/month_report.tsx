@@ -56,7 +56,7 @@ type Props = {
   token: any;
 };
 
-const MonthReport: React.FC<Props>  = memo(({
+const MonthReport: React.FC<Props> = memo(({
   token
 }
 ) => {
@@ -640,9 +640,9 @@ const MonthReport: React.FC<Props>  = memo(({
     </div>
   )
 },
-(pre, next) => {
-  return isEqual(pre, next);
-}
+  (pre, next) => {
+    return isEqual(pre, next);
+  }
 );
 
 export default MonthReport

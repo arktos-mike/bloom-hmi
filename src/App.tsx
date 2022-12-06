@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, memo } from 'react'
 import { useSSE } from 'react-hooks-sse';
 import logo from '/icon.svg'
 import 'styles/app.less'
@@ -54,7 +54,7 @@ import e from 'express';
 const { Header, Content, Footer } = Layout;
 const { Option } = Select;
 
-const App: React.FC = () => {
+const App: React.FC = memo(() => {
   const keyboardRef = useRef<KeyboardReactInterface | null>(null)
   const span = useRef<HTMLSpanElement | null>(null);
   const descr = useRef<HTMLSpanElement | null>(null);
@@ -648,6 +648,10 @@ const App: React.FC = () => {
       </ConfigProvider>
     </div >
   )
+},
+(pre, next) => {
+  return isEqual(pre, next);
 }
+);
 
 export default App
