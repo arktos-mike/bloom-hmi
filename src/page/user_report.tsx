@@ -39,7 +39,7 @@ const UserReport: React.FC<Props> = memo(({
   const [data, setData] = useState();
   const [users, setUsers] = useState();
   const [total, setTotal] = useState();
-  const [user, setUser] = useState(token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id : Number(shadowUser.id));
+  const [user, setUser] = useState(token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id : Number(shadowUser?.id));
   const [period, setPeriod] = useState([dayjs().startOf('month'), dayjs()]);
   const [loading, setLoading] = useState(false);
   const [filteredInfo, setFilteredInfo] = useState<Record<string, FilterValue | null>>({});
@@ -233,7 +233,7 @@ const UserReport: React.FC<Props> = memo(({
   }, [token]);
 
   useEffect(() => {
-    shadowUser.id && setUser(Number(shadowUser.id));
+    shadowUser?.id && setUser(Number(shadowUser?.id));
     return () => { }
   }, [shadowUser]);
 
@@ -248,12 +248,12 @@ const UserReport: React.FC<Props> = memo(({
       <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
         <h1 style={{ margin: 10 }}>{t('user.weaver')}</h1>
         <Select style={{ width: '100%' }} userRights={['admin', 'manager']} token={token}
-          value={user}
+          value={user ? user : null}
           onChange={(value: any) => { setUser(value) }}
           options={
-            (users || []).map(user => (
+            users ? (users as []).map(user => (
               { key: user['id'], value: user['id'], label: user['name'] }
-            ))
+            )) : null
           } />
         <h1 style={{ margin: 10 }}>{t('log.select')}</h1>
         <DatePicker style={{ flexGrow: 1 }} picker="month" format='MMMM YYYY' defaultValue={dayjs()} onChange={(e: any) => { setPeriod([e ? e?.startOf('month') : dayjs().startOf('month'), e ? e?.endOf('month') : dayjs()]) }} />

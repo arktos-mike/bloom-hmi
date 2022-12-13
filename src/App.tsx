@@ -410,9 +410,9 @@ const App: React.FC = memo(() => {
   }, [fullinfo.tags]);
 
   useEffect(() => {
-    if (period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) { setPeriodName(dayjs(info.dayinfo['start']).format('LL')); setEfficiency(info.dayinfo['efficiency']); }
-    else if (period == 'shift') { setPeriodName(t('shift.shift') + ' ' + info.shift['shiftname']); setEfficiency(info.shiftinfo['efficiency']); }
-    else if (period == 'month') { setPeriodName(dayjs(info.monthinfo['start']).format('MMMM YYYY')); setEfficiency(info.monthinfo['efficiency']); }
+    if (period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) { setPeriodName(dayjs(info.dayinfo?.start).format('LL')); setEfficiency(info.dayinfo?.efficiency); }
+    else if (period == 'shift') { setPeriodName(t('shift.shift') + ' ' + info.shift?.shiftname); setEfficiency(info.shiftinfo?.efficiency); }
+    else if (period == 'month') { setPeriodName(dayjs(info.monthinfo?.start).format('MMMM YYYY')); setEfficiency(info.monthinfo?.efficiency); }
   }, [info.dayinfo?.end, period]);
 
   useEffect(() => {
@@ -512,7 +512,7 @@ const App: React.FC = memo(() => {
             <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={location.pathname == '/' ? ['overview'] : [location.pathname.split("/").slice(-1)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? smallItemsMan : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? smallItemsFix : smallItems : smallItems} />
             <div className="speed"><Spin wrapperClassName="speed" spinning={modeCode?.val == 1 ? !getTagLink('speedMainDrive') : !getTagLink('stopAngle')}>{modeCode?.val == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode?.val == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}<div className="sub">{modeCode?.val == 1 ? t('tags.speedMainDrive.eng') : '°'}</div></Spin></div>
             <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode?.val).color }}><Spin wrapperClassName="mode" spinning={!getTagLink('modeCode')}>{modeCodeObj(modeCode?.val).text + ' '}{modeCodeObj(modeCode?.val).icon}<div className='stopwatch'>{stopwatch(modeCode?.updated)}</div></Spin></div>
-            <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{(period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) ? dayjs().format('L') : period == 'shift' ? periodName : period == 'month' ? dayjs().format('MMM YY') : ''}<div className="percent">{Number(Number(efficiency).toFixed((efficiency && (efficiency < 10)) ? 2 : 1).toString()).toLocaleString(i18n.language) + '%'}</div></Space></div><div className="progress"><Progress percent={efficiency ? efficiency : 0} showInfo={false} size="small" /></div></div>
+            <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{(period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) ? dayjs().format('L') : period == 'shift' ? periodName : period == 'month' ? dayjs().format('MMM YY') : ''}<div className="percent">{efficiency ? Number(Number(efficiency).toFixed((efficiency && (efficiency < 10)) ? 2 : 1).toString()).toLocaleString(i18n.language) + '%':''}</div></Space></div><div className="progress"><Progress percent={efficiency ? efficiency : 0} showInfo={false} size="small" /></div></div>
             <div className="user">
               <div className="user" onClick={() => { !visible && showUserDialog() }}>
                 <Avatar.Group size='large'>

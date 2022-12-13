@@ -23,22 +23,22 @@ router.get('/full', async (req, res) => {
   info.rows[0]['userinfo'] && await info.rows[0]['userinfo']['stops'].map((row: any) => {
     row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
   });
-  info.rows[0] && await info.rows[0]['shiftinfo']['stops'].map((row: any) => {
+  info.rows[0]['shiftinfo'] && await info.rows[0]['shiftinfo']['stops'].map((row: any) => {
     row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
   });
-  info.rows[0] && await info.rows[0]['dayinfo']['stops'].map((row: any) => {
+  info.rows[0]['dayinfo'] && await info.rows[0]['dayinfo']['stops'].map((row: any) => {
     row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
   });
-  info.rows[0] && await info.rows[0]['monthinfo']['stops'].map((row: any) => {
+  info.rows[0]['monthinfo'] && await info.rows[0]['monthinfo']['stops'].map((row: any) => {
     row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
   });
   info.rows[0]['shift'] && (info.rows[0]['shift']['shiftdur'] = parseInterval(info.rows[0]['shift']['shiftdur']))
   info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['runtime'] = parseInterval(info.rows[0]['userinfo']['runtime']))
   info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['workdur'] = parseInterval(info.rows[0]['userinfo']['workdur']))
-  info.rows[0]['shift'] && (info.rows[0]['shiftinfo']['runtime'] = parseInterval(info.rows[0]['shiftinfo']['runtime']))
-  info.rows[0] && (info.rows[0]['dayinfo']['runtime'] = parseInterval(info.rows[0]['dayinfo']['runtime']))
-  info.rows[0] && (info.rows[0]['monthinfo']['runtime'] = parseInterval(info.rows[0]['monthinfo']['runtime']))
-  info.rows[0] && (info.rows[0]['lifetime']['motor'] = parseInterval(info.rows[0]['lifetime']['motor']))
+  info.rows[0]['shiftinfo'] && (info.rows[0]['shiftinfo']['runtime'] = parseInterval(info.rows[0]['shiftinfo']['runtime']))
+  info.rows[0]['dayinfo'] && (info.rows[0]['dayinfo']['runtime'] = parseInterval(info.rows[0]['dayinfo']['runtime']))
+  info.rows[0]['monthinfo'] && (info.rows[0]['monthinfo']['runtime'] = parseInterval(info.rows[0]['monthinfo']['runtime']))
+  info.rows[0]['lifetime'] && (info.rows[0]['lifetime']['motor'] = parseInterval(info.rows[0]['lifetime']['motor']))
   res.status(200).send(info.rows[0])
 })
 

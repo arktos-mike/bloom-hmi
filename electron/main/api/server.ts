@@ -168,7 +168,8 @@ const dbInit = async () => {
     });
     await db.query(`INSERT INTO clothlog VALUES(tstzrange(current_timestamp(3),NULL,'[)'),$1,(SELECT val from tags WHERE tag->>'name' = 'fullWarpBeamLength'))`, [0])
     await network.get_active_interface(async (err, obj) => {
-      const ipConf = { opIP: obj, tcp1: { ip: '192.168.1.123', port: '502', sId: 1, swapBytes: true, swapWords: true } }
+      const ipConf = { opIP: err ? { name: 'localhost', type: 'Wired', model: '--', vendor: '--', netmask: '255.255.255.0', gateway_ip: '127.0.0.1', ip_address: '127.0.0.1', mac_address: '00:00:00:00:00:00' } : obj, tcp1: { ip: '192.168.1.123', port: '502', sId: 1, swapBytes: true, swapWords: true } }
+      console.log(ipConf)
       await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
     })
     await SerialPort.list().then(async function (ports) {

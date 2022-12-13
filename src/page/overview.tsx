@@ -255,21 +255,21 @@ const Overview: React.FC<Props> = memo(({
                               <Form.Item style={{ display: 'inline-block' }} >
                                 <span style={{ fontSize: '24px' }}>{periodInfo?.name}</span>
                               </Form.Item>
-                              <Form.Item label={<RiseOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }}>
+                              {periodInfo?.efficiency && <Form.Item label={<RiseOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }}>
                                 <span style={{ fontSize: '24px' }}>{Number(Number(periodInfo?.efficiency).toFixed(periodInfo?.efficiency < 10 ? 2 : 1)).toLocaleString(i18n.language) + ' ' + t('tags.efficiency.eng')}</span>
-                              </Form.Item>
+                              </Form.Item>}
                             </Form.Item>
                             <Form.Item label={<ClockCircleOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
                               <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{dayjs(periodInfo?.start).format('LL LT') + ' - ' + dayjs(periodInfo?.end).format('LL LT') + (periodInfo?.duration && (', ' + duration2text(dayjs.duration(periodInfo?.duration))))}</span>
                             </Form.Item>
-                            <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ marginBottom: 0 }} >
+                            {periodInfo?.picks && <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ marginBottom: 0 }} >
                               <Form.Item style={{ display: 'inline-block' }} >
                                 <span style={{ fontSize: '16px' }}>{Number(periodInfo?.picks) + ' ' + t('tags.picksLastRun.eng') + ', ' + Number(Number(periodInfo?.meters).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.clothMeters.eng')}</span>
                               </Form.Item>
                               <Form.Item label={<DashboardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }} >
                                 <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{Number(Number(periodInfo?.rpm).toFixed(1)).toLocaleString(i18n.language) + ' ' + t('tags.speedMainDrive.eng') + ', ' + Number(Number(periodInfo?.mph).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.speedCloth.eng')}</span>
                               </Form.Item>
-                            </Form.Item>
+                            </Form.Item>}
                             <Form.Item label={<PieChartOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
                               <Space direction="horizontal" style={{ width: '100%', justifyContent: 'start', alignItems: 'start' }} wrap>
                                 {periodInfo?.starts > 0 && <div onClick={() => setShiftDonutSel({ ...shiftDonutSel, run: !shiftDonutSel.run })} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
@@ -286,7 +286,7 @@ const Overview: React.FC<Props> = memo(({
                             </Form.Item>
                           </Form>
                           <div style={{ width: '20%', height: height && height / 4 }}>
-                            <Donut data={shiftDonut} selected={shiftDonutSel} text={(Number(Number(periodInfo?.efficiency).toFixed(periodInfo?.efficiency < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng'))} />
+                            <Donut data={shiftDonut} selected={shiftDonutSel} text={periodInfo?.efficiency && (Number(Number(periodInfo?.efficiency).toFixed(periodInfo?.efficiency < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng'))} />
                           </div></div>
                       </Skeleton>
                     </Card>
@@ -308,21 +308,21 @@ const Overview: React.FC<Props> = memo(({
                               <Form.Item style={{ display: 'inline-block' }} >
                                 <span style={{ fontSize: '24px' }}>{userInfo?.name}</span>
                               </Form.Item>
-                              <Form.Item label={<RiseOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }}>
+                              {userInfo?.efficiency && <Form.Item label={<RiseOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }}>
                                 <span style={{ fontSize: '24px' }}>{userInfo && (Number(Number(userInfo?.efficiency).toFixed(userInfo?.efficiency < 10 ? 2 : 1)).toLocaleString(i18n.language) + ' ' + t('tags.efficiency.eng'))}</span>
-                              </Form.Item>
+                              </Form.Item>}
                             </Form.Item>
                             <Form.Item label={<LoginOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
                               <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{dayjs(userInfo?.start).format('LL LT') + ', ' + (userInfo && duration2text(dayjs.duration(dayjs().diff(dayjs(userInfo.start)))))}</span>
                             </Form.Item>
-                            <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ marginBottom: 0 }} >
+                            {userInfo?.picks && <Form.Item label={<SyncOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ marginBottom: 0 }} >
                               <Form.Item style={{ display: 'inline-block' }} >
                                 <span style={{ fontSize: '16px' }}>{userInfo && (Number(userInfo?.picks) + ' ' + t('tags.picksLastRun.eng') + ', ' + Number(Number(userInfo?.meters).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.clothMeters.eng'))}</span>
                               </Form.Item>
                               <Form.Item label={<DashboardOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} style={{ display: 'inline-block', marginLeft: 15 }} >
                                 <span style={{ fontSize: '16px', color: '#8c8c8c' }}>{userInfo && (Number(Number(userInfo?.rpm).toFixed(1)).toLocaleString(i18n.language) + ' ' + t('tags.speedMainDrive.eng') + ', ' + Number(Number(userInfo?.mph).toFixed(2)).toLocaleString(i18n.language) + ' ' + t('tags.speedCloth.eng'))}</span>
                               </Form.Item>
-                            </Form.Item>
+                            </Form.Item>}
                             <Form.Item label={<PieChartOutlined style={{ color: '#1890ff', fontSize: '130%' }} />} >
                               {userInfo && <Space direction="horizontal" style={{ width: '100%', justifyContent: 'start', alignItems: 'start' }} wrap>
                                 {userInfo?.starts > 0 && <div onClick={() => setUserDonutSel({ ...userDonutSel, run: !userDonutSel.run })} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} key={Object.keys(stop)[0]}><Badge size='small'
