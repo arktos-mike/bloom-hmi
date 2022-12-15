@@ -49,7 +49,6 @@ import Reminders from './page/reminders';
 import { differenceWith, isEqual } from 'lodash-es';
 
 import type { InputRef } from 'antd';
-import e from 'express';
 
 const { Header, Content, Footer } = Layout;
 const { Option } = Select;
@@ -127,7 +126,7 @@ const App: React.FC = memo(() => {
   const [modeCode, setModeCode] = useState<any>();
   const [activeInput, setActiveInput] = useState({ form: '', id: '', num: false, showInput: true, input: '', showKeyboard: false, descr: '', pattern: 'default' })
   const [keyboardLayout, setKeyboardLayout] = useState(enlayout.layout)
-  const [keyboardLng, setKeyboardLng] = useState(i18n.language)
+  const [keyboardLng, setKeyboardLng] = useState('en')
   const [keyboardCollapse, setKeyboardCollapse] = useState(false)
   const [bufferKeyboard, setBufferKeyboard] = useState('')
   const [bufferTemp, setBufferTemp] = useState('')
@@ -197,6 +196,7 @@ const App: React.FC = memo(() => {
         activeInput.num ? setKeyboardLayout(numeric('es').layout) : setKeyboardLayout(eslayout.layout)
         break;
       default:
+        activeInput.num ? setKeyboardLayout(numeric('en').layout) : setKeyboardLayout(enlayout.layout)
         break;
     }
   }
