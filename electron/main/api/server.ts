@@ -418,22 +418,22 @@ const readModbusData = async function (client, port, slave) {
                   info.rows[0]['userinfo'] && await info.rows[0]['userinfo']['stops'].map((row: any) => {
                     row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
                   });
-                  info.rows[0]['shift'] && await info.rows[0]['shiftinfo']['stops'].map((row: any) => {
+                  info.rows[0]['shiftinfo'] && await info.rows[0]['shiftinfo']['stops'].map((row: any) => {
                     row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
                   });
-                  info.rows[0] && await info.rows[0]['dayinfo']['stops'].map((row: any) => {
+                  info.rows[0]['dayinfo'] && await info.rows[0]['dayinfo']['stops'].map((row: any) => {
                     row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
                   });
-                  info.rows[0] && await info.rows[0]['monthinfo']['stops'].map((row: any) => {
+                  info.rows[0]['monthinfo'] && await info.rows[0]['monthinfo']['stops'].map((row: any) => {
                     row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
                   });
                   info.rows[0]['shift'] && (info.rows[0]['shift']['shiftdur'] = parseInterval(info.rows[0]['shift']['shiftdur']))
                   info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['runtime'] = parseInterval(info.rows[0]['userinfo']['runtime']))
                   info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['workdur'] = parseInterval(info.rows[0]['userinfo']['workdur']))
-                  info.rows[0]['shift'] && (info.rows[0]['shiftinfo']['runtime'] = parseInterval(info.rows[0]['shiftinfo']['runtime']))
-                  info.rows[0] && (info.rows[0]['dayinfo']['runtime'] = parseInterval(info.rows[0]['dayinfo']['runtime']))
-                  info.rows[0] && (info.rows[0]['monthinfo']['runtime'] = parseInterval(info.rows[0]['monthinfo']['runtime']))
-                  info.rows[0] && (info.rows[0]['lifetime']['motor'] = parseInterval(info.rows[0]['lifetime']['motor']))
+                  info.rows[0]['shiftinfo'] && (info.rows[0]['shiftinfo']['runtime'] = parseInterval(info.rows[0]['shiftinfo']['runtime']))
+                  info.rows[0]['dayinfo'] && (info.rows[0]['dayinfo']['runtime'] = parseInterval(info.rows[0]['dayinfo']['runtime']))
+                  info.rows[0]['monthinfo'] && (info.rows[0]['monthinfo']['runtime'] = parseInterval(info.rows[0]['monthinfo']['runtime']))
+                  info.rows[0]['lifetime'] && (info.rows[0]['lifetime']['motor'] = parseInterval(info.rows[0]['lifetime']['motor']))
                   await sse.send(info.rows[0], 'fullinfo', 'all');
                 }
                 await sse.send(rows, 'tags', tag.name);
@@ -444,6 +444,7 @@ const readModbusData = async function (client, port, slave) {
               port.mbsState = MBS_STATE_FAIL_READ;
               //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
               //console.log(mbsStatus);
+              //console.log(e);
               if (tag.name == 'modeCode') {
                 const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false, val=0 where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *;', ['dev', slave.name, 'name', tag.name]);
                 if (rows[0]) {
