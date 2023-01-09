@@ -235,7 +235,7 @@ const Overview: React.FC<Props> = memo(({
                 <Col span={12} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
                   <Row style={{ marginBottom: '8px', flex: ((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser?.name) ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
                     <Card title={capitalizeFirstLetter(t('period.' + period))} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}
-                      extra={<Segmented size='middle' value={period} onChange={(value) => { setPeriod(value.toString()); }}
+                      extra={<Segmented onResize={undefined} onResizeCapture={undefined} size='middle' value={period} onChange={(value) => { setPeriod(value.toString()); }}
                         options={[{ label: t('period.shift'), value: 'shift', icon: <ScheduleOutlined /> },
                         { label: t('period.day'), value: 'day', icon: <HistoryOutlined /> },
                         { label: t('period.month'), value: 'month', icon: <ReconciliationOutlined /> }]} />
