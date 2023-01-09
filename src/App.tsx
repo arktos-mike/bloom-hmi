@@ -621,7 +621,7 @@ const App: React.FC = memo(() => {
                         setActiveInput({ ...activeInput, input: input })
                       }
                     }}
-                    display={activeInput.num ? { '-': '+/-', '{bksp}': '🠔', '{enter}': '⤶', '{lock}': '⇧', '{space}': '﹈', } : { '{bksp}': '🠔', '{enter}': '⤶', '{lock}': '⇧', '{space}': '﹈', }}
+                    display={activeInput.num ? { '-': '+/-', '{bksp}': '⇦', '{enter}': '⤶', '{lock}': '⇧', '{space}': '﹈', } : { '{bksp}': '⇦', '{enter}': '⤶', '{lock}': '⇧', '{space}': '﹈', }}
                     excludeFromLayout={{
                       default: [".com", "{tab}", "{shift}"], shift: [".com", "{tab}", "{shift}"]
                     }}
