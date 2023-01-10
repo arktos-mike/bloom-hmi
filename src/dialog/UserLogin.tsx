@@ -166,10 +166,10 @@ const UserLogin: React.FC<Props> = ({
             name="user"
             rules={[{ required: true, message: t('user.fill') }]}
           >
-            <Select showSearch open={showList} searchValue={search} onBlur={()=>{setSelected(false)}} onFocus={() => { if ((!showList && !selected) || (showList && search && !listNotEmpty && !selected)) { setActiveInput({ showKeyboard: true, num: false, showInput: true, form: 'login', id: 'name', input: search, descr: t('user.user'), pattern: 'username' }) } else { setActiveInput({ ...activeInput, form: 'login', id: 'name', input: search }); } }} onSearch={(value) => { setSearch(value); setActiveInput({ ...activeInput, input: value }); }} onSelect={() => { setSelected(true); setListNotEmpty(false); setShowList(false); setSearch(''); setActiveInput({ ...activeInput, showKeyboard: false, input: '' }); }}
+            <Select showSearch open={showList} searchValue={search} onBlur={()=>{setSelected(false); setListNotEmpty(false)}} onFocus={() => { if ((!showList && !selected) || (showList && search && !listNotEmpty && !selected)) { setActiveInput({ showKeyboard: true, num: false, showInput: true, form: 'login', id: 'name', input: search, descr: t('user.user'), pattern: 'username' }) } else { setActiveInput({ ...activeInput, form: 'login', id: 'name', input: search }); } }} onSearch={(value) => { setSearch(value); setActiveInput({ ...activeInput, input: value }); }} onSelect={() => { setSelected(true); setListNotEmpty(false); setShowList(false); setSearch(''); setActiveInput({ ...activeInput, showKeyboard: false, input: '' }); }}
               filterOption={(input, option) => (option!.children as unknown as string).toLowerCase().includes(input.toLowerCase())} placeholder={t('user.user')} virtual={true} size="large" suffixIcon={<UserOutlined style={{ fontSize: '120%' }} />}>
               {(state.data || []).map(user => (
-                <Option key={user['name']} value={user['name']} label={user['name']} onMouseEnter={() => { setListNotEmpty(true) }}>
+                <Option key={user['name']} value={user['name']} label={user['name']} onMouseDown={() => { setListNotEmpty(true) }} onMouseEnter={() => { setListNotEmpty(true) }}>
                   {user['name']}</Option>
               ))}
             </Select>
