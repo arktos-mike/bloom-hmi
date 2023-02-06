@@ -42,7 +42,7 @@ const SettingsOp: React.FC<Props> = ({
   const [lngs, setLngs] = useState({ data: [] })
   const [today, setDate] = useState(new Date())
   const [loading, setLoading] = useState(true)
-  const [selectedTimezone, setSelectedTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone as any)
+  const [selectedTimezone, setSelectedTimezone] = useState({value: Intl.DateTimeFormat().resolvedOptions().timeZone} as any)
 
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
     if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
@@ -123,7 +123,7 @@ const SettingsOp: React.FC<Props> = ({
       const response = await fetch('http://localhost:3000/datetime', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
-        body: JSON.stringify({ unix: dt.unix(), iso: dt.toISOString(), sync: values.sync, tz: selectedTimezone.value }),
+        body: JSON.stringify({ unix: dt.unix(), iso: dt.toISOString(), sync: values.sync, tz: selectedTimezone.value || selectedTimezone}),
       });
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
@@ -162,6 +162,7 @@ const SettingsOp: React.FC<Props> = ({
     if (form) {
       if (form.getFieldValue('date')) form.setFieldsValue({ date: format(dayjs(form.getFieldValue('date')), 'L') })
       if (form.getFieldValue('time')) form.setFieldsValue({ time: format(form.getFieldValue('time'), 'LTS') })
+          form.setFieldsValue({ sync:  true})
     }
     return () => { }
   }, [i18n.language])
