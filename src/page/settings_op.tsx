@@ -42,6 +42,7 @@ const SettingsOp: React.FC<Props> = ({
   const [lngs, setLngs] = useState({ data: [] })
   const [today, setDate] = useState(new Date())
   const [loading, setLoading] = useState(true)
+  const [sync, setSync] = useState(true)
   const [selectedTimezone, setSelectedTimezone] = useState({value: Intl.DateTimeFormat().resolvedOptions().timeZone} as any)
 
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
@@ -61,6 +62,16 @@ const SettingsOp: React.FC<Props> = ({
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setLngs({ data: json }); setLoading(false);
+    }
+    catch (error) { /*console.log(error);*/ }
+  }
+
+  const fetchSync = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/datetime');
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
+      const json = await response.json();
+      setSync(json);
     }
     catch (error) { /*console.log(error);*/ }
   }
@@ -162,7 +173,7 @@ const SettingsOp: React.FC<Props> = ({
     if (form) {
       if (form.getFieldValue('date')) form.setFieldsValue({ date: format(dayjs(form.getFieldValue('date')), 'L') })
       if (form.getFieldValue('time')) form.setFieldsValue({ time: format(form.getFieldValue('time'), 'LTS') })
-          form.setFieldsValue({ sync:  true})
+          form.setFieldsValue({ sync:  sync})
     }
     return () => { }
   }, [i18n.language])
