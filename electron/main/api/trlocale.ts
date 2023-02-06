@@ -147,6 +147,8 @@ const locale = {
   "time": {
     "date": "Tarih",
     "time": "Zaman",
+    "ntp": "Zaman senkronizasyonu",
+    "timezone": "Saat dilimi",
     "title": "Tarih/zaman ayarları",
     "submit": "TARİH VE ZAMAN DEĞİŞTİR"
   },

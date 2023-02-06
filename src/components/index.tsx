@@ -14,3 +14,4 @@ export { default as Donut } from './Donut';
 export { default as ColumnPlot } from './ColumnPlot';
 export { default as Breadcrumb } from './Breadcrumb';
 export { default as TextArea } from './TextArea';
+export { default as TimeZone } from './TimeZone';

@@ -147,6 +147,8 @@ const locale = {
   "time": {
     "date": "Date",
     "time": "Time",
+    "ntp": "Time synchronization",
+    "timezone": "Time zone",
     "title": "Date/time settings",
     "submit": "CHANGE DATE AND TIME"
   },

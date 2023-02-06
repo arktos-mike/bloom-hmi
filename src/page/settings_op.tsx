@@ -2,7 +2,7 @@ import { Card, Col, Form, notification, Row, Select, Skeleton, } from 'antd';
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import { DesktopOutlined, WifiOutlined, GlobalOutlined, CalendarOutlined, ClockCircleOutlined, ReloadOutlined } from '@ant-design/icons';
-import { DatePicker, TimePicker, Button, InputNumber, } from '../components';
+import { DatePicker, TimePicker, Button, InputNumber, TimeZone, Checkbox, } from '../components';
 import format from 'dayjs';
 import dayjs from 'dayjs';
 import 'dayjs/locale/en-gb';
@@ -10,6 +10,7 @@ const cardStyle = { background: "whitesmoke", width: '100%', display: 'flex', fl
 const cardHeadStyle = { background: "#1890ff", color: "white" }
 const cardBodyStyle = { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' as 'column' }
 const { Option } = Select;
+
 
 type Props = {
   token: any;
@@ -41,6 +42,7 @@ const SettingsOp: React.FC<Props> = ({
   const [lngs, setLngs] = useState({ data: [] })
   const [today, setDate] = useState(new Date())
   const [loading, setLoading] = useState(true)
+  const [selectedTimezone, setSelectedTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone as any)
 
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
     if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
@@ -115,13 +117,13 @@ const SettingsOp: React.FC<Props> = ({
   }
 
 
-  const onFinish = async (values: { date: any; time: any; }) => {
+  const onFinish = async (values: { date: any; time: any; sync:any; }) => {
     try {
       let dt = dayjs(dayjs(values.date).format('L') + " " + dayjs(values.time).format('LTS'))
       const response = await fetch('http://localhost:3000/datetime', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
-        body: JSON.stringify({ unix: dt.unix(), iso: dt.toISOString() }),
+        body: JSON.stringify({ unix: dt.unix(), iso: dt.toISOString(), sync: values.sync, tz: selectedTimezone.value }),
       });
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
@@ -250,23 +252,30 @@ const SettingsOp: React.FC<Props> = ({
                 colon={false}
               >
                 <Form.Item label={<CalendarOutlined style={{ fontSize: '130%' }} />} >
-                  <span style={{ fontSize: '16px' }}>{curDate}</span>
+                  <span style={{ fontSize: '16px' }}>{curDate}</span><br></br><span style={{ fontSize: '16px' }}>{curTime}</span>
                 </Form.Item>
-                <Form.Item label={<ClockCircleOutlined style={{ fontSize: '130%' }} />} >
-                  <span style={{ fontSize: '16px' }}>{curTime}</span>
+                <Form.Item name="sync" wrapperCol={{ offset: 8, span: 16 }} valuePropName="checked" >
+                  <Checkbox userRights={['admin', 'manager']} token={token} text='time.ntp'></Checkbox>
+                </Form.Item>
+                <Form.Item
+                  name="timezone"
+                  label={t('time.timezone')}
+                  rules={[{ required: false, message: t('user.fill') }]}
+                >
+                  <TimeZone userRights={['admin', 'manager']} token={token}
+                    value={selectedTimezone}
+                    onChange={setSelectedTimezone}
+                  />
                 </Form.Item>
                 <Form.Item
                   name="date"
                   label={t('time.date')}
-                  rules={[{ required: true, message: t('user.fill') }]}
                 >
                   <DatePicker userRights={['admin', 'manager']} token={token} />
                 </Form.Item>
-
                 <Form.Item
                   name="time"
                   label={t('time.time')}
-                  rules={[{ required: true, message: t('user.fill') }]}
                 >
                   <TimePicker userRights={['admin', 'manager']} token={token} />
                 </Form.Item>
@@ -278,7 +287,7 @@ const SettingsOp: React.FC<Props> = ({
           </Card>
         </Col>
       </Row>
-    </div>
+    </div >
   )
 }
 

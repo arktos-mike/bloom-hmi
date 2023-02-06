@@ -9,16 +9,19 @@ const options = {
 const router = PromiseRouter();
 // export our router to be mounted by the parent application
 router.post('/', async (req, res) => {
-    const { unix, iso } = req.body;
+    const { unix, iso, sync, tz } = req.body;
+    console.log(iso, sync, tz)
     try {
         switch (process.platform) {
             case 'linux':
                 //sudo.exec("date -s @" + unix + " && fake-hwclock save force", options, (error, data, getter) => {
-                sudo.exec("timedatectl set-ntp false && date -s @" + unix, options, (error, data, getter) => {
+                sudo.exec("timedatectl set-timezone '" + tz + "' && timedatectl set-ntp " + sync +"&& date -s @" + unix, options, (error, data, getter) => {
                     if (!error) {
                         res.status(200).json({
                             message: "notifications.dtupdate",
                             dt: iso,
+                            tz: tz,
+                            sync: sync
                         });
                     }
                 });
