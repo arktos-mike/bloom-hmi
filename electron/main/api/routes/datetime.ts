@@ -30,7 +30,6 @@ router.get('/', async (req, res) => {
                       server: ntp_server,
                       sync: ntp_status
                     });
-                    console.log(ntp_server, ntp_status)
                   }
                 });
               }

@@ -73,7 +73,7 @@ const SettingsOp: React.FC<Props> = ({
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setSync(json.sync);
-      setNtp(json.ntp);
+      setNtp(json.server);
       setLoading(false);
     }
     catch (error) { /*console.log(error);*/ }
@@ -185,7 +185,7 @@ const SettingsOp: React.FC<Props> = ({
       form.setFieldsValue({ ntp: ntp })
     }
     return () => { }
-  }, [i18n.language, sync])
+  }, [i18n.language, sync, ntp])
 
   return (
     <div className='wrapper'>
@@ -275,16 +275,17 @@ const SettingsOp: React.FC<Props> = ({
                 <Form.Item label={<CalendarOutlined style={{ fontSize: '130%' }} />} >
                   <span style={{ fontSize: '16px' }}>{curDate}</span><br></br><span style={{ fontSize: '16px' }}>{curTime}</span>
                 </Form.Item>
-                <Form.Item name="sync" wrapperCol={{ offset: 8, span: 16 }} valuePropName="checked" >
-                  <Checkbox userRights={['admin', 'manager']} token={token} text='time.ntp'></Checkbox>
-                </Form.Item>
-                <Form.Item label={t('time.ntp')} name="ntp" >
-                  <Input placeholder={t('time.ntp')} size="large" onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'time', id: 'ntp', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'email' }) }} />
+                <Form.Item label={t('time.ntp')} style={{ marginBottom: '0px !important' }}>
+                  <Form.Item name="sync" style={{ display: 'inline-block', width: 'calc(15%)' }} valuePropName="checked" >
+                    <Checkbox userRights={['admin', 'manager']} token={token} text=''></Checkbox>
+                  </Form.Item>
+                  <Form.Item name="ntp" style={{ display: 'inline-block', width: 'calc(85%)' }} >
+                    <Input userRights={['admin', 'manager']} token={token} className="narrow" placeholder={t('time.ntp')} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'time', id: 'ntp', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'email' }) }} />
+                  </Form.Item>
                 </Form.Item>
                 <Form.Item
                   name="timezone"
                   label={t('time.timezone')}
-                  rules={[{ required: false, message: t('user.fill') }]}
                 >
                   <TimeZone userRights={['admin', 'manager']} token={token}
                     value={selectedTimezone}
@@ -303,7 +304,7 @@ const SettingsOp: React.FC<Props> = ({
                 >
                   <TimePicker userRights={['admin', 'manager']} token={token} />
                 </Form.Item>
-                <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                <Form.Item wrapperCol={{ offset: 8, span: 16 }} >
                   <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="time.submit" />
                 </Form.Item>
               </Form>
