@@ -42,7 +42,7 @@ const SettingsOp: React.FC<Props> = ({
   const [lngs, setLngs] = useState({ data: [] })
   const [today, setDate] = useState(new Date())
   const [loading, setLoading] = useState(true)
-  const [sync, setSync] = useState(true)
+  const [sync, setSync] = useState(false)
   const [selectedTimezone, setSelectedTimezone] = useState({value: Intl.DateTimeFormat().resolvedOptions().timeZone} as any)
 
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
@@ -61,7 +61,7 @@ const SettingsOp: React.FC<Props> = ({
       const response = await fetch('http://localhost:3000/locales');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
-      setLngs({ data: json }); setLoading(false);
+      setLngs({ data: json });
     }
     catch (error) { /*console.log(error);*/ }
   }
@@ -71,7 +71,8 @@ const SettingsOp: React.FC<Props> = ({
       const response = await fetch('http://localhost:3000/datetime');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
-      setSync(json);
+      setSync(json.sync);
+      setLoading(false);
     }
     catch (error) { /*console.log(error);*/ }
   }
@@ -139,6 +140,7 @@ const SettingsOp: React.FC<Props> = ({
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
       if (!response.ok) { /*throw Error(response.statusText);*/ }
+      await fetchSync();
       form.resetFields()
     }
     catch (error) { console.log(error) }
@@ -149,6 +151,7 @@ const SettingsOp: React.FC<Props> = ({
       setActiveInput({ ...activeInput, form: '', id: '' });
       await fetchLngs();
       await fetchIP();
+      await fetchSync();
       clock();
       dayjs.locale(i18n.language == 'en' ? 'en-gb' : i18n.language)
     })();
@@ -176,7 +179,7 @@ const SettingsOp: React.FC<Props> = ({
           form.setFieldsValue({ sync:  sync})
     }
     return () => { }
-  }, [i18n.language])
+  }, [i18n.language, sync])
 
   return (
     <div className='wrapper'>
