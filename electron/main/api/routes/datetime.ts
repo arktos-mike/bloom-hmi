@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
                 ntp_status = parts[1].replace(/^[ ]+/g, "") == 'active' ? true : false;
                 sudo.exec("cat /etc/systemd/timesyncd.conf | grep ^NTP= | cut -f2- -d=", options, (error, data, getter) => {
                   if (!error && data) {
-                    ntp_server = data?.toString();
+                    ntp_server = data?.toString().replace(/\n/g, '');
                     res.status(200).json({
                       server: ntp_server,
                       sync: ntp_status
