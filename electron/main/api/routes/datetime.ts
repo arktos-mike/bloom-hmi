@@ -70,6 +70,11 @@ router.post('/', async (req, res) => {
               ntp: ntp
             });
           }
+          if (error) {
+            res.status(500).json({
+              error: error
+            });
+          }
         });
         break;
       case 'win32':
