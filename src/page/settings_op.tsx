@@ -275,11 +275,11 @@ const SettingsOp: React.FC<Props> = ({
                 <Form.Item label={<CalendarOutlined style={{ fontSize: '130%' }} />} >
                   <span style={{ fontSize: '16px' }}>{curDate}</span><br></br><span style={{ fontSize: '16px' }}>{curTime}</span>
                 </Form.Item>
-                <Form.Item label={t('time.ntp')} style={{ marginBottom: '0px !important' }}>
+                <Form.Item label={t('time.ntp')}  >
                   <Form.Item name="sync" style={{ display: 'inline-block', width: 'calc(15%)' }} valuePropName="checked" >
                     <Checkbox userRights={['admin', 'manager']} token={token} text=''></Checkbox>
                   </Form.Item>
-                  <Form.Item name="ntp" style={{ display: 'inline-block', width: 'calc(85%)' }} >
+                  <Form.Item className='form-item-narrow' name="ntp" style={{ display: 'inline-block', width: 'calc(85%)' }} >
                     <Input userRights={['admin', 'manager']} token={token} className="narrow" placeholder={t('time.ntp')} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'time', id: 'ntp', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'email' }) }} />
                   </Form.Item>
                 </Form.Item>
@@ -304,7 +304,7 @@ const SettingsOp: React.FC<Props> = ({
                 >
                   <TimePicker userRights={['admin', 'manager']} token={token} />
                 </Form.Item>
-                <Form.Item wrapperCol={{ offset: 8, span: 16 }} >
+                <Form.Item wrapperCol={{ offset: 8, span: 16 }} className='form-item-narrow' >
                   <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="time.submit" />
                 </Form.Item>
               </Form>

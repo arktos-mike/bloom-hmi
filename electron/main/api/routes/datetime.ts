@@ -38,6 +38,10 @@ router.get('/', async (req, res) => {
         });
         break;
       case 'win32':
+        res.status(200).json({
+          server: '',
+          sync: true
+        });
         break;
     }
 
