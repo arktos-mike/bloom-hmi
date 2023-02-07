@@ -2,7 +2,7 @@ import { Card, Col, Form, notification, Row, Select, Skeleton, } from 'antd';
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import { DesktopOutlined, WifiOutlined, GlobalOutlined, CalendarOutlined, ClockCircleOutlined, ReloadOutlined } from '@ant-design/icons';
-import { DatePicker, TimePicker, Button, InputNumber, TimeZone, Checkbox, } from '../components';
+import { DatePicker, TimePicker, Button, InputNumber, TimeZone, Checkbox, Input, } from '../components';
 import format from 'dayjs';
 import dayjs from 'dayjs';
 import 'dayjs/locale/en-gb';
@@ -43,7 +43,8 @@ const SettingsOp: React.FC<Props> = ({
   const [today, setDate] = useState(new Date())
   const [loading, setLoading] = useState(true)
   const [sync, setSync] = useState(false)
-  const [selectedTimezone, setSelectedTimezone] = useState({value: Intl.DateTimeFormat().resolvedOptions().timeZone} as any)
+  const [ntp, setNtp] = useState('')
+  const [selectedTimezone, setSelectedTimezone] = useState({ value: Intl.DateTimeFormat().resolvedOptions().timeZone } as any)
 
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
     if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
@@ -72,6 +73,7 @@ const SettingsOp: React.FC<Props> = ({
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setSync(json.sync);
+      setNtp(json.ntp);
       setLoading(false);
     }
     catch (error) { /*console.log(error);*/ }
@@ -129,13 +131,13 @@ const SettingsOp: React.FC<Props> = ({
   }
 
 
-  const onFinish = async (values: { date: any; time: any; sync:any; }) => {
+  const onFinish = async (values: { date: any; time: any; sync: any; ntp: any; }) => {
     try {
       let dt = dayjs(dayjs(values.date).format('L') + " " + dayjs(values.time).format('LTS'))
       const response = await fetch('http://localhost:3000/datetime', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
-        body: JSON.stringify({ unix: dt.unix(), iso: dt.toISOString(), sync: values.sync, tz: selectedTimezone.value || selectedTimezone}),
+        body: JSON.stringify({ unix: dt.unix(), iso: dt.toISOString(), sync: values.sync, tz: selectedTimezone.value || selectedTimezone, ntp: values.ntp }),
       });
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
@@ -162,6 +164,9 @@ const SettingsOp: React.FC<Props> = ({
     if (formIP && activeInput.form == 'ip') {
       formIP.setFieldsValue({ [activeInput.id]: activeInput.input })
     }
+    if (form && activeInput.form == 'time') {
+      form.setFieldsValue({ [activeInput.id]: activeInput.input })
+    }
     return () => { }
   }, [activeInput])
 
@@ -176,7 +181,8 @@ const SettingsOp: React.FC<Props> = ({
     if (form) {
       if (form.getFieldValue('date')) form.setFieldsValue({ date: format(dayjs(form.getFieldValue('date')), 'L') })
       if (form.getFieldValue('time')) form.setFieldsValue({ time: format(form.getFieldValue('time'), 'LTS') })
-          form.setFieldsValue({ sync:  sync})
+      form.setFieldsValue({ sync: sync })
+      form.setFieldsValue({ ntp: ntp })
     }
     return () => { }
   }, [i18n.language, sync])
@@ -271,6 +277,9 @@ const SettingsOp: React.FC<Props> = ({
                 </Form.Item>
                 <Form.Item name="sync" wrapperCol={{ offset: 8, span: 16 }} valuePropName="checked" >
                   <Checkbox userRights={['admin', 'manager']} token={token} text='time.ntp'></Checkbox>
+                </Form.Item>
+                <Form.Item label={t('time.ntp')} name="ntp" >
+                  <Input placeholder={t('time.ntp')} size="large" onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'time', id: 'ntp', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'email' }) }} />
                 </Form.Item>
                 <Form.Item
                   name="timezone"

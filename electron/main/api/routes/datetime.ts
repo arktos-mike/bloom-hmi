@@ -16,17 +16,24 @@ router.get('/', async (req, res) => {
         //sudo.exec("date -s @" + unix + " && fake-hwclock save force", options, (error, data, getter) => {
         sudo.exec("timedatectl", options, (error, data, getter) => {
           let ntp_status = false
+          let ntp_server = ''
           if (!error) {
             let lines = data?.toString().split('\n');
             lines?.forEach(function (line) {
               let parts = line.replace(/^[ ]+/g, "").split(':');
               if (parts[0] == 'NTP service') {
                 ntp_status = parts[1].replace(/^[ ]+/g, "") == 'active' ? true : false;
+                sudo.exec("cat /etc/systemd/timesyncd.conf | grep ^NTP= | cut -f2- -d=", options, (error, data, getter) => {
+                  if (!error && data) {
+                    ntp_server = data?.toString();
+                    res.status(200).json({
+                      server: ntp_server,
+                      sync: ntp_status
+                    });
+                    console.log(ntp_server, ntp_status)
+                  }
+                });
               }
-            });
-            res.status(200).json({
-              data: data,
-              sync: ntp_status
             });
           }
         });
@@ -39,25 +46,25 @@ router.get('/', async (req, res) => {
   catch (err) {
     /*console.log(err);*/
     res.status(500).json({
-      error: "Could not get system date/time",
-      message: "notifications.servererror",
+      error: "Could not get sync data",
     });
   };
 })
 
 router.post('/', async (req, res) => {
-  const { unix, iso, sync, tz } = req.body;
+  const { unix, iso, sync, tz, ntp } = req.body;
   try {
     switch (process.platform) {
       case 'linux':
         //sudo.exec("date -s @" + unix + " && fake-hwclock save force", options, (error, data, getter) => {
-        sudo.exec("timedatectl set-timezone '" + tz + "' && timedatectl set-ntp " + sync + "&& date -s @" + unix, options, (error, data, getter) => {
+        sudo.exec("timedatectl set-timezone '" + tz + "' && sed -i \"s/\\(NTP *= *\\).*/\\1" + ntp + "/\" /etc/systemd/timesyncd.conf && systemctl restart systemd-timesyncd.service && timedatectl set-ntp " + sync + "&& date -s @" + unix, options, (error, data, getter) => {
           if (!error) {
             res.status(200).json({
               message: "notifications.dtupdate",
               dt: iso,
               tz: tz,
-              sync: sync
+              sync: sync,
+              ntp: ntp
             });
           }
         });
