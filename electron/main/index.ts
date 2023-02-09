@@ -7,7 +7,11 @@ import './api/server'
 
 //app.commandLine.appendSwitch('host-rules', 'MAP * 127.0.0.1');
 //==============================================================
-
+app.commandLine.appendSwitch("--touch-events");
+app.commandLine.appendSwitch("--enable-touch-events");
+app.commandLine.appendSwitch("touch-events", "true");
+app.commandLine.appendSwitch("top-chrome-touch-ui", "true");
+app.commandLine.appendSwitch("--touch-events","enabled");
 // Disable GPU Acceleration for Windows 7
 //if (release().startsWith('6.1'))
 app.disableHardwareAcceleration()
@@ -50,6 +54,25 @@ async function createWindow() {
       webSecurity: false,
     },
   })
+  try {
+    // works with 1.1 too
+    win.webContents.debugger.attach('1.2')
+  } catch (err) {
+    console.log('Debugger attach failed: ', err)
+  }
+
+  const isDebuggerAttached = win.webContents.debugger.isAttached()
+  console.log('debugger attached? ', isDebuggerAttached)
+
+  win.webContents.debugger.on('detach', (event, reason) => {
+    console.log('Debugger detached due to: ', reason)
+  });
+
+  // This is where the magic happens!
+  win.webContents.debugger.sendCommand('Emulation.setEmitTouchEventsForMouse', {
+    enabled: true
+  });
+
   win.setBackgroundColor('#282c34');
   win.once('ready-to-show', () => {
     let devInnerHeight = 1080.0 // InnerHeight at development time

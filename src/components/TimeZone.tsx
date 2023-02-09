@@ -23,7 +23,8 @@ const Component = (props: any) => {
           control: (baseStyles, state) => ({
             ...baseStyles,
             borderWidth: 2,
-            borderRadius: 10
+            borderRadius: 10,
+            width: '100%'
           }),
         }}
       />
@@ -37,7 +38,8 @@ const Component = (props: any) => {
         control: (baseStyles, state) => ({
           ...baseStyles,
           borderWidth: 2,
-          borderRadius: 10
+          borderRadius: 10,
+          width: '100%'
         }),
       }}
     />
