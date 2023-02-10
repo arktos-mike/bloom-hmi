@@ -1086,7 +1086,7 @@ from
 	select
 		id,
 		name,
-		lower(timestamp) as logintime
+		case when lower(timestamp) < current_timestamp then lower(timestamp) else current_timestamp end as logintime
 	from
 		userlog
 	where
@@ -1160,7 +1160,7 @@ from
 	select
 		id,
 		name,
-		lower(timestamp) as logintime
+		case when lower(timestamp) < current_timestamp then lower(timestamp) else current_timestamp end as logintime
 	from
 		userlog
 	where

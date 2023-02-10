@@ -74,7 +74,8 @@ router.post('/register', async (req, res) => {
 router.post('/logout', async (req, res) => {
   try {
     const { id, logoutby } = req.body;
-    await db.query(`UPDATE userlog SET timestamp = tstzrange(lower(timestamp),current_timestamp(3),'[)'), logoutby=$2 WHERE upper_inf(timestamp) AND id=$1`, [id, logoutby]) //Verifying if the user exists in the database
+    await db.query(`DELETE FROM userlog WHERE upper_inf(timestamp) AND current_timestamp<lower(timestamp) AND id=$1`, [id])
+    await db.query(`UPDATE userlog SET timestamp = case when current_timestamp>lower(timestamp) then tstzrange(lower(timestamp),current_timestamp(3),'[)') else tstzrange(current_timestamp(3),current_timestamp(3),'[)')	end, logoutby=$2 WHERE upper_inf(timestamp) AND id=$1`, [id, logoutby]) //Verifying if the user exists in the database
     res.status(200).json({
       message: "notifications.logout",
     });
@@ -117,7 +118,8 @@ router.post('/login', async (req, res) => {
             process.env['SECRET_KEY'] || 'g@&hGgG&n34b%F7_f123K9',
           );
           let t = new Date()
-          await db.query(`UPDATE userlog SET timestamp = tstzrange(lower(timestamp),$5,'[)'), logoutby=$2 WHERE upper_inf(timestamp) AND (role<>$1 OR (role=$1 AND $3=$1)) AND id <> $4`, ['weaver', 'userpassword', user[0].role, user[0].id, t]);
+          await db.query(`DELETE FROM userlog WHERE upper_inf(timestamp) AND current_timestamp<lower(timestamp)`)
+          await db.query(`UPDATE userlog SET timestamp = case when current_timestamp>lower(timestamp) then tstzrange(lower(timestamp),$5,'[)') else tstzrange($5,$5,'[)')	end, logoutby=$2 WHERE upper_inf(timestamp) AND (role<>$1 OR (role=$1 AND $3=$1)) AND id <> $4`, ['weaver', 'userpassword', user[0].role, user[0].id, t]);
           await db.query(`INSERT INTO userlog (id, name, role, loginby, timestamp) SELECT * FROM (VALUES($1::numeric, $2::text, $3::text, $4::text, tstzrange($5,NULL,'[)')::tstzrange)) AS t (id, name, role, loginby, timestamp) WHERE t.id IS DISTINCT FROM (SELECT id FROM userlog WHERE upper_inf(timestamp))`, [user[0].id, user[0].name, user[0].role, 'password', t]);
           res.status(200).json({
             message: "notifications.userok",
@@ -165,7 +167,8 @@ router.post('/login/:id', async (req, res) => {
         process.env['SECRET_KEY'] || 'g@&hGgG&n34b%F7_f123K9',
       );
       let t = new Date()
-      await db.query(`UPDATE userlog SET timestamp = tstzrange(lower(timestamp),$5,'[)'), logoutby=$2 WHERE upper_inf(timestamp) AND (role<>$1 OR (role=$1 AND $3=$1)) AND id IS DISTINCT FROM $4`, ['weaver', 'userid', user[0].role, user[0].id, t]);
+      await db.query(`DELETE FROM userlog WHERE upper_inf(timestamp) AND current_timestamp<lower(timestamp)`)
+      await db.query(`UPDATE userlog SET timestamp = case when current_timestamp>lower(timestamp) then tstzrange(lower(timestamp),$5,'[)') else tstzrange($5,$5,'[)')	end, logoutby=$2 WHERE upper_inf(timestamp) AND (role<>$1 OR (role=$1 AND $3=$1)) AND id IS DISTINCT FROM $4`, ['weaver', 'userid', user[0].role, user[0].id, t]);
       await db.query(`INSERT INTO userlog (id, name, role, loginby, timestamp) SELECT * FROM (VALUES($1::numeric, $2::text, $3::text, $4::text, tstzrange($5,NULL,'[)')::tstzrange)) AS t (id, name, role, loginby, timestamp) WHERE t.id IS DISTINCT FROM (SELECT id FROM userlog WHERE upper_inf(timestamp))`, [user[0].id, user[0].name, user[0].role, 'id', t]);
 
       res.status(200).json({
@@ -202,7 +205,7 @@ router.delete('/:id', async (req, res) => {
           })
         }
         else {
-          db.query(`UPDATE userlog SET timestamp = tstzrange(lower(timestamp),current_timestamp(3),'[)'), logoutby=$2 WHERE upper_inf(timestamp) AND id=$1`, [user[0].id, "delete"]);
+          db.query(`UPDATE userlog SET timestamp = case when current_timestamp>lower(timestamp) then tstzrange(lower(timestamp),current_timestamp(3),'[)') else tstzrange(current_timestamp(3),current_timestamp(3),'[)')	end, logoutby=$2 WHERE upper_inf(timestamp) AND id=$1`, [user[0].id, "delete"]);
           res.status(200).send({ message: "notifications.userdel", id: req.params.id });
         }
       })
