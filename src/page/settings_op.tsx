@@ -79,6 +79,15 @@ const SettingsOp: React.FC<Props> = ({
     catch (error) { /*console.log(error);*/ }
   }
 
+  const getIP = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/config/getinterfaces');
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
+      await response.json();
+    }
+    catch (error) { /*console.log(error);*/ }
+  }
+
   const fetchIP = async () => {
     try {
       const response = await fetch('http://localhost:3000/config');
@@ -152,6 +161,7 @@ const SettingsOp: React.FC<Props> = ({
   useEffect(() => {
     (async () => {
       setActiveInput({ ...activeInput, form: '', id: '' });
+      await getIP();
       await fetchLngs();
       await fetchIP();
       await fetchSync();

@@ -43,6 +43,23 @@ api.post('/tags/writeTagRTU', async (req, res) => {
   }
 })
 
+api.get('/config/getinterfaces', async (req, res) => {
+  await network.get_active_interface(async (err, obj) => {
+    if (err) {
+      res.status(500).send({
+        error: err
+      })
+    }
+    else {
+      let ifs = obj
+      await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP}', obj]);
+      res.status(200).send({
+        opIP: ifs,
+      })
+    }
+  })
+})
+
 api.listen(process.env['EXPRESS_SERVER_PORT'] || 3000, () => {
   console.log(`API Server listening on port `, process.env['EXPRESS_SERVER_PORT'] || 3000)
 })
