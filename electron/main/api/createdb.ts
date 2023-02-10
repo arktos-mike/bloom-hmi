@@ -224,7 +224,8 @@ from
 	tags
 where
 	(tag->>'name' = 'picksLastRun'));
-
+DELETE FROM modelog WHERE upper_inf(timestamp) AND current_timestamp<lower(timestamp);
+DELETE FROM clothlog WHERE upper_inf(timestamp) AND current_timestamp<lower(timestamp);
 update
 	modelog
 set
