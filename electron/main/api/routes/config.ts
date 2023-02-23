@@ -58,10 +58,28 @@ router.post('/update', async (req, res) => {
     if (req.body.opIP) {
 
       const { opIP } = req.body;
-
-      await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, address}', '"' + opIP.ip_address + '"']);
-      await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, netmask}', '"' + opIP.netmask + '"']);
-
+      console.log(opIP)
+      opIP.name && await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, name}', '"' + opIP.name + '"']);
+      if (opIP.wired) {
+        await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, dhcp}', opIP.wired.dhcp]);
+        if (opIP.wired.dhcp==false) {
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, ip_address}', '"' + opIP.wired.ip_address + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, netmask}', '"' + opIP.wired.netmask + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, gateway_ip}', '"' + opIP.wired.gateway_ip + '"']);
+        }
+      }
+      if (opIP.wireless) {
+        await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, dhcp}', opIP.wireless.dhcp]);
+        if (opIP.wireless.dhcp==false) {
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, ip_address}', '"' + opIP.wireless.ip_address + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, netmask}', '"' + opIP.wireless.netmask + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, gateway_ip}', '"' + opIP.wireless.gateway_ip + '"']);
+        }
+      }
+      if (opIP.wifi) {
+        await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wifi, ssid}', '"' + opIP.wifi.ssid + '"']);
+        await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wifi, pwd}', '"' + opIP.wifi.pwd + '"']);
+      }
       switch (process.platform) {
         case 'linux':
           sudo.exec("ip addr flush dev eth0 && ifconfig eth0 " + opIP.ip_address + " netmask " + opIP.netmask + " && ip route add default via " + opIP.gateway_ip + " dev eth0", options, (error, data, getter) => {

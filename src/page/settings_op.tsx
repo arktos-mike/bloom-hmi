@@ -1,11 +1,12 @@
-import { Card, Col, Form, notification, Row, Select, Skeleton, } from 'antd';
-import React, { useEffect, useState } from 'react'
+import { Card, Carousel, Col, Form, notification, Row, Segmented, Select, Skeleton, } from 'antd';
+import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
-import { DesktopOutlined, WifiOutlined, GlobalOutlined, CalendarOutlined, ClockCircleOutlined, ReloadOutlined } from '@ant-design/icons';
-import { DatePicker, TimePicker, Button, InputNumber, TimeZone, Checkbox, Input, } from '../components';
+import { DesktopOutlined, WifiOutlined, GlobalOutlined, CalendarOutlined, ReloadOutlined, PartitionOutlined, ConsoleSqlOutlined, LockOutlined } from '@ant-design/icons';
+import { DatePicker, TimePicker, Button, InputNumber, TimeZone, Checkbox, Input, InputPassword, } from '../components';
 import format from 'dayjs';
 import dayjs from 'dayjs';
 import 'dayjs/locale/en-gb';
+import { CarouselRef } from 'antd/lib/carousel';
 const cardStyle = { background: "whitesmoke", width: '100%', display: 'flex', flexDirection: 'column' as 'column' }
 const cardHeadStyle = { background: "#1890ff", color: "white" }
 const cardBodyStyle = { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' as 'column' }
@@ -35,16 +36,23 @@ const SettingsOp: React.FC<Props> = ({
     }
     catch (error) { /*console.log(error);*/ }
   }
-
+  const [height, setHeight] = useState<number | undefined>(0)
+  const [slide, setSlide] = useState(0);
+  const slider = useRef<CarouselRef | null>();
   const [form] = Form.useForm()
   const [formIP] = Form.useForm()
-  const [opIP, setOpIP] = useState({ name: '', type: '', ip_address: '', netmask: '', gateway_ip: '', mac_address: '' })
+  const [formWifi] = Form.useForm()
+  const [formNet] = Form.useForm()
+
+  const [opIP, setOpIP] = useState({ name: '', wired: { dhcp: false, netmask: '', gateway_ip: '', ip_address: '', mac_address: '' }, wireless: { dhcp: false, netmask: '', gateway_ip: '', ip_address: '', mac_address: '' }, wifi: { ssid: '', pwd: '' } })
   const [lngs, setLngs] = useState({ data: [] })
   const [today, setDate] = useState(new Date())
   const [loading, setLoading] = useState(true)
   const [sync, setSync] = useState(false)
   const [ntp, setNtp] = useState('')
   const [selectedTimezone, setSelectedTimezone] = useState({ value: Intl.DateTimeFormat().resolvedOptions().timeZone } as any)
+  const div = useRef<HTMLDivElement | null>(null);
+  const contentStyle = { height: height, margin: '1px' };
 
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
     if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
@@ -124,12 +132,12 @@ const SettingsOp: React.FC<Props> = ({
     catch (error) { console.log(error) }
   }
 
-  const onIPChange = async (values: { ip: any; mask: any; gw: any; }) => {
+  const onIPChange = async (values: { dhcp: any; ip: any; mask: any; gw: any; }) => {
     try {
       const response = await fetch('http://localhost:3000/config/update', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
-        body: JSON.stringify({ opIP: { ip_address: values.ip, netmask: values.mask, gateway_ip: values.gw } }),
+        body: JSON.stringify({ opIP: { wired: { dhcp: values.dhcp, ip_address: values.ip, netmask: values.mask, gateway_ip: values.gw } } }),
       });
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
@@ -139,12 +147,41 @@ const SettingsOp: React.FC<Props> = ({
     catch (error) { console.log(error) }
   }
 
+  const onWifiChange = async (values: { dhcp: any; ip: any; mask: any; gw: any; ssid: any; pwd: any; }) => {
+    try {
+      const response = await fetch('http://localhost:3000/config/update', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json;charset=UTF-8', },
+        body: JSON.stringify({ opIP: { wifi: { ssid: values.ssid, pwd: values.pwd }, wireless: { dhcp: values.dhcp, ip_address: values.ip, netmask: values.mask, gateway_ip: values.gw } } }),
+      });
+      const json = await response.json();
+      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
+      fetchIP();
+    }
+    catch (error) { console.log(error) }
+  }
+
+  const onNetChange = async (values: { name: any; }) => {
+    try {
+      const response = await fetch('http://localhost:3000/config/update', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json;charset=UTF-8', },
+        body: JSON.stringify({ opIP: { name: values.name } }),
+      });
+      const json = await response.json();
+      openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
+      fetchIP();
+    }
+    catch (error) { console.log(error) }
+  }
 
   const onFinish = async (values: { date: any; time: any; sync: any; ntp: any; }) => {
     try {
-      console.log("Date",values.date)
+      console.log("Date", values.date)
       let dt = dayjs(dayjs(values.time).date(dayjs(values.date).get('date')).month(dayjs(values.date).get('month')).year(dayjs(values.date).get('year')))
-      console.log("Glue",dt)
+      console.log("Glue", dt)
       const response = await fetch('http://localhost:3000/datetime', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
@@ -159,6 +196,11 @@ const SettingsOp: React.FC<Props> = ({
   }
 
   useEffect(() => {
+    slider.current?.goTo(slide);
+    return () => { }
+  }, [slide])
+
+  useEffect(() => {
     (async () => {
       setActiveInput({ ...activeInput, form: '', id: '' });
       await getIP();
@@ -167,6 +209,7 @@ const SettingsOp: React.FC<Props> = ({
       await fetchSync();
       clock();
       dayjs.locale(i18n.language == 'en' ? 'en-gb' : i18n.language)
+      setHeight(div.current?.offsetHeight ? div.current?.offsetHeight - 5 : 0)
     })();
     return () => { }
   }, [])
@@ -174,6 +217,12 @@ const SettingsOp: React.FC<Props> = ({
   useEffect(() => {
     if (formIP && activeInput.form == 'ip') {
       formIP.setFieldsValue({ [activeInput.id]: activeInput.input })
+    }
+    if (formNet && activeInput.form == 'net') {
+      formNet.setFieldsValue({ [activeInput.id]: activeInput.input })
+    }
+    if (formWifi && activeInput.form == 'wifi') {
+      formWifi.setFieldsValue({ [activeInput.id]: activeInput.input })
     }
     if (form && activeInput.form == 'time') {
       form.setFieldsValue({ [activeInput.id]: activeInput.input })
@@ -183,7 +232,13 @@ const SettingsOp: React.FC<Props> = ({
 
   useEffect(() => {
     if (formIP) {
-      formIP.setFieldsValue({ ip: opIP.ip_address, mask: opIP.netmask, gw: opIP.gateway_ip })
+      formIP.setFieldsValue({ dhcp: opIP.wired.dhcp, ip: opIP.wired.ip_address, mask: opIP.wired.netmask, gw: opIP.wired.gateway_ip });
+    }
+    if (formNet) {
+      formNet.setFieldsValue({ name: opIP.name })
+    }
+    if (formWifi) {
+      formWifi.setFieldsValue({ ssid: opIP.wifi.ssid, pwd: opIP.wifi.pwd, dhcp: opIP.wireless.dhcp, ip: opIP.wireless.ip_address, mask: opIP.wireless.netmask, gw: opIP.wireless.gateway_ip });
     }
     return () => { }
   }, [opIP])
@@ -201,7 +256,7 @@ const SettingsOp: React.FC<Props> = ({
 
   return (
     <div className='wrapper'>
-      <Row gutter={[8, 8]} style={{ flex: '1 1 30%', marginBottom: 8 }}>
+      <Row gutter={[8, 8]} style={{ flex: '1 1 10%', marginBottom: 8 }}>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('panel.language')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
             <Skeleton loading={loading} round active>
@@ -226,49 +281,133 @@ const SettingsOp: React.FC<Props> = ({
           </Card>
         </Col>
       </Row>
-      <Row gutter={[8, 8]} style={{ flex: '1 1 70%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
+      <Row gutter={[8, 8]} style={{ flex: '1 1 90%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
-          <Card title={t('panel.network')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
-            <Skeleton loading={loading} round active>
-              <Form
-                labelCol={{ span: 8 }}
-                wrapperCol={{ span: 16 }}
-                size='large'
-                form={formIP}
-                style={{ width: '100%' }}
-                onFinish={onIPChange}
-                preserve={false}
-                colon={false}
-              >
-                <Form.Item label={opIP.type == "Wireless" ? <WifiOutlined style={{ fontSize: '130%' }} /> : <DesktopOutlined style={{ fontSize: '130%' }} />} >
-                  <span style={{ fontSize: '16px' }}>{opIP.mac_address + " " + opIP.name + " " + opIP.ip_address + " " + opIP.netmask + " " + opIP.gateway_ip}</span>
-                </Form.Item>
-                <Form.Item
-                  name="ip"
-                  label={t('ip.ip')}
-                  rules={[{ required: true, message: t('user.fill') }]}
-                >
-                  <InputNumber userRights={['admin', 'manager']} token={token} placeholder='ip.ip' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'ip', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
-                </Form.Item>
-                <Form.Item
-                  name="mask"
-                  label={t('ip.mask')}
-                  rules={[{ required: true, message: t('user.fill') }]}
-                >
-                  <InputNumber userRights={['admin', 'manager']} token={token} placeholder='ip.mask' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'mask', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
-                </Form.Item>
-                <Form.Item
-                  name="gw"
-                  label={t('ip.gw')}
-                  rules={[{ required: true, message: t('user.fill') }]}
-                >
-                  <InputNumber userRights={['admin', 'manager']} token={token} placeholder='ip.gw' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'gw', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
-                </Form.Item>
-                <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                  <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
-                </Form.Item>
-              </Form>
-            </Skeleton>
+          <Card title={t('panel.network')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} extra=
+            {<Segmented onResize={undefined} onResizeCapture={undefined} size='middle' value={slide} onChange={(value) => { setSlide(Number(value)); }} options={[{ value: 0, icon: <DesktopOutlined />, },
+            { value: 1, icon: <PartitionOutlined />, }, { value: 2, icon: <WifiOutlined />, }]} />} >
+            <div ref={div} style={{ height: '100%', width: '100%' }}>
+              <div style={{ width: '100%' }}>
+                <Skeleton loading={loading} round active>
+                  <Carousel ref={r => { slider.current = r }} dots={false} swipe={false}>
+                    <div>
+                      <div style={{ ...contentStyle, maxHeight: '100%', overflowY: 'auto' }}>
+                        <Form
+                          labelCol={{ span: 8 }}
+                          wrapperCol={{ span: 16 }}
+                          size='large'
+                          form={formNet}
+                          style={{ width: '100%' }}
+                          onFinish={onNetChange}
+                          preserve={false}
+                          colon={false}
+                        >
+                          <Form.Item label={<WifiOutlined style={{ fontSize: '130%' }} />} >
+                            <span style={{ fontSize: '16px' }}>{opIP.wireless.mac_address + " " + opIP.wireless.ip_address + " " + opIP.wireless.netmask + " " + opIP.wireless.gateway_ip}</span>
+                          </Form.Item>
+                          <Form.Item label={<PartitionOutlined style={{ fontSize: '130%' }} />} >
+                            <span style={{ fontSize: '16px' }}>{opIP.wired.mac_address + " " + opIP.wired.ip_address + " " + opIP.wired.netmask + " " + opIP.wired.gateway_ip}</span>
+                          </Form.Item>
+                          <Form.Item name="name" label={t('ip.name')} rules={[{ required: true, message: t('user.fill') }]} >
+                            <Input userRights={['admin', 'manager']} token={token} className="narrow" placeholder={t('ip.name')} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'net', id: 'name', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'email' }) }} />
+                          </Form.Item>
+                          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                            <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
+                          </Form.Item>
+                        </Form>
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ ...contentStyle, maxHeight: '100%', overflowY: 'auto' }}>
+                        <Form
+                          labelCol={{ span: 8 }}
+                          wrapperCol={{ span: 16 }}
+                          size='large'
+                          form={formIP}
+                          style={{ width: '100%' }}
+                          onFinish={onIPChange}
+                          preserve={false}
+                          colon={false}
+                        >
+                          <Form.Item name="dhcp" valuePropName="checked" label={t('ip.dhcp')}>
+                            <Checkbox userRights={['admin', 'manager']} token={token} text=''></Checkbox>
+                          </Form.Item>
+                          <Form.Item
+                            name="ip"
+                            label={t('ip.ip')}
+                          >
+                            <InputNumber disable={formIP.getFieldValue('dhcp')} userRights={['admin', 'manager']} token={token} placeholder='ip.ip' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'ip', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                          </Form.Item>
+                          <Form.Item
+                            name="mask"
+                            label={t('ip.mask')}
+                          >
+                            <InputNumber disable={formIP.getFieldValue('dhcp')} userRights={['admin', 'manager']} token={token} placeholder='ip.mask' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'mask', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                          </Form.Item>
+                          <Form.Item
+                            name="gw"
+                            label={t('ip.gw')}
+                          >
+                            <InputNumber disable={formIP.getFieldValue('dhcp')} userRights={['admin', 'manager']} token={token} placeholder='ip.gw' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'gw', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                          </Form.Item>
+                          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                            <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
+                          </Form.Item>
+                        </Form>
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ ...contentStyle, maxHeight: '100%', overflowY: 'auto' }}>
+                        <Form
+                          labelCol={{ span: 8 }}
+                          wrapperCol={{ span: 16 }}
+                          size='large'
+                          form={formWifi}
+                          style={{ width: '100%' }}
+                          onFinish={onWifiChange}
+                          preserve={false}
+                          colon={false}
+                        >
+                          <Form.Item name="ssid" label={t('ip.ssid')} >
+                            <Input userRights={['admin', 'manager']} token={token} className="narrow" placeholder={t('ip.ssid')} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'wifi', id: 'ssid', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'default' }) }} />
+                          </Form.Item>
+                          <Form.Item
+                            label={t('user.password')}
+                            name="pwd"
+                          >
+                            <InputPassword userRights={['admin', 'manager']} token={token} onChange={(e: { target: { value: any; }; }) => { setActiveInput({ ...activeInput, input: e.target.value }); }} onFocus={(e: { target: { value: any; placeholder: any; }; }) => { setActiveInput({ showKeyboard: true, form: 'wifi', id: 'pwd', num: false, showInput: false, input: e.target.value, descr: e.target.placeholder, pattern: 'default' }) }} visibilityToggle={true} placeholder={t('user.password')} prefix={<LockOutlined className="site-form-item-icon" />} />
+                          </Form.Item>
+                          <Form.Item name="dhcp" valuePropName="checked" label={t('ip.dhcp')}>
+                            <Checkbox userRights={['admin', 'manager']} token={token} text=''></Checkbox>
+                          </Form.Item>
+                          <Form.Item
+                            name="ip"
+                            label={t('ip.ip')}
+                          >
+                            <InputNumber disable={formWifi.getFieldValue('dhcp')} userRights={['admin', 'manager']} token={token} placeholder='ip.ip' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'wifi', id: 'ip', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                          </Form.Item>
+                          <Form.Item
+                            name="mask"
+                            label={t('ip.mask')}
+                          >
+                            <InputNumber disable={formWifi.getFieldValue('dhcp')} userRights={['admin', 'manager']} token={token} placeholder='ip.mask' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'wifi', id: 'mask', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                          </Form.Item>
+                          <Form.Item
+                            name="gw"
+                            label={t('ip.gw')}
+                          >
+                            <InputNumber disable={formWifi.getFieldValue('dhcp')} userRights={['admin', 'manager']} token={token} placeholder='ip.gw' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'wifi', id: 'gw', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                          </Form.Item>
+                          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                            <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
+                          </Form.Item>
+                        </Form>
+                      </div>
+                    </div>
+                  </Carousel>
+                </Skeleton>
+              </div>
+            </div>
           </Card>
         </Col>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>

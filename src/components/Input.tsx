@@ -38,6 +38,25 @@ const Component = (props: any) => {
       </Spin>
     );
   }
+  if (props.disable==true) {
+    return (
+      <Spin spinning={(props.tag?.link == null || props.tag?.link == true) ? false : true} size="small">
+        <div style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} >
+          <Input size="large"
+            className={props.className ? props.className : null}
+            addonBefore={props.descr ? props.tag === null ? props.descr : t('tags.' + props.tag?.name.replace(/[0-9]/g, '') + '.descr') : null}
+            addonAfter={props.eng ? props.tag === null ? props.eng : t('tags.' + props.tag?.name.replace(/[0-9]/g, '') + '.eng') : null}
+            prefix={props.prefix}
+            defaultValue={props.defaultValue}
+            value={props.tag?.val ? props.tag?.val : props.value}
+            placeholder={t(props.placeholder)}
+            style={{ width: "100%" }}
+            disabled
+          />
+        </div>
+      </Spin>
+    );
+  }
   return (
     <Spin spinning={(props.tag?.link == null || props.tag?.link == true) ? false : true} size="small">
       <div style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

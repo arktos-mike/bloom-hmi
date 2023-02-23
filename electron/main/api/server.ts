@@ -52,7 +52,7 @@ api.get('/config/getinterfaces', async (req, res) => {
     }
     else {
       let ifs = obj
-      await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP}', obj]);
+      //await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP}', obj]);
       res.status(200).send({
         opIP: ifs,
       })
@@ -185,7 +185,7 @@ const dbInit = async () => {
     });
     await db.query(`INSERT INTO clothlog VALUES(tstzrange(current_timestamp(3),NULL,'[)'),$1,(SELECT val from tags WHERE tag->>'name' = 'fullWarpBeamLength'))`, [0])
     await network.get_active_interface(async (err, obj) => {
-      const ipConf = { opIP: err ? { name: 'localhost', type: 'Wired', model: '--', vendor: '--', netmask: '255.255.255.0', gateway_ip: '127.0.0.1', ip_address: '127.0.0.1', mac_address: '00:00:00:00:00:00' } : obj, tcp1: { ip: '192.168.1.123', port: '502', sId: 1, swapBytes: true, swapWords: true } }
+      const ipConf = { opIP: { name: 'bloomhmi1', wired: { dhcp: false, netmask: '255.255.255.0', gateway_ip: '127.0.0.1', ip_address: '127.0.0.1', mac_address: '00:00:00:00:00:00' }, wireless: { dhcp: false, netmask: '255.255.255.0', gateway_ip: '127.0.0.1', ip_address: '127.0.0.1', mac_address: '00:00:00:00:00:00' }, wifi: { ssid: 'BloomConnect', pwd: 'textile2023' } }, tcp1: { ip: '192.168.1.123', port: '502', sId: 1, swapBytes: true, swapWords: true } }
       console.log(ipConf)
       await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
     })

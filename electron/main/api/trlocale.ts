@@ -243,7 +243,10 @@ const locale = {
   "ip": {
     "ip": "IP adresi",
     "mask": "Alt ağ maskesi",
-    "gw": "Ağ geçidi"
+    "gw": "Ağ geçidi",
+    "name": "Ana Bilgisayar Adı",
+    "dhcp": "DHCP",
+    "ssid": "SSID"
   },
   "panel": {
     "main": "Çalışma parametreleri",

@@ -243,7 +243,10 @@ const locale = {
   "ip": {
     "ip": "Dirección IP",
     "mask": "Máscara de subred",
-    "gw": "Puerta de enlace"
+    "gw": "Puerta de enlace",
+    "name": "Nombre de host",
+    "dhcp": "DHCP",
+    "ssid": "SSID"
   },
   "panel": {
     "main": "Parámetros de funcionamiento",
