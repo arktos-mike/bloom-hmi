@@ -59,7 +59,7 @@ api.get('/config/getinterfaces', async (req, res) => {
       })
     }
   })
-
+/*
   await network.get_active_interface(async (err, obj) => {
     if (err) {
       res.status(500).send({
@@ -74,6 +74,7 @@ api.get('/config/getinterfaces', async (req, res) => {
       })
     }
   })
+  */
 })
 
 api.listen(process.env['EXPRESS_SERVER_PORT'] || 3000, () => {

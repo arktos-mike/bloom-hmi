@@ -58,7 +58,6 @@ router.post('/update', async (req, res) => {
     if (req.body.opIP) {
 
       const { opIP } = req.body;
-      console.log(opIP)
       opIP.name && await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, name}', '"' + opIP.name + '"']);
       if (opIP.wired) {
         await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, dhcp}', opIP.wired.dhcp]);

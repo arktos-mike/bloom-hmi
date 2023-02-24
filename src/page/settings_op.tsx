@@ -179,9 +179,7 @@ const SettingsOp: React.FC<Props> = ({
 
   const onFinish = async (values: { date: any; time: any; sync: any; ntp: any; }) => {
     try {
-      console.log("Date", values.date)
       let dt = dayjs(dayjs(values.time).date(dayjs(values.date).get('date')).month(dayjs(values.date).get('month')).year(dayjs(values.date).get('year')))
-      console.log("Glue", dt)
       const response = await fetch('http://localhost:3000/datetime', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
