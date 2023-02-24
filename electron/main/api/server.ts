@@ -16,6 +16,10 @@ import network from 'network'
 import { SerialPort } from 'serialport'
 import parseInterval from 'postgres-interval'
 import ModbusRTU from 'modbus-serial'
+import sudo from 'sudo-prompt'
+const options = {
+  name: 'Electron',
+};
 const client1 = new ModbusRTU();
 const client2 = new ModbusRTU();
 const client3 = new ModbusRTU();
@@ -69,6 +73,13 @@ api.get('/config/getinterfaces', async (req, res) => {
           await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, dhcp}', (ifc.ip_address == undefined || ifc.netmask == undefined || ifc.gateway_ip == undefined) ? true : false]);
         }
       }
+      sudo.exec("nmcli general hostname", options, async (error, data, getter) => {
+        let hostname = ''
+        if (!error) {
+          hostname = data?.toString().split('\n')[0] || '';
+        }
+        await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, name}', '"' + hostname + '"']);
+      });
       res.status(200).send({
         opIP: ifs,
       })

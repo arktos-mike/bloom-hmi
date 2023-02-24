@@ -61,7 +61,7 @@ router.post('/update', async (req, res) => {
       opIP.name && await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, name}', '"' + opIP.name + '"']);
       if (opIP.wired) {
         await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, dhcp}', opIP.wired.dhcp]);
-        if (opIP.wired.dhcp==false) {
+        if (opIP.wired.dhcp == false) {
           await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, ip_address}', '"' + opIP.wired.ip_address + '"']);
           await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, netmask}', '"' + opIP.wired.netmask + '"']);
           await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, gateway_ip}', '"' + opIP.wired.gateway_ip + '"']);
@@ -69,7 +69,7 @@ router.post('/update', async (req, res) => {
       }
       if (opIP.wireless) {
         await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, dhcp}', opIP.wireless.dhcp]);
-        if (opIP.wireless.dhcp==false) {
+        if (opIP.wireless.dhcp == false) {
           await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, ip_address}', '"' + opIP.wireless.ip_address + '"']);
           await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, netmask}', '"' + opIP.wireless.netmask + '"']);
           await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, gateway_ip}', '"' + opIP.wireless.gateway_ip + '"']);
@@ -81,6 +81,14 @@ router.post('/update', async (req, res) => {
       }
       switch (process.platform) {
         case 'linux':
+          if (opIP.name) {
+            sudo.exec("nmcli general hostname " + opIP.name, options, async (error, data, getter) => {
+              if (!error) {
+                await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, name}', '"' + opIP.name + '"']);
+              }
+            });
+          }
+          /*
           sudo.exec("ip addr flush dev eth0 && ifconfig eth0 " + opIP.ip_address + " netmask " + opIP.netmask + " && ip route add default via " + opIP.gateway_ip + " dev eth0", options, (error, data, getter) => {
             if (!error) {
               res.status(200).json({
@@ -88,9 +96,11 @@ router.post('/update', async (req, res) => {
               });
             }
           });
+          */
           break;
         case 'win32':
           console.log(maskToPrefixLength(opIP.netmask))
+          /*
           sudo.exec("powershell -command \"Remove-NetIPAddress -InterfaceAlias Ethernet -Confirm:$false; Remove-NetRoute -InterfaceAlias Ethernet -Confirm:$false; New-NetIPAddress -InterfaceAlias Ethernet -AddressFamily IPv4 " + opIP.ip_address + " -PrefixLength " + maskToPrefixLength(opIP.netmask) + " -DefaultGateway " + opIP.gateway_ip + " -Type Unicast  -Confirm:$false\"", options, (error, data, getter) => {
             if (!error) {
               res.status(200).json({
@@ -104,6 +114,7 @@ router.post('/update', async (req, res) => {
               });
             }
           });
+          */
           break;
       }
     }
