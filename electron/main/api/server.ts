@@ -54,21 +54,21 @@ api.get('/config/getinterfaces', async (req, res) => {
     else {
       let ifs = obj
       for (let ifc of ifs) {
-        if (ifc.name == 'enp0s3') {
+        if (ifc.name == 'enp2s0') {
           await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, mac_address}', '"' + ifc.mac_address + '"']);
-          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, ip_address}', '"' + ifc.ip_address? ifc.ip_address:null + '"']);
-          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, netmask}', '"' + ifc.netmask? ifc.netmask:null + '"']);
-          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, gateway_ip}', '"' + ifc.gateway_ip? ifc.gateway_ip:null + '"']);
-          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, dhcp}', (!ifc.ip_address || !ifc.netmask || !ifc.gateway_ip) ? true: false]);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, ip_address}', '"' + (ifc.ip_address != undefined ? ifc.ip_address : '') + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, netmask}', '"' + (ifc.netmask != undefined ? ifc.netmask : '') + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, gateway_ip}', '"' + (ifc.gateway_ip != undefined ? ifc.gateway_ip : '') + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, dhcp}', (!ifc.ip_address || !ifc.netmask || !ifc.gateway_ip) ? true : false]);
         }
-        if (ifc['name'] == 'enp0s8') {
+        if (ifc.name == 'wlp4s0') {
           await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, mac_address}', '"' + ifc.mac_address + '"']);
-          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, ip_address}', '"' + ifc.ip_address? ifc.ip_address:null + '"']);
-          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, netmask}', '"' + ifc.netmask? ifc.netmask:null + '"']);
-          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, gateway_ip}', '"' + ifc.gateway_ip? ifc.gateway_ip:null + '"']);
-          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, dhcp}', (!ifc.ip_address || !ifc.netmask || !ifc.gateway_ip) ? true: false]);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, ip_address}', '"' + (ifc.ip_address != undefined ? ifc.ip_address : '') + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, netmask}', '"' + (ifc.netmask != undefined ? ifc.netmask : '') + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, gateway_ip}', '"' + (ifc.gateway_ip != undefined ? ifc.gateway_ip : '') + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, dhcp}', (ifc.ip_address == undefined || ifc.netmask == undefined || ifc.gateway_ip == undefined) ? true : false]);
         }
-    }
+      }
       res.status(200).send({
         opIP: ifs,
       })
