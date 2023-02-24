@@ -85,6 +85,9 @@ router.post('/update', async (req, res) => {
             sudo.exec("nmcli general hostname " + opIP.name, options, async (error, data, getter) => {
               if (!error) {
                 await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, name}', '"' + opIP.name + '"']);
+                res.status(200).json({
+                  message: "notifications.confupdate",
+                });
               }
             });
           }
