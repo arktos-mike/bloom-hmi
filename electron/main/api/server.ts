@@ -53,28 +53,27 @@ api.get('/config/getinterfaces', async (req, res) => {
     }
     else {
       let ifs = obj
-      //await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP}', obj]);
+      for (let ifc of ifs) {
+        if (ifc.name == 'enp0s3') {
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, mac_address}', '"' + ifc.mac_address + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, ip_address}', '"' + ifc.ip_address? ifc.ip_address:null + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, netmask}', '"' + ifc.netmask? ifc.netmask:null + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, gateway_ip}', '"' + ifc.gateway_ip? ifc.gateway_ip:null + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, dhcp}', (!ifc.ip_address || !ifc.netmask || !ifc.gateway_ip) ? true: false]);
+        }
+        if (ifc['name'] == 'enp0s8') {
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, mac_address}', '"' + ifc.mac_address + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, ip_address}', '"' + ifc.ip_address? ifc.ip_address:null + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, netmask}', '"' + ifc.netmask? ifc.netmask:null + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, gateway_ip}', '"' + ifc.gateway_ip? ifc.gateway_ip:null + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, dhcp}', (!ifc.ip_address || !ifc.netmask || !ifc.gateway_ip) ? true: false]);
+        }
+    }
       res.status(200).send({
         opIP: ifs,
       })
     }
   })
-/*
-  await network.get_active_interface(async (err, obj) => {
-    if (err) {
-      res.status(500).send({
-        error: err
-      })
-    }
-    else {
-      let ifs = obj
-      //await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP}', obj]);
-      res.status(200).send({
-        opIP: ifs,
-      })
-    }
-  })
-  */
 })
 
 api.listen(process.env['EXPRESS_SERVER_PORT'] || 3000, () => {
