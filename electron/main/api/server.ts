@@ -63,14 +63,36 @@ api.get('/config/getinterfaces', async (req, res) => {
           await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, ip_address}', '"' + (ifc.ip_address != undefined ? ifc.ip_address : '') + '"']);
           await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, netmask}', '"' + (ifc.netmask != undefined ? ifc.netmask : '') + '"']);
           await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, gateway_ip}', '"' + (ifc.gateway_ip != undefined ? ifc.gateway_ip : '') + '"']);
-          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, dhcp}', (!ifc.ip_address || !ifc.netmask || !ifc.gateway_ip) ? true : false]);
+
+          sudo.exec("nmcli -g ipv4.method connection show wired", options, async (error, data, getter) => {
+            let dhcp = false
+            if (!error) {
+              dhcp = (data?.toString().split('\n')[0] == 'auto') ? true : false;
+            }
+            else {
+              dhcp = (!ifc.ip_address || !ifc.netmask || !ifc.gateway_ip) ? true : false
+            }
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, dhcp}', (!ifc.ip_address == undefined || !ifc.netmask == undefined || !ifc.gateway_ip == undefined) ? true : false]);
+          });
+
         }
         if (ifc.name == 'wlp4s0') {
           await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, mac_address}', '"' + ifc.mac_address + '"']);
           await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, ip_address}', '"' + (ifc.ip_address != undefined ? ifc.ip_address : '') + '"']);
           await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, netmask}', '"' + (ifc.netmask != undefined ? ifc.netmask : '') + '"']);
           await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, gateway_ip}', '"' + (ifc.gateway_ip != undefined ? ifc.gateway_ip : '') + '"']);
-          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, dhcp}', (ifc.ip_address == undefined || ifc.netmask == undefined || ifc.gateway_ip == undefined) ? true : false]);
+
+          sudo.exec("nmcli -g ipv4.method connection show wireless", options, async (error, data, getter) => {
+            let dhcp = false
+            if (!error) {
+              dhcp = (data?.toString().split('\n')[0] == 'auto') ? true : false;
+            }
+            else {
+              dhcp = (!ifc.ip_address || !ifc.netmask || !ifc.gateway_ip) ? true : false
+            }
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, dhcp}', (!ifc.ip_address == undefined || !ifc.netmask == undefined || !ifc.gateway_ip == undefined) ? true : false]);
+          });
+
         }
       }
       sudo.exec("nmcli general hostname", options, async (error, data, getter) => {
@@ -222,6 +244,16 @@ const dbInit = async () => {
       const comConf = { opCOM1: { path: com1.path, conf: { baudRate: 230400, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 500 }, opCOM2: { path: com2.path, conf: { baudRate: 115200, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 0 } }
       await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])
     });
+    switch (process.platform) {
+      case 'linux':
+        sudo.exec(" nmcli con con-name \"wireless\" add type wifi ifname wlp4s0 ssid \"BloomConnect\" -- wifi-sec.key-mgmt wpa-psk wifi-sec.psk \"textile2023\" ipv4.method auto ipv4.dns 8.8.8.8 && nmcli con up wireless", options, async (error, data, getter) => {
+        });
+        sudo.exec(" nmcli con con-name \"wired\" add type ethernet ifname enp2s0 ipv4.method auto ipv4.dns 8.8.8.8 && nmcli con up wired", options, async (error, data, getter) => {
+        });
+        break;
+      case 'win32':
+        break;
+    }
   }
   await dbConf();
 }
