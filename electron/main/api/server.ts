@@ -16,6 +16,10 @@ import network from 'network'
 import { SerialPort } from 'serialport'
 import parseInterval from 'postgres-interval'
 import ModbusRTU from 'modbus-serial'
+import sudo from 'sudo-prompt'
+const options = {
+  name: 'Electron',
+};
 const client1 = new ModbusRTU();
 const client2 = new ModbusRTU();
 const client3 = new ModbusRTU();
@@ -41,6 +45,68 @@ api.post('/tags/writeTagRTU', async (req, res) => {
       body: { name, value },
     })
   }
+})
+
+api.get('/config/getinterfaces', async (req, res) => {
+
+  await network.get_interfaces_list(async (err, obj) => {
+    if (err) {
+      res.status(500).send({
+        error: err
+      })
+    }
+    else {
+      let ifs = obj
+      for (let ifc of ifs) {
+        if (ifc.name == 'enp2s0') {
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, mac_address}', '"' + ifc.mac_address + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, ip_address}', '"' + (ifc.ip_address != undefined ? ifc.ip_address : '') + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, netmask}', '"' + (ifc.netmask != undefined ? ifc.netmask : '') + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, gateway_ip}', '"' + (ifc.gateway_ip != undefined ? ifc.gateway_ip : '') + '"']);
+
+          sudo.exec("nmcli -g ipv4.method connection show wired", options, async (error, data, getter) => {
+            let dhcp = false
+            if (!error) {
+              dhcp = (data?.toString().split('\n')[0] == 'auto') ? true : false;
+            }
+            else {
+              dhcp = (!ifc.ip_address || !ifc.netmask || !ifc.gateway_ip) ? true : false
+            }
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, dhcp}', (!ifc.ip_address == undefined || !ifc.netmask == undefined || !ifc.gateway_ip == undefined) ? true : false]);
+          });
+
+        }
+        if (ifc.name == 'wlp4s0') {
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, mac_address}', '"' + ifc.mac_address + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, ip_address}', '"' + (ifc.ip_address != undefined ? ifc.ip_address : '') + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, netmask}', '"' + (ifc.netmask != undefined ? ifc.netmask : '') + '"']);
+          await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, gateway_ip}', '"' + (ifc.gateway_ip != undefined ? ifc.gateway_ip : '') + '"']);
+
+          sudo.exec("nmcli -g ipv4.method connection show wireless", options, async (error, data, getter) => {
+            let dhcp = false
+            if (!error) {
+              dhcp = (data?.toString().split('\n')[0] == 'auto') ? true : false;
+            }
+            else {
+              dhcp = (!ifc.ip_address || !ifc.netmask || !ifc.gateway_ip) ? true : false
+            }
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, dhcp}', (!ifc.ip_address == undefined || !ifc.netmask == undefined || !ifc.gateway_ip == undefined) ? true : false]);
+          });
+
+        }
+      }
+      sudo.exec("nmcli general hostname", options, async (error, data, getter) => {
+        let hostname = ''
+        if (!error) {
+          hostname = data?.toString().split('\n')[0] || '';
+        }
+        await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, name}', '"' + hostname + '"']);
+      });
+      res.status(200).send({
+        opIP: ifs,
+      })
+    }
+  })
 })
 
 api.listen(process.env['EXPRESS_SERVER_PORT'] || 3000, () => {
@@ -168,7 +234,7 @@ const dbInit = async () => {
     });
     await db.query(`INSERT INTO clothlog VALUES(tstzrange(current_timestamp(3),NULL,'[)'),$1,(SELECT val from tags WHERE tag->>'name' = 'fullWarpBeamLength'))`, [0])
     await network.get_active_interface(async (err, obj) => {
-      const ipConf = { opIP: err ? { name: 'localhost', type: 'Wired', model: '--', vendor: '--', netmask: '255.255.255.0', gateway_ip: '127.0.0.1', ip_address: '127.0.0.1', mac_address: '00:00:00:00:00:00' } : obj, tcp1: { ip: '192.168.1.123', port: '502', sId: 1, swapBytes: true, swapWords: true } }
+      const ipConf = { opIP: { name: 'bloomhmi1', wired: { dhcp: false, netmask: '255.255.255.0', gateway_ip: '127.0.0.1', ip_address: '127.0.0.1', mac_address: '00:00:00:00:00:00' }, wireless: { dhcp: false, netmask: '255.255.255.0', gateway_ip: '127.0.0.1', ip_address: '127.0.0.1', mac_address: '00:00:00:00:00:00' }, wifi: { ssid: 'BloomConnect', pwd: 'textile2023' } }, tcp1: { ip: '192.168.1.123', port: '502', sId: 1, swapBytes: true, swapWords: true } }
       console.log(ipConf)
       await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
     })
@@ -178,6 +244,16 @@ const dbInit = async () => {
       const comConf = { opCOM1: { path: com1.path, conf: { baudRate: 230400, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 500 }, opCOM2: { path: com2.path, conf: { baudRate: 115200, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 0 } }
       await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])
     });
+    switch (process.platform) {
+      case 'linux':
+        sudo.exec(" nmcli con con-name \"wireless\" add type wifi ifname wlp4s0 ssid \"BloomConnect\" -- wifi-sec.key-mgmt wpa-psk wifi-sec.psk \"textile2023\" ipv4.method auto ipv4.dns 8.8.8.8 && nmcli con up wireless", options, async (error, data, getter) => {
+        });
+        sudo.exec(" nmcli con con-name \"wired\" add type ethernet ifname enp2s0 ipv4.method auto ipv4.dns 8.8.8.8 && nmcli con up wired", options, async (error, data, getter) => {
+        });
+        break;
+      case 'win32':
+        break;
+    }
   }
   await dbConf();
 }

@@ -224,7 +224,8 @@ from
 	tags
 where
 	(tag->>'name' = 'picksLastRun'));
-
+DELETE FROM modelog WHERE upper_inf(timestamp) AND current_timestamp<lower(timestamp);
+DELETE FROM clothlog WHERE upper_inf(timestamp) AND current_timestamp<lower(timestamp);
 update
 	modelog
 set
@@ -1086,7 +1087,7 @@ from
 	select
 		id,
 		name,
-		lower(timestamp) as logintime
+		case when lower(timestamp) < current_timestamp then lower(timestamp) else current_timestamp end as logintime
 	from
 		userlog
 	where
@@ -1160,7 +1161,7 @@ from
 	select
 		id,
 		name,
-		lower(timestamp) as logintime
+		case when lower(timestamp) < current_timestamp then lower(timestamp) else current_timestamp end as logintime
 	from
 		userlog
 	where

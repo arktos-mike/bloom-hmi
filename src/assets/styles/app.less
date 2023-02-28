@@ -58,6 +58,28 @@ body {
   -webkit-app-region: no-drag;
 }
 
+::-webkit-scrollbar {
+  width: 10px;
+  border-radius: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #E1F5FE;
+  border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #1890ff;
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
 .ant-statistic {
   text-align: center
 }
@@ -475,6 +497,10 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+.form-item-narrow {
+  margin-bottom: 0px !important;
 }
 
 .ant-notification-notice-with-icon .ant-notification-notice-message{

@@ -243,7 +243,10 @@ const locale = {
   "ip": {
     "ip": "IP address",
     "mask": "Subnet mask",
-    "gw": "Gateway"
+    "gw": "Gateway",
+    "name": "Hostname",
+    "dhcp": "DHCP",
+    "ssid": "SSID"
   },
   "panel": {
     "main": "Operating parameters",
