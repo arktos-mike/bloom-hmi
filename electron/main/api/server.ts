@@ -70,9 +70,9 @@ api.get('/config/getinterfaces', async (req, res) => {
               dhcp = (data?.toString().split('\n')[0] == 'auto') ? true : false;
             }
             else {
-              dhcp = (!ifc.ip_address || !ifc.netmask || !ifc.gateway_ip) ? true : false
+              dhcp = ((ifc.ip_address == undefined) || (ifc.netmask == undefined) || (ifc.gateway_ip == undefined)) ? true : false
             }
-            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, dhcp}', (!ifc.ip_address == undefined || !ifc.netmask == undefined || !ifc.gateway_ip == undefined) ? true : false]);
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, dhcp}', dhcp]);
           });
 
         }
@@ -88,9 +88,9 @@ api.get('/config/getinterfaces', async (req, res) => {
               dhcp = (data?.toString().split('\n')[0] == 'auto') ? true : false;
             }
             else {
-              dhcp = (!ifc.ip_address || !ifc.netmask || !ifc.gateway_ip) ? true : false
+              dhcp = ((ifc.ip_address == undefined) || (ifc.netmask == undefined) || (ifc.gateway_ip == undefined)) ? true : false
             }
-            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, dhcp}', (!ifc.ip_address == undefined || !ifc.netmask == undefined || !ifc.gateway_ip == undefined) ? true : false]);
+            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, dhcp}', dhcp]);
           });
 
         }
@@ -244,16 +244,18 @@ const dbInit = async () => {
       const comConf = { opCOM1: { path: com1.path, conf: { baudRate: 230400, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 500 }, opCOM2: { path: com2.path, conf: { baudRate: 115200, parity: "none", dataBits: 8, stopBits: 1 }, scan: 0, timeout: 0 } }
       await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['comConf', comConf])
     });
+    /*
     switch (process.platform) {
       case 'linux':
-        sudo.exec(" nmcli con con-name \"wireless\" add type wifi ifname wlp4s0 ssid \"BloomConnect\" -- wifi-sec.key-mgmt wpa-psk wifi-sec.psk \"textile2023\" ipv4.method auto ipv4.dns 8.8.8.8 && nmcli con up wireless", options, async (error, data, getter) => {
+        sudo.exec(" nmcli con add con-name \"wireless\"  type wifi ifname wlp4s0 ssid \"BloomConnect\" -- wifi-sec.key-mgmt wpa-psk wifi-sec.psk \"textile2023\" ipv4.method auto ipv4.dns 8.8.8.8 && nmcli con up wireless", options, async (error, data, getter) => {
         });
-        sudo.exec(" nmcli con con-name \"wired\" add type ethernet ifname enp2s0 ipv4.method auto ipv4.dns 8.8.8.8 && nmcli con up wired", options, async (error, data, getter) => {
+        sudo.exec(" nmcli con add con-name \"wired\" type ethernet ifname enp2s0 ipv4.method auto ipv4.dns 8.8.8.8 && nmcli con up wired", options, async (error, data, getter) => {
         });
         break;
       case 'win32':
         break;
     }
+  */
   }
   await dbConf();
 }
