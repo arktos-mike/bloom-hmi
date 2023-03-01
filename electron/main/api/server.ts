@@ -247,7 +247,7 @@ const dbInit = async () => {
     /*
     switch (process.platform) {
       case 'linux':
-        sudo.exec(" nmcli con add con-name \"wireless\"  type wifi ifname wlp4s0 ssid \"BloomConnect\" -- wifi-sec.key-mgmt wpa-psk wifi-sec.psk \"textile2023\" ipv4.method auto ipv4.dns 8.8.8.8 && nmcli con up wireless", options, async (error, data, getter) => {
+        sudo.exec(" nmcli con add con-name \"wireless\"  type wifi ifname wlp4s0 ssid \"BloomConnect\" wifi-sec.key-mgmt wpa-psk wifi-sec.psk \"textile2023\" ipv4.method auto ipv4.dns 8.8.8.8 && nmcli con up wireless", options, async (error, data, getter) => {
         });
         sudo.exec(" nmcli con add con-name \"wired\" type ethernet ifname enp2s0 ipv4.method auto ipv4.dns 8.8.8.8 && nmcli con up wired", options, async (error, data, getter) => {
         });

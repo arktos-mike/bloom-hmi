@@ -152,7 +152,7 @@ router.post('/update', async (req, res) => {
       if (opIP.wifi) {
         switch (process.platform) {
           case 'linux':
-            sudo.exec("nmcli con mod wireless ssid \"" + opIP.wifi.ssid + "\" -- wifi-sec.key-mgmt wpa-psk wifi-sec.psk \"" + opIP.wifi.pwd + "\"" + " && nmcli con down wireless && nmcli con up wireless", options, async (error, data, getter) => {
+            sudo.exec("nmcli con mod wireless ssid \"" + opIP.wifi.ssid + "\" wifi-sec.key-mgmt wpa-psk wifi-sec.psk \"" + opIP.wifi.pwd + "\"" + " && nmcli con down wireless && nmcli con up wireless", options, async (error, data, getter) => {
               if (!error) {
                 await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wifi, ssid}', '"' + opIP.wifi.ssid + '"']);
                 await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wifi, pwd}', '"' + opIP.wifi.pwd + '"']);
