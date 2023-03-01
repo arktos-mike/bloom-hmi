@@ -64,7 +64,7 @@ router.post('/update', async (req, res) => {
         if (opIP.wired.dhcp == false) {
           switch (process.platform) {
             case 'linux':
-              sudo.exec("nmcli con mod wired ipv4.method manual ip4 " + opIP.wired.ip_address + "/" + maskToPrefixLength(opIP.wireds.netmask) + " gw4 " + opIP.wired.gateway_ip, options, async (error, data, getter) => {
+              sudo.exec("nmcli con mod wired ipv4.method manual ip4 " + opIP.wired.ip_address + "/" + maskToPrefixLength(opIP.wired.netmask) + " gw4 " + opIP.wired.gateway_ip, options, async (error, data, getter) => {
                 if (!error) {
                   await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, dhcp}', opIP.wired.dhcp]);
                   await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, ip_address}', '"' + opIP.wired.ip_address + '"']);
