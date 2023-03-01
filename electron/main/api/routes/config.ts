@@ -64,12 +64,15 @@ router.post('/update', async (req, res) => {
         if (opIP.wired.dhcp == false) {
           switch (process.platform) {
             case 'linux':
-              sudo.exec("nmcli con mod wired ipv4.method manual ip4 " + opIP.wired.ip_address + "/" + maskToPrefixLength(opIP.wired.netmask) + " gw4 " + opIP.wired.gateway_ip, options, async (error, data, getter) => {
+              sudo.exec("nmcli con mod wired ipv4.method manual ip4 " + opIP.wired.ip_address + "/" + maskToPrefixLength(opIP.wired.netmask) + " gw4 " + opIP.wired.gateway_ip + " && nmcli con down wired && nmcli con up wired", options, async (error, data, getter) => {
                 if (!error) {
                   await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, dhcp}', opIP.wired.dhcp]);
                   await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, ip_address}', '"' + opIP.wired.ip_address + '"']);
                   await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, netmask}', '"' + opIP.wired.netmask + '"']);
                   await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, gateway_ip}', '"' + opIP.wired.gateway_ip + '"']);
+                  res.status(200).json({
+                    message: "notifications.confupdate",
+                  });
                 }
               });
               break;
@@ -84,9 +87,12 @@ router.post('/update', async (req, res) => {
         else {
           switch (process.platform) {
             case 'linux':
-              sudo.exec("nmcli con mod wired ipv4.method auto", options, async (error, data, getter) => {
+              sudo.exec("nmcli con mod wired ipv4.method auto && nmcli con down wired && nmcli con up wired", options, async (error, data, getter) => {
                 if (!error) {
                   await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, dhcp}', opIP.wired.dhcp]);
+                  res.status(200).json({
+                    message: "notifications.confupdate",
+                  });
                 }
               });
               break;
@@ -101,12 +107,17 @@ router.post('/update', async (req, res) => {
         if (opIP.wireless.dhcp == false) {
           switch (process.platform) {
             case 'linux':
-              sudo.exec("nmcli con mod wireless ipv4.method manual ip4 " + opIP.wireless.ip_address + "/" + maskToPrefixLength(opIP.wireless.netmask) + " gw4 " + opIP.wireless.gateway_ip, options, async (error, data, getter) => {
+              sudo.exec("nmcli con mod wireless ipv4.method manual ip4 " + opIP.wireless.ip_address + "/" + maskToPrefixLength(opIP.wireless.netmask) + " gw4 " + opIP.wireless.gateway_ip + " && nmcli con down wireless && nmcli con up wireless", options, async (error, data, getter) => {
                 if (!error) {
                   await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, dhcp}', opIP.wireless.dhcp]);
                   await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, ip_address}', '"' + opIP.wireless.ip_address + '"']);
                   await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, netmask}', '"' + opIP.wireless.netmask + '"']);
                   await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, gateway_ip}', '"' + opIP.wireless.gateway_ip + '"']);
+                  if (!opIP.wifi) {
+                    res.status(200).json({
+                      message: "notifications.confupdate",
+                    });
+                  }
                 }
               });
               break;
@@ -121,9 +132,14 @@ router.post('/update', async (req, res) => {
         else {
           switch (process.platform) {
             case 'linux':
-              sudo.exec("nmcli con mod wireless ipv4.method auto", options, async (error, data, getter) => {
+              sudo.exec("nmcli con mod wireless ipv4.method auto && nmcli con down wireless && nmcli con up wireless", options, async (error, data, getter) => {
                 if (!error) {
                   await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, dhcp}', opIP.wireless.dhcp]);
+                  if (!opIP.wifi) {
+                    res.status(200).json({
+                      message: "notifications.confupdate",
+                    });
+                  }
                 }
               });
               break;
@@ -136,10 +152,13 @@ router.post('/update', async (req, res) => {
       if (opIP.wifi) {
         switch (process.platform) {
           case 'linux':
-            sudo.exec("nmcli con mod wireless ssid \"" + opIP.wifi.ssid + "\" -- wifi-sec.key-mgmt wpa-psk wifi-sec.psk \"" + opIP.wifi.pwd + "\"", options, async (error, data, getter) => {
+            sudo.exec("nmcli con mod wireless ssid \"" + opIP.wifi.ssid + "\" -- wifi-sec.key-mgmt wpa-psk wifi-sec.psk \"" + opIP.wifi.pwd + "\"" + " && nmcli con down wireless && nmcli con up wireless", options, async (error, data, getter) => {
               if (!error) {
                 await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wifi, ssid}', '"' + opIP.wifi.ssid + '"']);
                 await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wifi, pwd}', '"' + opIP.wifi.pwd + '"']);
+                res.status(200).json({
+                  message: "notifications.confupdate",
+                });
               }
             });
             break;
