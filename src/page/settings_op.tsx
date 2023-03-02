@@ -92,6 +92,9 @@ const SettingsOp: React.FC<Props> = ({
       const response = await fetch('http://localhost:3000/config/getinterfaces');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       await response.json();
+      setLoading(false);
+      setNetLoading(false);
+      slider.current?.goTo(slide);
     }
     catch (error) { /*console.log(error);*/ }
   }
@@ -103,8 +106,6 @@ const SettingsOp: React.FC<Props> = ({
       const json = await response.json();
       setOpIP(json['ipConf']['opIP']);
       setLoading(false);
-      setNetLoading(false);
-      slider.current?.goTo(slide);
     }
     catch (error) { /*console.log(error);*/setLoading(false); setNetLoading(false); }
   }
@@ -146,6 +147,7 @@ const SettingsOp: React.FC<Props> = ({
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
       if (!response.ok) { /*throw Error(response.statusText);*/ }
+      await getIP();
       await fetchIP();
     }
     catch (error) { console.log(error) }
@@ -162,6 +164,7 @@ const SettingsOp: React.FC<Props> = ({
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
       if (!response.ok) { /*throw Error(response.statusText);*/ }
+      await getIP();
       await fetchIP();
     }
     catch (error) { console.log(error) }
@@ -178,6 +181,7 @@ const SettingsOp: React.FC<Props> = ({
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
       if (!response.ok) { /*throw Error(response.statusText);*/ }
+      await getIP();
       await fetchIP();
     }
     catch (error) { console.log(error) }
@@ -201,7 +205,10 @@ const SettingsOp: React.FC<Props> = ({
 
   useEffect(() => {
     (async () => {
-      if (slide == 0) await fetchIP();
+      if (slide == 0) {
+        await getIP();
+        await fetchIP();
+      }
       slider.current?.goTo(slide);
     })();
     return () => { }
@@ -210,9 +217,9 @@ const SettingsOp: React.FC<Props> = ({
   useEffect(() => {
     (async () => {
       setActiveInput({ ...activeInput, form: '', id: '' });
-      await getIP();
       await fetchLngs();
       await fetchSync();
+      await getIP();
       await fetchIP();
       clock();
       dayjs.locale(i18n.language == 'en' ? 'en-gb' : i18n.language)
