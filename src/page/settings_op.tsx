@@ -48,6 +48,7 @@ const SettingsOp: React.FC<Props> = ({
   const [lngs, setLngs] = useState({ data: [] })
   const [today, setDate] = useState(new Date())
   const [loading, setLoading] = useState(true)
+  const [netLoading, setNetLoading] = useState(false)
   const [sync, setSync] = useState(false)
   const [ntp, setNtp] = useState('')
   const [selectedTimezone, setSelectedTimezone] = useState({ value: Intl.DateTimeFormat().resolvedOptions().timeZone } as any)
@@ -102,8 +103,9 @@ const SettingsOp: React.FC<Props> = ({
       const json = await response.json();
       setOpIP(json['ipConf']['opIP']);
       setLoading(false);
+      setNetLoading(false);
     }
-    catch (error) { /*console.log(error);*/setLoading(false); }
+    catch (error) { /*console.log(error);*/setLoading(false); setNetLoading(false); }
   }
 
   const curDate = today.toLocaleDateString(i18n.language == 'en' ? 'en-GB' : i18n.language, { dateStyle: 'full' });
@@ -133,7 +135,7 @@ const SettingsOp: React.FC<Props> = ({
   }
 
   const onIPChange = async (values: { dhcp: any; ip: any; mask: any; gw: any; }) => {
-    setLoading(true);
+    setNetLoading(true);
     try {
       const response = await fetch('http://localhost:3000/config/update', {
         method: 'POST',
@@ -149,7 +151,7 @@ const SettingsOp: React.FC<Props> = ({
   }
 
   const onWifiChange = async (values: { dhcp: any; ip: any; mask: any; gw: any; ssid: any; pwd: any; }) => {
-    setLoading(true);
+    setNetLoading(true);
     try {
       const response = await fetch('http://localhost:3000/config/update', {
         method: 'POST',
@@ -165,7 +167,7 @@ const SettingsOp: React.FC<Props> = ({
   }
 
   const onNetChange = async (values: { name: any; }) => {
-    setLoading(true);
+    setNetLoading(true);
     try {
       const response = await fetch('http://localhost:3000/config/update', {
         method: 'POST',
@@ -285,11 +287,11 @@ const SettingsOp: React.FC<Props> = ({
       <Row gutter={[8, 8]} style={{ flex: '1 1 90%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('panel.network')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} extra=
-            {<Segmented onResize={undefined} onResizeCapture={undefined} size='middle' value={slide} onChange={async (value) => { (Number(value) == 0) && await fetchIP(); setSlide(Number(value)); }} options={[{ value: 0, icon: <DesktopOutlined />, },
+            {<Segmented onResize={undefined} onResizeCapture={undefined} size='middle' value={slide} onChange={async (value) => { await fetchIP(); setSlide(Number(value)); }} options={[{ value: 0, icon: <DesktopOutlined />, },
             { value: 1, icon: <PartitionOutlined />, }, { value: 2, icon: <WifiOutlined />, }]} />} >
             <div ref={div} style={{ height: '100%', width: '100%' }}>
               <div style={{ width: '100%' }}>
-                <Skeleton loading={loading} round active>
+                <Skeleton loading={loading || netLoading} round active>
                   <Carousel ref={r => { slider.current = r }} dots={false} swipe={false}>
                     <div>
                       <div style={{ ...contentStyle, maxHeight: '100%', overflowY: 'auto' }}>
