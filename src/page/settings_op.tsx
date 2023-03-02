@@ -104,6 +104,7 @@ const SettingsOp: React.FC<Props> = ({
       setOpIP(json['ipConf']['opIP']);
       setLoading(false);
       setNetLoading(false);
+      slider.current?.goTo(slide);
     }
     catch (error) { /*console.log(error);*/setLoading(false); setNetLoading(false); }
   }
@@ -199,7 +200,10 @@ const SettingsOp: React.FC<Props> = ({
   }
 
   useEffect(() => {
-    slider.current?.goTo(slide);
+    (async () => {
+      if (slide == 0) await fetchIP();
+      slider.current?.goTo(slide);
+    })();
     return () => { }
   }, [slide])
 
@@ -287,7 +291,7 @@ const SettingsOp: React.FC<Props> = ({
       <Row gutter={[8, 8]} style={{ flex: '1 1 90%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('panel.network')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} extra=
-            {<Segmented onResize={undefined} onResizeCapture={undefined} size='middle' value={slide} onChange={async (value) => { await fetchIP(); setSlide(Number(value)); }} options={[{ value: 0, icon: <DesktopOutlined />, },
+            {<Segmented onResize={undefined} onResizeCapture={undefined} size='middle' value={slide} onChange={async (value) => { setSlide(Number(value)); }} options={[{ value: 0, icon: <DesktopOutlined />, },
             { value: 1, icon: <PartitionOutlined />, }, { value: 2, icon: <WifiOutlined />, }]} />} >
             <div ref={div} style={{ height: '100%', width: '100%' }}>
               <div style={{ width: '100%' }}>
