@@ -82,7 +82,6 @@ const SettingsOp: React.FC<Props> = ({
       const json = await response.json();
       setSync(json.sync);
       setNtp(json.server);
-      setLoading(false);
     }
     catch (error) { /*console.log(error);*/ }
   }
@@ -102,8 +101,9 @@ const SettingsOp: React.FC<Props> = ({
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setOpIP(json['ipConf']['opIP']);
+      setLoading(false);
     }
-    catch (error) { /*console.log(error);*/ }
+    catch (error) { /*console.log(error);*/setLoading(false); }
   }
 
   const curDate = today.toLocaleDateString(i18n.language == 'en' ? 'en-GB' : i18n.language, { dateStyle: 'full' });
@@ -133,6 +133,7 @@ const SettingsOp: React.FC<Props> = ({
   }
 
   const onIPChange = async (values: { dhcp: any; ip: any; mask: any; gw: any; }) => {
+    setLoading(true);
     try {
       const response = await fetch('http://localhost:3000/config/update', {
         method: 'POST',
@@ -142,12 +143,13 @@ const SettingsOp: React.FC<Props> = ({
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
       if (!response.ok) { /*throw Error(response.statusText);*/ }
-      fetchIP();
+      await fetchIP();
     }
     catch (error) { console.log(error) }
   }
 
   const onWifiChange = async (values: { dhcp: any; ip: any; mask: any; gw: any; ssid: any; pwd: any; }) => {
+    setLoading(true);
     try {
       const response = await fetch('http://localhost:3000/config/update', {
         method: 'POST',
@@ -157,12 +159,13 @@ const SettingsOp: React.FC<Props> = ({
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
       if (!response.ok) { /*throw Error(response.statusText);*/ }
-      fetchIP();
+      await fetchIP();
     }
     catch (error) { console.log(error) }
   }
 
   const onNetChange = async (values: { name: any; }) => {
+    setLoading(true);
     try {
       const response = await fetch('http://localhost:3000/config/update', {
         method: 'POST',
@@ -172,7 +175,7 @@ const SettingsOp: React.FC<Props> = ({
       const json = await response.json();
       openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
       if (!response.ok) { /*throw Error(response.statusText);*/ }
-      fetchIP();
+      await fetchIP();
     }
     catch (error) { console.log(error) }
   }
@@ -203,8 +206,8 @@ const SettingsOp: React.FC<Props> = ({
       setActiveInput({ ...activeInput, form: '', id: '' });
       await getIP();
       await fetchLngs();
-      await fetchIP();
       await fetchSync();
+      await fetchIP();
       clock();
       dayjs.locale(i18n.language == 'en' ? 'en-gb' : i18n.language)
       setHeight(div.current?.offsetHeight ? div.current?.offsetHeight - 5 : 0)
@@ -282,7 +285,7 @@ const SettingsOp: React.FC<Props> = ({
       <Row gutter={[8, 8]} style={{ flex: '1 1 90%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('panel.network')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} extra=
-            {<Segmented onResize={undefined} onResizeCapture={undefined} size='middle' value={slide} onChange={(value) => { setSlide(Number(value)); }} options={[{ value: 0, icon: <DesktopOutlined />, },
+            {<Segmented onResize={undefined} onResizeCapture={undefined} size='middle' value={slide} onChange={async (value) => { (Number(value) == 0) && await fetchIP(); setSlide(Number(value)); }} options={[{ value: 0, icon: <DesktopOutlined />, },
             { value: 1, icon: <PartitionOutlined />, }, { value: 2, icon: <WifiOutlined />, }]} />} >
             <div ref={div} style={{ height: '100%', width: '100%' }}>
               <div style={{ width: '100%' }}>
