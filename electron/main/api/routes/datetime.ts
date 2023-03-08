@@ -61,9 +61,8 @@ router.post('/', async (req, res) => {
     switch (process.platform) {
       case 'linux':
         //sudo.exec("date -s @" + unix + " && fake-hwclock save force", options, (error, data, getter) => {
-        sudo.exec("timedatectl set-timezone '" + tz + "' && sed -i \"s/\\(NTP *= *\\).*/\\1" + ntp + "/\" /etc/systemd/timesyncd.conf && systemctl restart systemd-timesyncd.service && timedatectl set-ntp " + sync + " && date -s @" + unix + ' && /sbin/hwclock --systohc', options, async (error, data, getter) => {
+        sudo.exec("timedatectl set-timezone '" + tz + "' && sed -i \"s/\\(NTP *= *\\).*/\\1" + ntp + "/\" /etc/systemd/timesyncd.conf && systemctl restart systemd-timesyncd.service && timedatectl set-ntp " + sync + " && date -s @" + unix + " && sed -i \"s/\\(timezone *= *\\).*/\\1\'" + tz.toString().replace(/\//g,'\\/') + "\'/\" /etc/postgresql/14/main/postgresql.conf && /sbin/hwclock --systohc", options, async (error, data, getter) => {
           if (!error) {
-            await db.query('ALTER DATABASE bloomhmi SET timezone to $1', [tz]);
             await db.query('SELECT pg_reload_conf()');
             res.status(200).json({
               message: "notifications.dtupdate",
@@ -75,7 +74,8 @@ router.post('/', async (req, res) => {
           }
           if (error) {
             res.status(500).json({
-              error: error
+              error: error,
+              message: "notifications.servererror",
             });
           }
         });

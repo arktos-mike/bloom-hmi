@@ -51,7 +51,7 @@ const SettingsOp: React.FC<Props> = ({
   const [netLoading, setNetLoading] = useState(true)
   const [sync, setSync] = useState(false)
   const [ntp, setNtp] = useState('')
-  const [selectedTimezone, setSelectedTimezone] = useState({ value: Intl.DateTimeFormat().resolvedOptions().timeZone } as any)
+  const [selectedTimezone, setSelectedTimezone] = useState({ value: Intl.DateTimeFormat().resolvedOptions().timeZone == 'UTC' ? 'GMT' : Intl.DateTimeFormat().resolvedOptions().timeZone } as any)
   const div = useRef<HTMLDivElement | null>(null);
   const contentStyle = { height: height, margin: '1px' };
 
@@ -92,8 +92,6 @@ const SettingsOp: React.FC<Props> = ({
       const response = await fetch('http://localhost:3000/config/getinterfaces');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       await response.json();
-      setLoading(false);
-      setNetLoading(false);
       slider.current?.goTo(slide);
     }
     catch (error) { /*console.log(error);*/ }
@@ -105,9 +103,8 @@ const SettingsOp: React.FC<Props> = ({
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setOpIP(json['ipConf']['opIP']);
-      setLoading(false);
     }
-    catch (error) { /*console.log(error);*/setLoading(false); setNetLoading(false); }
+    catch (error) { /*console.log(error);*/ }
   }
 
   const curDate = today.toLocaleDateString(i18n.language == 'en' ? 'en-GB' : i18n.language, { dateStyle: 'full' });
@@ -224,6 +221,8 @@ const SettingsOp: React.FC<Props> = ({
       clock();
       dayjs.locale(i18n.language == 'en' ? 'en-gb' : i18n.language)
       setHeight(div.current?.offsetHeight ? div.current?.offsetHeight - 5 : 0)
+      console.log(selectedTimezone)
+      setLoading(false);
     })();
     return () => { }
   }, [])
@@ -254,6 +253,7 @@ const SettingsOp: React.FC<Props> = ({
     if (formWifi) {
       formWifi.setFieldsValue({ ssid: opIP.wifi.ssid, pwd: opIP.wifi.pwd, dhcp: opIP.wireless.dhcp, ip: opIP.wireless.ip_address, mask: opIP.wireless.netmask, gw: opIP.wireless.gateway_ip });
     }
+    if (opIP.wired?.ip_address || opIP.wireless?.ip_address) setNetLoading(false);
     return () => { }
   }, [opIP])
 
