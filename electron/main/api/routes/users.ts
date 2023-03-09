@@ -47,11 +47,19 @@ router.post('/register', async (req, res) => {
 
         db.query(id ? 'INSERT INTO users (id, name, email, phonenumber, password, role) VALUES ($1,$2,$3,$4,$5,$6);' : 'INSERT INTO users (name, email, phonenumber, password, role) VALUES ($1,$2,$3,$4,$5);', id ? [user.id, user.name, user.email, user.phonenumber, user.password, user.role] : [user.name, user.email, user.phonenumber, user.password, user.role], (err) => {
           if (err) {
-            flag = 0; //If user is not inserted is not inserted to database assigning flag as 0/false.
-            console.error(err);
-            return res.status(500).json({
-              message: "notifications.dberror",
-              error: err
+            db.query(id ? 'INSERT INTO users (id, name, email, phonenumber, password, role) VALUES ($1,$2,$3,$4,$5,$6);' : 'INSERT INTO users (name, email, phonenumber, password, role) VALUES ($1,$2,$3,$4,$5);', id ? [user.id, user.name, user.email, user.phonenumber, user.password, user.role] : [user.name, user.email, user.phonenumber, user.password, user.role], (err) => {
+              if (err) {
+                flag = 0; //If user is not inserted is not inserted to database assigning flag as 0/false.
+                //console.error(err);
+                return res.status(500).json({
+                  message: "notifications.dberror",
+                  error: err
+                })
+              }
+              else {
+                flag = 1;
+                res.status(200).send({ message: "notifications.userregistered", });
+              }
             })
           }
           else {

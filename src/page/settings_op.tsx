@@ -51,7 +51,7 @@ const SettingsOp: React.FC<Props> = ({
   const [netLoading, setNetLoading] = useState(true)
   const [sync, setSync] = useState(false)
   const [ntp, setNtp] = useState('')
-  const [selectedTimezone, setSelectedTimezone] = useState({ value: Intl.DateTimeFormat().resolvedOptions().timeZone == 'UTC' ? 'GMT' : Intl.DateTimeFormat().resolvedOptions().timeZone } as any)
+  const [selectedTimezone, setSelectedTimezone] = useState({ value: Intl.DateTimeFormat().resolvedOptions().timeZone } as any)
   const div = useRef<HTMLDivElement | null>(null);
   const contentStyle = { height: height, margin: '1px' };
 
@@ -266,11 +266,6 @@ const SettingsOp: React.FC<Props> = ({
     }
     return () => { }
   }, [i18n.language, sync, ntp])
-
-  useEffect(() => {
-    console.log(selectedTimezone);
-    return () => { }
-  }, [selectedTimezone])
 
   return (
     <div className='wrapper'>
