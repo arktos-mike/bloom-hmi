@@ -221,7 +221,6 @@ const SettingsOp: React.FC<Props> = ({
       clock();
       dayjs.locale(i18n.language == 'en' ? 'en-gb' : i18n.language)
       setHeight(div.current?.offsetHeight ? div.current?.offsetHeight - 5 : 0)
-      console.log(selectedTimezone)
       setLoading(false);
     })();
     return () => { }
@@ -267,6 +266,11 @@ const SettingsOp: React.FC<Props> = ({
     }
     return () => { }
   }, [i18n.language, sync, ntp])
+
+  useEffect(() => {
+    console.log(selectedTimezone);
+    return () => { }
+  }, [selectedTimezone])
 
   return (
     <div className='wrapper'>

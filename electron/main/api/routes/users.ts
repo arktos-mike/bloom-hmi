@@ -39,7 +39,7 @@ router.post('/register', async (req, res) => {
         if (err)
           res.status(err).json({
             message: "notifications.servererror",
-            error: "Server error",
+            error: err,
           });
         const user = { id, name, email, phonenumber, password: hash, role };
         var flag = 1; //Declaring a flag
@@ -51,7 +51,7 @@ router.post('/register', async (req, res) => {
             console.error(err);
             return res.status(500).json({
               message: "notifications.dberror",
-              error: "Database error"
+              error: err
             })
           }
           else {
@@ -66,7 +66,7 @@ router.post('/register', async (req, res) => {
     /*console.log(err);*/
     res.status(500).json({
       message: "notifications.dberror",
-      error: "Database error while registring user!", //Database connection error
+      error: err, //Database connection error
     });
   };
 });
