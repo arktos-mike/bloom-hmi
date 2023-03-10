@@ -68,13 +68,22 @@ api.get('/config/getinterfaces', async (req, res) => {
             else {
               dhcp = ((ifc.ip_address == undefined) || (ifc.netmask == undefined) || (ifc.gateway_ip == undefined)) ? true : false
             }
-            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, dhcp}', dhcp]);
-            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, mac_address}', '"' + ifc.mac_address + '"']);
-            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, ip_address}', '"' + (ifc.ip_address != undefined ? ifc.ip_address : '') + '"']);
-            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, netmask}', '"' + (ifc.netmask != undefined ? ifc.netmask : '255.255.255.0') + '"']);
-            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, gateway_ip}', '"' + (ifc.gateway_ip != undefined ? ifc.gateway_ip : '') + '"']);
+            sudo.exec("nmcli -g GENERAL.STATE connection show wired", options, async (error, data, getter) => {
+              let status = 'invisible'
+              if (!error) {
+                status = data?.toString().split('\n')[0] || 'invisible';
+              }
+              else {
+                status = 'invisible';
+              }
+              await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, status}', status]);
+              await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, dhcp}', dhcp]);
+              await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, mac_address}', '"' + ifc.mac_address + '"']);
+              await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, ip_address}', '"' + (ifc.ip_address != undefined ? ifc.ip_address : '') + '"']);
+              await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, netmask}', '"' + (ifc.netmask != undefined ? ifc.netmask : '255.255.255.0') + '"']);
+              await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, gateway_ip}', '"' + (ifc.gateway_ip != undefined ? ifc.gateway_ip : '') + '"']);
+            });
           });
-
         }
         if (ifc.name == 'wlp4s0') {
 
@@ -86,13 +95,22 @@ api.get('/config/getinterfaces', async (req, res) => {
             else {
               dhcp = ((ifc.ip_address == undefined) || (ifc.netmask == undefined) || (ifc.gateway_ip == undefined)) ? true : false
             }
-            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, dhcp}', dhcp]);
-            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, mac_address}', '"' + ifc.mac_address + '"']);
-            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, ip_address}', '"' + (ifc.ip_address != undefined ? ifc.ip_address : '') + '"']);
-            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, netmask}', '"' + (ifc.netmask != undefined ? ifc.netmask : '255.255.255.0') + '"']);
-            await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, gateway_ip}', '"' + (ifc.gateway_ip != undefined ? ifc.gateway_ip : '') + '"']);
+            sudo.exec("nmcli -g GENERAL.STATE connection show wireless", options, async (error, data, getter) => {
+              let status = 'invisible'
+              if (!error) {
+                status = data?.toString().split('\n')[0] || 'invisible';
+              }
+              else {
+                status = 'invisible';
+              }
+              await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, status}', status]);
+              await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, dhcp}', dhcp]);
+              await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, mac_address}', '"' + ifc.mac_address + '"']);
+              await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, ip_address}', '"' + (ifc.ip_address != undefined ? ifc.ip_address : '') + '"']);
+              await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, netmask}', '"' + (ifc.netmask != undefined ? ifc.netmask : '255.255.255.0') + '"']);
+              await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, gateway_ip}', '"' + (ifc.gateway_ip != undefined ? ifc.gateway_ip : '') + '"']);
+            });
           });
-
         }
       }
       sudo.exec("nmcli general hostname", options, async (error, data, getter) => {
@@ -234,7 +252,7 @@ const dbInit = async () => {
     });
     await db.query(`INSERT INTO clothlog VALUES(tstzrange(current_timestamp(3),NULL,'[)'),$1,(SELECT val from tags WHERE tag->>'name' = 'fullWarpBeamLength'))`, [0])
     await network.get_active_interface(async (err, obj) => {
-      const ipConf = { opIP: { name: 'bloomhmi1', wired: { dhcp: false, netmask: '255.255.255.0', gateway_ip: '127.0.0.1', ip_address: '127.0.0.1', mac_address: '00:00:00:00:00:00' }, wireless: { dhcp: false, netmask: '255.255.255.0', gateway_ip: '127.0.0.1', ip_address: '127.0.0.1', mac_address: '00:00:00:00:00:00' }, wifi: { ssid: 'BloomConnect', pwd: 'textile2023' } }, tcp1: { ip: '192.168.1.123', port: '502', sId: 1, swapBytes: true, swapWords: true } }
+      const ipConf = { opIP: { name: 'bloomhmi1', wired: { status: 'invisible', dhcp: false, netmask: '255.255.255.0', gateway_ip: '127.0.0.1', ip_address: '127.0.0.1', mac_address: '00:00:00:00:00:00' }, wireless: { status: 'invisible', dhcp: false, netmask: '255.255.255.0', gateway_ip: '127.0.0.1', ip_address: '127.0.0.1', mac_address: '00:00:00:00:00:00' }, wifi: { ssid: 'BloomConnect', pwd: 'textile2023' } }, tcp1: { ip: '192.168.1.123', port: '502', sId: 1, swapBytes: true, swapWords: true } }
       console.log(ipConf)
       await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
     })

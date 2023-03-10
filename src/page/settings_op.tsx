@@ -43,8 +43,7 @@ const SettingsOp: React.FC<Props> = ({
   const [formIP] = Form.useForm()
   const [formWifi] = Form.useForm()
   const [formNet] = Form.useForm()
-
-  const [opIP, setOpIP] = useState({ name: '', wired: { dhcp: false, netmask: '', gateway_ip: '', ip_address: '', mac_address: '' }, wireless: { dhcp: false, netmask: '', gateway_ip: '', ip_address: '', mac_address: '' }, wifi: { ssid: '', pwd: '' } })
+  const [opIP, setOpIP] = useState({ name: '', wired: { status: 'invisible', dhcp: false, netmask: '', gateway_ip: '', ip_address: '', mac_address: '' }, wireless: { status: 'invisible', dhcp: false, netmask: '', gateway_ip: '', ip_address: '', mac_address: '' }, wifi: { ssid: '', pwd: '' } })
   const [lngs, setLngs] = useState({ data: [] })
   const [today, setDate] = useState(new Date())
   const [loading, setLoading] = useState(true)
@@ -315,10 +314,10 @@ const SettingsOp: React.FC<Props> = ({
                           preserve={false}
                           colon={false}
                         >
-                          <Form.Item label={<WifiOutlined style={{ fontSize: '130%' }} />} >
+                          <Form.Item label={<WifiOutlined style={{ fontSize: '130%', color: opIP.wireless.status == 'invisible' ? '#bcbcbc' : opIP.wireless.status == 'activating' ? '#06bab2' : opIP.wireless.status == 'activated' ? '#65bd22' : '#b6162e' }} />} >
                             <span style={{ fontSize: '16px' }}>{opIP.wireless.mac_address + " " + opIP.wireless.ip_address + " " + opIP.wireless.netmask + " " + opIP.wireless.gateway_ip}</span>
                           </Form.Item>
-                          <Form.Item label={<PartitionOutlined style={{ fontSize: '130%' }} />} >
+                          <Form.Item label={<PartitionOutlined style={{ fontSize: '130%', color: opIP.wired.status == 'invisible' ? '#bcbcbc' : opIP.wired.status == 'activating' ? '#06bab2' : opIP.wired.status == 'activated' ? '#65bd22' : '#b6162e' }} />} >
                             <span style={{ fontSize: '16px' }}>{opIP.wired.mac_address + " " + opIP.wired.ip_address + " " + opIP.wired.netmask + " " + opIP.wired.gateway_ip}</span>
                           </Form.Item>
                           <Form.Item name="name" label={t('ip.name')} rules={[{ required: true, message: t('user.fill') }]} >
