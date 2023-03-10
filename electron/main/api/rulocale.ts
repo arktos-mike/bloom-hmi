@@ -1,6 +1,6 @@
 const locale = {
   "self": "Русский",
-  "footer": "© ТЕХМАШХОЛДИНГ г.Чебоксары",
+  "footer": "© ТЕКСТИЛЬМАШ г.Чебоксары",
   "decimalSeparator": ",",
   "menu": {
     "close": "ЗАКРЫТЬ",

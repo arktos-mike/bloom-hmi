@@ -1,6 +1,6 @@
 const locale = {
   "self": "Türkçe",
-  "footer": "© TEHMASHHOLDİNG Cheboksary, Rusya Federasyonu",
+  "footer": "© TEXTILMACH Cheboksary, Rusya Federasyonu",
   "decimalSeparator": ",",
   "menu": {
     "close": "KAPAT",

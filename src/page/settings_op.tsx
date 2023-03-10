@@ -315,10 +315,10 @@ const SettingsOp: React.FC<Props> = ({
                           colon={false}
                         >
                           <Form.Item label={<WifiOutlined style={{ fontSize: '130%', color: opIP.wireless.status == 'invisible' ? '#bcbcbc' : opIP.wireless.status == 'activating' ? '#06bab2' : opIP.wireless.status == 'activated' ? '#65bd22' : '#b6162e' }} />} >
-                            <span style={{ fontSize: '16px' }}>{opIP.wireless.mac_address + " " + opIP.wireless.ip_address + " " + opIP.wireless.netmask + " " + opIP.wireless.gateway_ip}</span>
+                            <span style={{ fontSize: '16px' }}>{opIP.wireless.mac_address}<br/>{opIP.wireless.ip_address }<br/>{opIP.wireless.netmask}<br/>{opIP.wireless.gateway_ip}</span>
                           </Form.Item>
                           <Form.Item label={<PartitionOutlined style={{ fontSize: '130%', color: opIP.wired.status == 'invisible' ? '#bcbcbc' : opIP.wired.status == 'activating' ? '#06bab2' : opIP.wired.status == 'activated' ? '#65bd22' : '#b6162e' }} />} >
-                            <span style={{ fontSize: '16px' }}>{opIP.wired.mac_address + " " + opIP.wired.ip_address + " " + opIP.wired.netmask + " " + opIP.wired.gateway_ip}</span>
+                            <span style={{ fontSize: '16px' }}>{opIP.wired.mac_address }<br/>{opIP.wired.ip_address}<br/>{opIP.wired.netmask}<br/>{opIP.wired.gateway_ip}</span>
                           </Form.Item>
                           <Form.Item name="name" label={t('ip.name')} rules={[{ required: true, message: t('user.fill') }]} >
                             <Input userRights={['admin', 'manager']} token={token} className="narrow" placeholder={t('ip.name')} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'net', id: 'name', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'email' }) }} />

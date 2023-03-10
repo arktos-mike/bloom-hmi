@@ -1,6 +1,6 @@
 const locale = {
   "self": "Español",
-  "footer": "© TEHMASHHOLDING Cheboksary, Rusia",
+  "footer": "© TEXTILMACH Cheboksary, Rusia",
   "decimalSeparator": ",",
   "menu": {
     "close": "CERRAR",
