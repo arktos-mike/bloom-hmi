@@ -268,7 +268,7 @@ const SettingsOp: React.FC<Props> = ({
 
   return (
     <div className='wrapper'>
-      <Row gutter={[8, 8]} style={{ flex: '1 1 23%', marginBottom: 8 }}>
+      <Row gutter={[8, 8]} style={{ flex: '1 1 22%', marginBottom: 8 }}>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('panel.language')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
             <Skeleton loading={loading} round active paragraph={false}>
@@ -293,7 +293,7 @@ const SettingsOp: React.FC<Props> = ({
           </Card>
         </Col>
       </Row>
-      <Row gutter={[8, 8]} style={{ flex: '1 1 77%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
+      <Row gutter={[8, 8]} style={{ flex: '1 1 78%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('panel.network')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} extra=
             {<Segmented onResize={undefined} onResizeCapture={undefined} size='middle' value={slide} onChange={async (value) => { setSlide(Number(value)); }} options={[{ value: 0, icon: <DesktopOutlined />, },
