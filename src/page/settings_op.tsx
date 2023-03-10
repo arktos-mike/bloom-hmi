@@ -271,7 +271,7 @@ const SettingsOp: React.FC<Props> = ({
       <Row gutter={[8, 8]} style={{ flex: '1 1 10%', marginBottom: 8 }}>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('panel.language')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
-            <Skeleton loading={loading} round active paragraph={{ rows: 1 }}>
+            <Skeleton loading={loading} round active paragraph={false}>
               <Form labelCol={{ span: 4 }} wrapperCol={{ span: 20 }} size='large' style={{ width: '50%' }} colon={false}>
                 <Form.Item label={<GlobalOutlined style={{ fontSize: '130%' }} />} >
                   <Select value={i18n.language} onChange={lngChange} >
@@ -287,7 +287,7 @@ const SettingsOp: React.FC<Props> = ({
         </Col>
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('panel.actions')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
-            <Skeleton loading={loading} round active paragraph={{ rows: 1 }}>
+            <Skeleton loading={loading} round active paragraph={false}>
               <Button confirm userRights={['fixer', 'admin', 'manager']} token={token} onClick={onReboot} icon={<ReloadOutlined style={{ fontSize: '200%' }} />} text="system.reboot" />
             </Skeleton>
           </Card>
