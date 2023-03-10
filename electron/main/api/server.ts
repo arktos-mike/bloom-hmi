@@ -76,7 +76,7 @@ api.get('/config/getinterfaces', async (req, res) => {
               else {
                 status = 'invisible';
               }
-              await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, status}', status]);
+              await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, status}', '"' + status + '"']);
               await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, dhcp}', dhcp]);
               await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, mac_address}', '"' + ifc.mac_address + '"']);
               await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, ip_address}', '"' + (ifc.ip_address != undefined ? ifc.ip_address : '') + '"']);
@@ -103,7 +103,7 @@ api.get('/config/getinterfaces', async (req, res) => {
               else {
                 status = 'invisible';
               }
-              await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, status}', status]);
+              await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, status}', '"' + status + '"']);
               await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, dhcp}', dhcp]);
               await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, mac_address}', '"' + ifc.mac_address + '"']);
               await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wireless, ip_address}', '"' + (ifc.ip_address != undefined ? ifc.ip_address : '') + '"']);
