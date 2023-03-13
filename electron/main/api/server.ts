@@ -128,7 +128,7 @@ api.get('/config/getinterfaces', async (req, res) => {
 })
 
 api.listen(process.env['EXPRESS_SERVER_PORT'] || 3000, () => {
-  console.log(`API Server listening on port `, process.env['EXPRESS_SERVER_PORT'] || 3000)
+  //console.log(`API Server listening on port `, process.env['EXPRESS_SERVER_PORT'] || 3000)
 })
 
 
@@ -253,7 +253,7 @@ const dbInit = async () => {
     await db.query(`INSERT INTO clothlog VALUES(tstzrange(current_timestamp(3),NULL,'[)'),$1,(SELECT val from tags WHERE tag->>'name' = 'fullWarpBeamLength'))`, [0])
     await network.get_active_interface(async (err, obj) => {
       const ipConf = { opIP: { name: 'bloomhmi1', wired: { status: 'invisible', dhcp: false, netmask: '255.255.255.0', gateway_ip: '127.0.0.1', ip_address: '127.0.0.1', mac_address: '00:00:00:00:00:00' }, wireless: { status: 'invisible', dhcp: false, netmask: '255.255.255.0', gateway_ip: '127.0.0.1', ip_address: '127.0.0.1', mac_address: '00:00:00:00:00:00' }, wifi: { ssid: 'BloomConnect', pwd: 'textile2023' } }, tcp1: { ip: '192.168.1.123', port: '502', sId: 1, swapBytes: true, swapWords: true } }
-      console.log(ipConf)
+      //console.log(ipConf)
       await db.query('INSERT INTO hwconfig VALUES($1,$2) ON CONFLICT (name) DO NOTHING;', ['ipConf', ipConf])
     })
     await SerialPort.list().then(async function (ports) {
@@ -289,14 +289,14 @@ const connectClient = async function (client, port) {
     else { await client.connectRTUBuffered(port.path, port.conf) }
     port.mbsState = MBS_STATE_GOOD_CONNECT;
     mbsStatus = "[" + port.path + "]" + "Connected, wait for reading...";
-    console.log(mbsStatus);
+    //console.log(mbsStatus);
   } catch (e) {
     port.slaves.map(async (slave: any) => {
       await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 AND link=true;', ['dev', slave.name]);
     })
     port.mbsState = MBS_STATE_FAIL_CONNECT;
     mbsStatus = "[" + port.path + "]" + e.message;
-    console.log(mbsStatus);
+    //console.log(mbsStatus);
   }
 }
 
@@ -360,7 +360,7 @@ const writeModbusData = async function (tagName, val) {
         } catch (e) {
           port.mbsState = MBS_STATE_FAIL_WRITE;
           mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
-          console.log(mbsStatus);
+          //console.log(mbsStatus);
         }
         break;
       default:
@@ -386,7 +386,7 @@ const writeModbusData = async function (tagName, val) {
         } catch (e) {
           port.mbsState = MBS_STATE_FAIL_WRITE;
           //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
-          console.log(mbsStatus);
+          //console.log(mbsStatus);
         }
         break;
     }
@@ -571,12 +571,12 @@ const runModbus = async function (client, port) {
   if (updFlagConn) {
     const conn = await db.query('SELECT * FROM hwconfig WHERE name = $1', ['connConf']);
     contype = conn.rows[0].data.conn
-    await client.close(async () => { console.log("[" + port.path + "]closed"); });
+    await client.close(async () => { /*console.log("[" + port.path + "]closed");*/ });
     await dbConf();
     resetFlagConn();
   }
   if ((updFlagCOM1 && port.self == 'com1') || (updFlagCOM2 && port.self == 'com2') || (updFlagTCP1 && port.self == 'ip1')) {
-    await client.close(async () => { console.log("[" + port.path + "]closed"); });
+    await client.close(async () => { /*console.log("[" + port.path + "]closed");*/ });
     await dbConf();
     await connectClient(client, port);
     (port.self == 'com1') && resetFlagCOM1(); (port.self == 'com2') && resetFlagCOM2(); (port.self == 'ip1') && resetFlagTCP1();
@@ -623,7 +623,7 @@ const runModbus = async function (client, port) {
       }
     }
   }
-  else if (port.slaves.length == 0) { if (client.isOpen) { await client.close(async () => { console.log("[" + port.path + "]closed"); }); } }
+  else if (port.slaves.length == 0) { if (client.isOpen) { await client.close(async () => { /*console.log("[" + port.path + "]closed");*/ }); } }
   port.act++;
   if (port.act === port.slaves.length) {
     port.act = 0;
