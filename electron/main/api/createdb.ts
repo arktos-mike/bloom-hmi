@@ -192,6 +192,27 @@ where
 	(tag->>'name' = 'planClothDensity'))
  );
  end if;
+
+ if new.val = 6 then
+UPDATE
+  clothlog
+SET
+	timestamp = tstzrange(
+      lower(timestamp),
+	current_timestamp(3),
+	'[)'
+  ),
+	meters = (select
+    val
+  from
+    tags
+  where
+    tag->>'name' = 'orderLength')
+where
+	event=1 and upper_inf(timestamp);
+INSERT INTO clothlog VALUES(tstzrange(current_timestamp(3),NULL,'[)'),1,NULL);
+end if;
+
   return null;
   end;
 
@@ -274,26 +295,6 @@ set
 	motor = justify_hours(motor + clock)
 where
 	serialno is not null;
-end if;
-
-if code = 6 then
-UPDATE
-  clothlog
-SET
-	timestamp = tstzrange(
-      lower(timestamp),
-	current_timestamp(3),
-	'[)'
-  ),
-	meters = (select
-    val
-  from
-    tags
-  where
-    tag->>'name' = 'orderLength')
-where
-	event=1 and upper_inf(timestamp);
-INSERT INTO clothlog VALUES(tstzrange(current_timestamp(3),NULL,'[)'),1,NULL);
 end if;
 
 return new;
