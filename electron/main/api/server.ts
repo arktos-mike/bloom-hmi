@@ -531,6 +531,10 @@ const readModbusData = async function (client, port, slave) {
                   info.rows[0]['monthinfo'] && (info.rows[0]['monthinfo']['runtime'] = parseInterval(info.rows[0]['monthinfo']['runtime']))
                   info.rows[0]['lifetime'] && (info.rows[0]['lifetime']['motor'] = parseInterval(info.rows[0]['lifetime']['motor']))
                   await sse.send(info.rows[0], 'fullinfo', 'all');
+                  if (val == 6) {
+                    const { rows } = await db.query(`SELECT count(*) FROM clothlog WHERE not upper_inf(timestamp) and timestamp && tstzrange(lower((SELECT timestamp FROM clothlog WHERE upper_inf(timestamp) and event=0)),current_timestamp(3),'[)') AND event=$1`, [1]);
+                    await sse.send(rows[0].count, 'rolls', 'pieces');
+                  }
                 }
                 await sse.send(rows, 'tags', tag.name);
               }

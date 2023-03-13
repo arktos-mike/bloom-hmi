@@ -20,11 +20,11 @@ router.post('/clothlogchange', async (req, res) => {
     const { event, meters } = req.body;
     await db.query(`UPDATE clothlog SET timestamp = tstzrange(lower(timestamp),current_timestamp(3),'[)')` + ((event == 0) ? `` : `, meters=$2`) + `WHERE upper_inf(timestamp) AND event=$1`, event == 0 ? [event] : [event, meters])
     await db.query(`INSERT INTO clothlog VALUES(tstzrange(current_timestamp(3),NULL,'[)'),$1,$2)`, [event, event == 0 ? meters : null])
+    const { rows } = await db.query(`SELECT count(*) FROM clothlog WHERE not upper_inf(timestamp) and timestamp && tstzrange(lower((SELECT timestamp FROM clothlog WHERE upper_inf(timestamp) and event=0)),current_timestamp(3),'[)') AND event=$1`, [1]);
+    await sse.send(rows[0].count, 'rolls', 'pieces');
     res.status(200).json({
       message: "notifications.confupdate",
     });
-    const { rows } = await db.query(`SELECT count(*) FROM clothlog WHERE not upper_inf(timestamp) and timestamp && tstzrange(lower((SELECT timestamp FROM clothlog WHERE upper_inf(timestamp) and event=0)),current_timestamp(3),'[)') AND event=$1`, [1]);
-    await sse.send(rows[0].count, 'rolls', 'pieces');
   } catch (err) {
     /*console.log(err);*/
     res.status(500).json({
