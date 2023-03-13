@@ -188,7 +188,7 @@ router.post('/update', async (req, res) => {
           */
           break;
         case 'win32':
-          console.log(maskToPrefixLength(opIP.netmask))
+          //console.log(maskToPrefixLength(opIP.netmask))
           /*
           sudo.exec("powershell -command \"Remove-NetIPAddress -InterfaceAlias Ethernet -Confirm:$false; Remove-NetRoute -InterfaceAlias Ethernet -Confirm:$false; New-NetIPAddress -InterfaceAlias Ethernet -AddressFamily IPv4 " + opIP.ip_address + " -PrefixLength " + maskToPrefixLength(opIP.netmask) + " -DefaultGateway " + opIP.gateway_ip + " -Type Unicast  -Confirm:$false\"", options, (error, data, getter) => {
             if (!error) {
