@@ -58,14 +58,14 @@ async function createWindow() {
     // works with 1.1 too
     win.webContents.debugger.attach('1.2')
   } catch (err) {
-    console.log('Debugger attach failed: ', err)
+    //console.log('Debugger attach failed: ', err)
   }
 
   const isDebuggerAttached = win.webContents.debugger.isAttached()
-  console.log('debugger attached? ', isDebuggerAttached)
+  //console.log('debugger attached? ', isDebuggerAttached)
 
   win.webContents.debugger.on('detach', (event, reason) => {
-    console.log('Debugger detached due to: ', reason)
+    //console.log('Debugger detached due to: ', reason)
   });
 
   // This is where the magic happens!
