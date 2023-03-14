@@ -395,6 +395,26 @@ const App: React.FC = memo(() => {
     }
   );
 
+  const userinfo = useSSE(
+    'userinfo',
+    {
+      workdur: '',
+      picks: 0,
+      meters: 0,
+      rpm: 0,
+      mph: 0,
+      efficiency: 0,
+      starts: 0,
+      runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 },
+      stops: {}
+    },
+    {
+      parser(input: string) {
+        return JSON.parse(input);
+      },
+    }
+  );
+
   useEffect(() => {
     if (tags.length > 0) {
       const updatedTags = tags.map(obj => info.tags.find((o: any) => o['tag']!['name'] === obj['tag']['name']) || obj);
@@ -535,7 +555,7 @@ const App: React.FC = memo(() => {
               </div>
               <div className="site-layout-content">
                 <Routes>
-                  <Route index element={<Overview period={period} setPeriod={setPeriod} pieces={Math.max(Number(pieces), (fullinfo.rolls != null) ? fullinfo.rolls : all?.rolls)} tags={tags} token={token} modeCode={modeCode} info={info} fullinfo={fullinfo.lifetime.mfgdate ? fullinfo : all} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
+                  <Route index element={<Overview period={period} setPeriod={setPeriod} pieces={Math.max(Number(pieces), (fullinfo.rolls != null) ? fullinfo.rolls : all?.rolls)} tags={tags} token={token} modeCode={modeCode} info={info} fullinfo={fullinfo.lifetime.mfgdate ? fullinfo : all} userinfo={userinfo} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
                   <Route path={'/machineInfo'} element={<MachineInfo lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} tags={tags} modeCode={modeCode} />} />
                   <Route path={'/reminders'} element={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Reminders activeInput={activeInput} setActiveInput={setActiveInput} setUpdatedReminders={setUpdatedReminders} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                   <Route path={'/reports'} element={<MonthReport token={token} />} />

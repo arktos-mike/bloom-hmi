@@ -1,8 +1,9 @@
 import PromiseRouter from 'express-promise-router'
 import db from '../../db'
-import * as dotenv from 'dotenv'
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
+import { sse } from './'
+import parseInterval from 'postgres-interval'
 // create a new express-promise-router
 // this has the same API as the normal express router except
 // it allows you to use async functions as route handlers
@@ -129,6 +130,15 @@ router.post('/login', async (req, res) => {
           await db.query(`DELETE FROM userlog WHERE upper_inf(timestamp) AND current_timestamp<lower(timestamp)`)
           await db.query(`UPDATE userlog SET timestamp = case when current_timestamp>lower(timestamp) then tstzrange(lower(timestamp),$5,'[)') else tstzrange($5,$5,'[)')	end, logoutby=$2 WHERE upper_inf(timestamp) AND (role<>$1 OR (role=$1 AND $3=$1)) AND id <> $4`, ['weaver', 'userpassword', user[0].role, user[0].id, t]);
           await db.query(`INSERT INTO userlog (id, name, role, loginby, timestamp) SELECT * FROM (VALUES($1::numeric, $2::text, $3::text, $4::text, tstzrange($5,NULL,'[)')::tstzrange)) AS t (id, name, role, loginby, timestamp) WHERE t.id IS DISTINCT FROM (SELECT id FROM userlog WHERE upper_inf(timestamp))`, [user[0].id, user[0].name, user[0].role, 'password', t]);
+          if (user[0].role == 'weaver') {
+            const info = await db.query('SELECT * FROM getcurrentinfo();');
+            info.rows[0]['userinfo'] && await info.rows[0]['userinfo']['stops'].map((row: any) => {
+              row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+            });
+            info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['runtime'] = parseInterval(info.rows[0]['userinfo']['runtime']))
+            info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['workdur'] = parseInterval(info.rows[0]['userinfo']['workdur']))
+            await sse.send(info.rows[0]['userinfo'], 'userinfo', 'all');
+          }
           res.status(200).json({
             message: "notifications.userok",
             token: token,
