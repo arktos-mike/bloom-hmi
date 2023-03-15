@@ -530,6 +530,7 @@ const readModbusData = async function (client, port, slave) {
                   info.rows[0]['dayinfo'] && (info.rows[0]['dayinfo']['runtime'] = parseInterval(info.rows[0]['dayinfo']['runtime']))
                   info.rows[0]['monthinfo'] && (info.rows[0]['monthinfo']['runtime'] = parseInterval(info.rows[0]['monthinfo']['runtime']))
                   info.rows[0]['lifetime'] && (info.rows[0]['lifetime']['motor'] = parseInterval(info.rows[0]['lifetime']['motor']))
+                  info.rows[0]['modeCode'] = {val:rows[0]['val'], updated:rows[0]['updated']}
                   await sse.send(info.rows[0], 'fullinfo', 'all');
                 }
                 await sse.send(rows, 'tags', tag.name);
