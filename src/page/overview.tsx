@@ -47,7 +47,7 @@ const Overview: React.FC<Props> = memo(({
   const [height, setHeight] = useState<number | undefined>(0)
   const [loading, setLoading] = useState(true)
   const [periodInfo, setPeriodInfo] = useState<any>((period == 'day' || ((!fullinfo?.shift?.shiftstart || !fullinfo?.shift?.shiftend) && period == 'shift')) ? { name: dayjs(fullinfo?.dayinfo?.start).format('LL'), start: fullinfo?.dayinfo?.start, end: fullinfo?.dayinfo?.end, duration: '', picks: fullinfo?.dayinfo?.picks, meters: fullinfo?.dayinfo?.meters, rpm: fullinfo?.dayinfo?.rpm, mph: fullinfo?.dayinfo?.mph, efficiency: fullinfo?.dayinfo?.efficiency, starts: fullinfo?.dayinfo?.starts, runtime: fullinfo?.dayinfo?.runtime, stops: fullinfo?.dayinfo?.stops } : (period == 'shift') ? { name: t('shift.shift') + ' ' + fullinfo?.shift?.shiftname, start: fullinfo?.shift?.shiftstart, end: fullinfo?.shift?.shiftend, duration: fullinfo?.shift?.shiftdur, picks: fullinfo?.shiftinfo?.picks, meters: fullinfo?.shiftinfo?.meters, rpm: fullinfo?.shiftinfo?.rpm, mph: fullinfo?.shiftinfo?.mph, efficiency: fullinfo?.shiftinfo?.efficiency, starts: fullinfo?.shiftinfo?.starts, runtime: fullinfo?.shiftinfo?.runtime, stops: fullinfo?.shiftinfo?.stops } : (period == 'month') ? { name: dayjs(fullinfo?.monthinfo?.start).format('MMMM YYYY'), start: fullinfo?.monthinfo?.start, end: fullinfo?.monthinfo?.end, duration: '', picks: fullinfo?.monthinfo?.picks, meters: fullinfo?.monthinfo?.meters, rpm: fullinfo?.monthinfo?.rpm, mph: fullinfo?.monthinfo?.mph, efficiency: fullinfo?.monthinfo?.efficiency, starts: fullinfo?.monthinfo?.starts, runtime: fullinfo?.monthinfo?.runtime, stops: fullinfo?.monthinfo?.stops } : {})
-  const [userInfo, setUserInfo] = useState<any>({ name: fullinfo?.weaver?.name, start: fullinfo?.weaver?.logintime, end: fullinfo?.dayinfo?.end, duration: fullinfo?.userinfo?.workdur, picks: fullinfo?.userinfo?.picks, meters: fullinfo?.userinfo?.meters, rpm: fullinfo?.userinfo?.rpm, mph: fullinfo?.userinfo?.mph, efficiency: fullinfo?.userinfo?.efficiency, starts: fullinfo?.userinfo?.starts, runtime: fullinfo?.userinfo?.runtime, stops: fullinfo?.userinfo?.stops })
+  const [userInfo, setUserInfo] = useState<any>(dayjs(modeCode?.updated).isBefore(dayjs(info.weaver?.logintime)) == true ? ((Array.isArray(userinfo?.stops) && (dayjs(userinfo?.start).isAfter(info?.weaver?.logintime) || info?.weaver?.logintime === undefined)) ? { name: info.weaver?.name, duration: userinfo?.workdur, start: info.weaver?.logintime, end: info.dayinfo?.end, picks: info.userinfo?.picks, meters: info.userinfo?.meters, rpm: info.userinfo?.rpm, mph: info.userinfo?.mph, efficiency: info.userinfo?.efficiency, starts: userinfo?.starts, runtime: userinfo?.runtime, stops: userinfo?.stops } : { name: info.weaver?.name, duration: fullinfo?.userinfo?.workdur, start: info.weaver?.logintime, end: info.dayinfo?.end, picks: info.userinfo?.picks, meters: info.userinfo?.meters, rpm: info.userinfo?.rpm, mph: info.userinfo?.mph, efficiency: info.userinfo?.efficiency, starts: fullinfo?.userinfo?.starts, runtime: fullinfo?.userinfo?.runtime, stops: fullinfo?.userinfo?.stops }) : { name: fullinfo?.weaver?.name, start: fullinfo?.weaver?.logintime, end: fullinfo?.dayinfo?.end, duration: fullinfo?.userinfo?.workdur, picks: fullinfo?.userinfo?.picks, meters: fullinfo?.userinfo?.meters, rpm: fullinfo?.userinfo?.rpm, mph: fullinfo?.userinfo?.mph, efficiency: fullinfo?.userinfo?.efficiency, starts: fullinfo?.userinfo?.starts, runtime: fullinfo?.userinfo?.runtime, stops: fullinfo?.userinfo?.stops })
   const [userDonut, setUserDonut] = useState([] as any)
   const [userDonutSel, setUserDonutSel] = useState({ run: true, other: true, button: true, warp: true, weft: true, tool: true, fabric: true } as any)
   const [shiftDonut, setShiftDonut] = useState([] as any)
@@ -161,15 +161,12 @@ const Overview: React.FC<Props> = memo(({
   }, [info.dayinfo?.end]);
 
   useEffect(() => {
-    if (Array.isArray(userInfo?.stops)) { setUserInfo({ ...userInfo, name: info.weaver?.name, start: info.weaver?.logintime, end: info.dayinfo?.end, picks: info.userinfo?.picks, meters: info.userinfo?.meters, rpm: info.userinfo?.rpm, mph: info.userinfo?.mph, efficiency: info.userinfo?.efficiency }); }
-    else {
-      setUserInfo({ ...userInfo, name: info.weaver?.name, start: info.weaver?.logintime, end: info.dayinfo?.end, picks: info.userinfo?.picks, meters: info.userinfo?.meters, rpm: info.userinfo?.rpm, mph: info.userinfo?.mph, efficiency: info.userinfo?.efficiency, tarts: userinfo?.starts, runtime: userinfo?.runtime, stops: userinfo?.stops });
-    }
-  }, [info.userinfo?.efficiency, info.weaver?.id && period, info.weaver?.logintime]);
+    setUserInfo({ ...userInfo, name: info.weaver?.name, start: info.weaver?.logintime, end: info.dayinfo?.end, picks: info.userinfo?.picks, meters: info.userinfo?.meters, rpm: info.userinfo?.rpm, mph: info.userinfo?.mph, efficiency: info.userinfo?.efficiency });
+  }, [info?.userinfo, info.userinfo?.efficiency, info.weaver?.id && period, info.weaver?.logintime]);
 
   useEffect(() => {
-    userinfo && setUserInfo({ ...userInfo, picks: userinfo?.picks, meters: userinfo?.meters, rpm: userinfo?.rpm, mph: userinfo?.mph, efficiency: userinfo?.efficiency, starts: userinfo?.starts, runtime: userinfo?.runtime, stops: userinfo?.stops });
-  }, [userinfo]);
+    if (Array.isArray(userinfo?.stops) && (dayjs(userinfo?.start).isAfter(info?.weaver?.logintime) || info?.weaver?.logintime === undefined)) setUserInfo({ ...userInfo, picks: userinfo?.picks, meters: userinfo?.meters, rpm: userinfo?.rpm, mph: userinfo?.mph, efficiency: userinfo?.efficiency, starts: userinfo?.starts, duration: userinfo?.workdur, runtime: userinfo?.runtime, stops: userinfo?.stops });
+  }, [userinfo?.stops]);
 
   useEffect(() => {
     if (mode?.val === undefined) { setMode({ val: modeCode?.val, updated: dayjs().subtract(2, 's') }) }
@@ -188,6 +185,7 @@ const Overview: React.FC<Props> = memo(({
     if (userInfo && Array.isArray(userInfo?.stops)) {
       let obj = []
       obj.push({ reason: 'run', value: dayjs.duration(userInfo?.runtime || 0).asMilliseconds(), count: Number(userInfo?.starts) })
+
       for (let stop of userInfo?.stops) {
         obj.push({ reason: Object.keys(stop)[0], value: dayjs.duration(stop[Object.keys(stop)[0]]['dur']).asMilliseconds(), count: stop[Object.keys(stop)[0]]['total'] })
       }
