@@ -627,11 +627,7 @@ from
         then round(ppicks)
         when not (timestamp &< tstzrange(dates.st, dates.et, '[)'))
         then
-        case when upper_inf(timestamp) then
-        ppicks
-        else
         floor(ppicks)
-        end
         else modelog.picks
         end
         ) as spicks,
