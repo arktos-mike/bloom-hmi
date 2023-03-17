@@ -325,7 +325,8 @@ from
 	lateral (
 	select
 		case
-			when upper_inf(timestamp) and current_timestamp>lower(timestamp) then
+			when upper_inf(timestamp)
+			and current_timestamp>lower(timestamp) then
             tstzrange(lower(timestamp),
 			current_timestamp,
 			'[)')
@@ -347,38 +348,31 @@ when (timestamp @> tstzrange(starttime, endtime, '[)'))
 then round(ppicks)
 when not (timestamp &< tstzrange(starttime, endtime, '[)'))
 then
-case when upper_inf(timestamp) and current_timestamp>lower(timestamp) then
-cpicks
-else
 floor(ppicks)
-end
 else modelog.picks
 end
 ) as spicks,
 	justify_hours(sum(dur)) as mototime,
 	count(*) as runstarts,
-		sum(case when upper_inf(timestamp) and durqs > exdurs then
-cpicks * 6000 /(planspeed * (durqs-exdurs))
-when durqs > exdurs then
+		sum(
 ppicks * 6000 /(planspeed * (durqs-exdurs))
-end ) as eff,
-	sum(case when upper_inf(timestamp) then
-cpicks /(100 * plandensity)
-else
+ ) as eff,
+	sum(
 ppicks /(100 * plandensity)
-end) as meter
+) as meter
 from
 		modelog,
 		lateral (
 	select
 		case
-			when upper_inf(timestamp) and current_timestamp>lower(timestamp) then
+			when upper_inf(timestamp)
+				and current_timestamp>lower(timestamp) then
             tstzrange(lower(timestamp),
-			current_timestamp,
-			'[)')
-			else
+				current_timestamp,
+				'[)')
+				else
             timestamp
-		end as tr) timerange,
+			end as tr) timerange,
 		lateral (
 	select
 		extract(epoch
@@ -394,7 +388,20 @@ from
 		dur) as durs) intsecduration,
 		lateral (
 	select
-		(durs / durrs) * modelog.picks as ppicks) partialpicks,
+		case
+			when upper_inf(timestamp)
+				and current_timestamp>lower(timestamp) then
+(durs / durrs) * (
+				select
+					val
+				from
+					tags
+				where
+					(tag->>'name' = 'picksLastRun'))
+				else
+(durs / durrs) * modelog.picks
+			end
+	 as ppicks) partialpicks,
 		lateral (
 	select
 		extract(epoch
@@ -417,32 +424,27 @@ from
 		lateral (
 		select
 			case
-				when upper_inf(timestamp) and current_timestamp>lower(timestamp) then
+				when upper_inf(timestamp)
+					and current_timestamp>lower(timestamp) then
               tstzrange(lower(timestamp),
-				current_timestamp,
-				'[)')
-				else
+					current_timestamp,
+					'[)')
+					else
               timestamp
-			end as ts) timeranges
+				end as ts) timeranges
 	where
 		tstzrange(starttime,
 		endtime,
 		'[)') && ts
 			and
     (modecode = 2
-				or modecode = 0 or modecode = 6)) normstop,
+				or modecode = 0
+				or modecode = 6)) normstop,
 	lateral (
 	select
 		coalesce((extract(epoch
 	from
-		exdur)), 0) as exdurs) normstopsecduration,
-		lateral (
-	select
-		val as cpicks
-	from
-		tags
-	where
-		(tag->>'name' = 'picksLastRun') ) currentpicks
+		exdur)), 0) as exdurs) normstopsecduration
 where
 		tstzrange(starttime,
 	endtime,
@@ -483,17 +485,17 @@ from
 	from
 		(
 	values (2,
-    'button'),
-    (6,
-      'fabric'),
-    (5,
-      'tool'),
-    (4,
-      'weft'),
-    (3,
-    'warp'),
-    (0,
-      'other') ) as t(num,
+	'button'),
+	(6,
+	'fabric'),
+	(5,
+	'tool'),
+	(4,
+	'weft'),
+	(3,
+	'warp'),
+	(0,
+	'other') ) as t(num,
 		stop) )
 	select
 		jsonb_agg(json_build_object(t.stop, json_build_object('total', total , 'dur', justify_hours(dur)))) as descrstop
@@ -508,13 +510,14 @@ from
 			lateral (
 			select
 				case
-					when upper_inf(timestamp) and current_timestamp>lower(timestamp) then
+					when upper_inf(timestamp)
+						and current_timestamp>lower(timestamp) then
                     tstzrange(lower(timestamp),
-					current_timestamp,
-					'[)')
-					else
+						current_timestamp,
+						'[)')
+						else
                     timestamp
-				end as tr) timerange
+					end as tr) timerange
 		where
 			tstzrange(starttime,
 			endtime,
@@ -590,7 +593,8 @@ from
 	lateral (
 	select
 			case
-				when upper_inf(timestamp) and current_timestamp>lower(timestamp) then
+				when upper_inf(timestamp)
+			and current_timestamp>lower(timestamp) then
               tstzrange(lower(timestamp),
 				current_timestamp,
 				'[)')
@@ -624,23 +628,19 @@ from
         when not (timestamp &< tstzrange(dates.st, dates.et, '[)'))
         then
         case when upper_inf(timestamp) then
-        cpicks
+        ppicks
         else
         floor(ppicks)
         end
         else modelog.picks
         end
         ) as spicks,
-		sum(case when upper_inf(timestamp) then
-        cpicks /(100 * plandensity)
-        else
+		sum(
         ppicks /(100 * plandensity)
-        end ) as meter,
-		sum(case when upper_inf(timestamp) then
-        cpicks * 6000 /(planspeed * durqs)
-        else
+        ) as meter,
+		sum(
         ppicks * 6000 /(planspeed * durqs)
-        end ) as eff,
+        ) as eff,
 		count(*) as runstarts,
 		justify_hours(sum(dur)) as mototime
 	from
@@ -648,13 +648,14 @@ from
 		lateral (
 		select
 			case
-				when upper_inf(timestamp) and current_timestamp>lower(timestamp) then
+				when upper_inf(timestamp)
+					and current_timestamp>lower(timestamp) then
               tstzrange(lower(timestamp),
-				current_timestamp,
-				'[)')
-				else
+					current_timestamp,
+					'[)')
+					else
               timestamp
-			end as tr) timerange,
+				end as tr) timerange,
 		lateral (
 		select
 			extract(epoch
@@ -670,19 +671,24 @@ from
 			dur) as durs) intsecduration,
 		lateral (
 		select
-			(durs / durrs) * modelog.picks as ppicks) partialpicks,
+			case
+				when upper_inf(timestamp)
+					and current_timestamp>lower(timestamp) then
+(durs / durrs) * (
+					select
+						val
+					from
+						tags
+					where
+						(tag->>'name' = 'picksLastRun'))
+					else
+(durs / durrs) * modelog.picks
+				end as ppicks) partialpicks,
 		lateral (
 		select
 			extract(epoch
 		from
-			(dates.et-dates.st)) as durqs) querysecduration,
-		lateral (
-		select
-			val as cpicks
-		from
-			tags
-		where
-			(tag->>'name' = 'picksLastRun') ) currentpicks
+			(dates.et-dates.st)) as durqs) querysecduration
 	where
 		tstzrange(dates.st,
 		dates.et,
@@ -729,16 +735,16 @@ from
 	values
 	(2,
 	'button'),
-  (6,
-    'fabric'),
-  (5,
-    'tool'),
-  (4,
-    'weft'),
-  (3,
+	(6,
+	'fabric'),
+	(5,
+	'tool'),
+	(4,
+	'weft'),
+	(3,
 	'warp'),
 	(0,
-    'other') ) as t(num,
+	'other') ) as t(num,
 		stop) )
 	select
 		jsonb_agg(json_build_object(t.stop, json_build_object('total', total , 'dur', justify_hours(dur)))) as descrstop
@@ -753,13 +759,14 @@ from
 			lateral (
 			select
 				case
-					when upper_inf(timestamp) and current_timestamp>lower(timestamp) then
+					when upper_inf(timestamp)
+						and current_timestamp>lower(timestamp) then
                     tstzrange(lower(timestamp),
-					current_timestamp,
-					'[)')
-					else
+						current_timestamp,
+						'[)')
+						else
                     timestamp
-				end as tr) timerange
+					end as tr) timerange
 		where
 			tstzrange(query.st,
 			query.et,

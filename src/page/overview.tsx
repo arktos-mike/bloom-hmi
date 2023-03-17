@@ -162,7 +162,10 @@ const Overview: React.FC<Props> = memo(({
 
   useEffect(() => {
     setUserInfo({ ...userInfo, name: info.weaver?.name, start: info.weaver?.logintime, end: info.dayinfo?.end, picks: info.userinfo?.picks, meters: info.userinfo?.meters, rpm: info.userinfo?.rpm, mph: info.userinfo?.mph, efficiency: info.userinfo?.efficiency });
-  }, [info?.userinfo, info.userinfo?.efficiency, info.weaver?.id && period, info.weaver?.logintime]);
+  }, [info?.userinfo, info.weaver?.id && period, info.weaver?.logintime]);
+
+  useEffect(() => {
+  }, [userInfo]);
 
   useEffect(() => {
     if (Array.isArray(userinfo?.stops) && (dayjs(userinfo?.start).isAfter(info?.weaver?.logintime) || info?.weaver?.logintime === undefined)) setUserInfo({ ...userInfo, picks: userinfo?.picks, meters: userinfo?.meters, rpm: userinfo?.rpm, mph: userinfo?.mph, efficiency: userinfo?.efficiency, starts: userinfo?.starts, duration: userinfo?.workdur, runtime: userinfo?.runtime, stops: userinfo?.stops });
@@ -172,28 +175,27 @@ const Overview: React.FC<Props> = memo(({
     if (mode?.val === undefined) { setMode({ val: modeCode?.val, updated: dayjs().subtract(2, 's') }) }
     if (Array.isArray(periodInfo?.stops)) {
       let obj = []
-      obj.push({ reason: 'run', value: dayjs.duration(periodInfo?.runtime || 0).asMilliseconds(), count: Number(periodInfo?.starts) })
+      obj.push({ reason: 'run', value: mode?.val == 1 ? dayjs.duration(periodInfo?.runtime).add((dayjs(mode?.updated).isBefore(dayjs(periodInfo?.start)) == true ? dayjs().diff(dayjs(periodInfo?.start)) : dayjs().diff(dayjs(mode?.updated)))).asMilliseconds() : dayjs.duration(periodInfo?.runtime).asMilliseconds(), count: Number(periodInfo?.starts) })
       for (let stop of periodInfo?.stops) {
-        obj.push({ reason: Object.keys(stop)[0], value: dayjs.duration(stop[Object.keys(stop)[0]]['dur']).asMilliseconds(), count: stop[Object.keys(stop)[0]]['total'] })
+        obj.push({ reason: Object.keys(stop)[0], value: mode?.val == stopNum(Object.keys(stop)[0]) ? dayjs.duration(stop[Object.keys(stop)[0]]['dur']).add((dayjs(mode?.updated).isBefore(dayjs(periodInfo?.start)) == true ? dayjs().diff(dayjs(periodInfo?.start)) : dayjs().diff(dayjs(mode?.updated)))).asMilliseconds() : dayjs.duration(stop[Object.keys(stop)[0]]['dur']).asMilliseconds(), count: stop[Object.keys(stop)[0]]['total'] })
       }
       setShiftDonut(obj);
     }
     return () => { }
-  }, [periodInfo?.runtime, periodInfo?.stops, period])
+  }, [periodInfo, period])
 
   useEffect(() => {
     if (userInfo && Array.isArray(userInfo?.stops)) {
       let obj = []
-      obj.push({ reason: 'run', value: dayjs.duration(userInfo?.runtime || 0).asMilliseconds(), count: Number(userInfo?.starts) })
-
+      obj.push({ reason: 'run', value: mode?.val == 1 ? dayjs.duration(userInfo?.runtime).add((dayjs(mode?.updated).isBefore(dayjs(userInfo?.start)) == true ? dayjs().diff(dayjs(userInfo?.start)) : dayjs().diff(dayjs(mode?.updated)))).asMilliseconds() : dayjs.duration(userInfo?.runtime).asMilliseconds(), count: Number(userInfo?.starts) })
       for (let stop of userInfo?.stops) {
-        obj.push({ reason: Object.keys(stop)[0], value: dayjs.duration(stop[Object.keys(stop)[0]]['dur']).asMilliseconds(), count: stop[Object.keys(stop)[0]]['total'] })
+        obj.push({ reason: Object.keys(stop)[0], value: mode?.val == stopNum(Object.keys(stop)[0]) ? dayjs.duration(stop[Object.keys(stop)[0]]['dur']).add((dayjs(mode?.updated).isBefore(dayjs(userInfo?.start)) == true ? dayjs().diff(dayjs(userInfo?.start)) : dayjs().diff(dayjs(mode?.updated)))).asMilliseconds() : dayjs.duration(stop[Object.keys(stop)[0]]['dur']).asMilliseconds(), count: stop[Object.keys(stop)[0]]['total'] })
       }
       setUserDonut(obj);
     }
     setLoading(false)
     return () => { }
-  }, [userInfo?.runtime, userInfo?.stops, period])
+  }, [userInfo, period])
 
   useEffect(() => {
     dayjs.locale(i18n.language == 'en' ? 'en-gb' : i18n.language)
