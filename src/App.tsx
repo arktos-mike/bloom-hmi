@@ -355,6 +355,7 @@ const App: React.FC = memo(() => {
     {
       tags: [],
       rolls: null,
+      modeCode: { val: 0, updated: '' },
       shift: { shiftname: '', shiftstart: '', shiftend: '', shiftdur: '' },
       lifetime: { type: '', serialno: '', mfgdate: '', picks: 0, cloth: 0, motor: '' },
       weaver: { id: '', name: '', logintime: '' },
