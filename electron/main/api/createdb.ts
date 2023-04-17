@@ -344,6 +344,7 @@ declare
 exdurs numeric;
 
 begin
+if starttime < current_timestamp then
 	exdurs :=(
 	with query as (
 select
@@ -513,6 +514,7 @@ from
 		where
 			modecode = t.num) stat) descrstops
 );
+end if;
 end;
 
 $function$
@@ -546,8 +548,9 @@ select
   data.runtime,
   data.stops
 from
-	dates,getstatinfo(st,
-	et) as data
+	dates,
+  lateral(select * from getstatinfo(st,
+    et) limit 1 ) data
 );
 end;
 
@@ -1013,9 +1016,9 @@ select
 	*
 from
 	t,
-	getuserstatinfo(t.userid,
-	starttime,
-	endtime));
+	lateral(select * from getuserstatinfo(t.userid,
+    starttime,
+    endtime) limit 1 ) data);
 end;
 
 $function$

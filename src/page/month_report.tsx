@@ -222,7 +222,7 @@ const MonthReport: React.FC<Props> = memo(({
       key: 'userid',
       ellipsis: true,
       width: '16%',
-      shouldCellUpdate: () => false,
+      //shouldCellUpdate: () => false,
       render: (_, record) => <><b>{(users?.filter((item: any) => item.id == record.userid))[0]['name']}</b><br />{period[0] && dayjs(period[0]).format('MMMM YYYY')}<br />{duration2text(dayjs.duration(record.workdur))}</>
     },
     {
@@ -233,7 +233,7 @@ const MonthReport: React.FC<Props> = memo(({
       sortOrder: sortedInfo.columnKey === 'picks' ? sortedInfo.order : null,
       ellipsis: true,
       width: '10%',
-      shouldCellUpdate: () => false,
+      //shouldCellUpdate: () => false,
       render: (_, record) => record.picks,
     },
     {
@@ -242,7 +242,7 @@ const MonthReport: React.FC<Props> = memo(({
       key: 'meters',
       ellipsis: true,
       width: '8%',
-      shouldCellUpdate: () => false,
+      //shouldCellUpdate: () => false,
       render: (_, record) => record?.meters && (Number(record?.meters).toFixed(2) + " " + t('tags.clothMeters.eng'))
     },
     {
@@ -251,7 +251,7 @@ const MonthReport: React.FC<Props> = memo(({
       key: 'rpm',
       ellipsis: true,
       width: '10%',
-      shouldCellUpdate: () => false,
+      //shouldCellUpdate: () => false,
       render: (_, record) => record?.rpm && (Number(record?.rpm).toFixed(1) + " " + t('tags.speedMainDrive.eng'))
     },
     {
@@ -260,7 +260,7 @@ const MonthReport: React.FC<Props> = memo(({
       key: 'mph',
       ellipsis: true,
       width: '8%',
-      shouldCellUpdate: () => false,
+      //shouldCellUpdate: () => false,
       render: (_, record) => record?.mph && (Number(record?.mph).toFixed(2) + " " + t('tags.speedCloth.eng'))
     },
     {
@@ -271,7 +271,7 @@ const MonthReport: React.FC<Props> = memo(({
       sortOrder: sortedInfo.columnKey === 'efficiency' ? sortedInfo.order : null,
       ellipsis: true,
       width: '10%',
-      shouldCellUpdate: () => false,
+      //shouldCellUpdate: () => false,
       render: (_, record) => <b>{record?.efficiency && (Number(record?.efficiency).toFixed(2) + " %")}</b>
     },
     {
@@ -279,7 +279,7 @@ const MonthReport: React.FC<Props> = memo(({
       dataIndex: 'starts',
       key: 'starts',
       ellipsis: true,
-      shouldCellUpdate: () => false,
+      //shouldCellUpdate: () => false,
       render: (_, record) => <div><Badge
         count={record.starts} overflowCount={999}
         style={{ backgroundColor: '#52c41a' }}
@@ -291,7 +291,7 @@ const MonthReport: React.FC<Props> = memo(({
       dataIndex: 'stops',
       key: 'stops',
       ellipsis: true,
-      shouldCellUpdate: () => false,
+      //shouldCellUpdate: () => false,
       render: (_, record) => <div><Badge
         count={stopsAgg(record?.stops).total} overflowCount={999}
         style={{ backgroundColor: '#1890ff' }}

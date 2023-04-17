@@ -47,7 +47,7 @@ const Overview: React.FC<Props> = memo(({
   const [height, setHeight] = useState<number | undefined>(0)
   const [loading, setLoading] = useState(true)
   const [periodInfo, setPeriodInfo] = useState<any>((period == 'day' || ((!fullinfo?.shift?.shiftstart || !fullinfo?.shift?.shiftend) && period == 'shift')) ? { name: dayjs(fullinfo?.dayinfo?.start).format('LL'), start: fullinfo?.dayinfo?.start, end: fullinfo?.dayinfo?.end, duration: '', picks: fullinfo?.dayinfo?.picks, meters: fullinfo?.dayinfo?.meters, rpm: fullinfo?.dayinfo?.rpm, mph: fullinfo?.dayinfo?.mph, efficiency: fullinfo?.dayinfo?.efficiency, starts: fullinfo?.dayinfo?.starts, runtime: fullinfo?.dayinfo?.runtime, stops: fullinfo?.dayinfo?.stops } : (period == 'shift') ? { name: t('shift.shift') + ' ' + fullinfo?.shift?.shiftname, start: fullinfo?.shift?.shiftstart, end: fullinfo?.shift?.shiftend, duration: fullinfo?.shift?.shiftdur, picks: fullinfo?.shiftinfo?.picks, meters: fullinfo?.shiftinfo?.meters, rpm: fullinfo?.shiftinfo?.rpm, mph: fullinfo?.shiftinfo?.mph, efficiency: fullinfo?.shiftinfo?.efficiency, starts: fullinfo?.shiftinfo?.starts, runtime: fullinfo?.shiftinfo?.runtime, stops: fullinfo?.shiftinfo?.stops } : (period == 'month') ? { name: dayjs(fullinfo?.monthinfo?.start).format('MMMM YYYY'), start: fullinfo?.monthinfo?.start, end: fullinfo?.monthinfo?.end, duration: '', picks: fullinfo?.monthinfo?.picks, meters: fullinfo?.monthinfo?.meters, rpm: fullinfo?.monthinfo?.rpm, mph: fullinfo?.monthinfo?.mph, efficiency: fullinfo?.monthinfo?.efficiency, starts: fullinfo?.monthinfo?.starts, runtime: fullinfo?.monthinfo?.runtime, stops: fullinfo?.monthinfo?.stops } : {})
-  const [userInfo, setUserInfo] = useState<any>(dayjs(modeCode?.updated).isBefore(dayjs(userinfo?.start)) == true ? { name: info.weaver?.name, duration: userinfo?.workdur, start: info.weaver?.logintime, end: info.dayinfo?.end, picks: info.userinfo?.picks, meters: info.userinfo?.meters, rpm: info.userinfo?.rpm, mph: info.userinfo?.mph, efficiency: info.userinfo?.efficiency, starts: userinfo?.starts, runtime: userinfo?.runtime, stops: userinfo?.stops } : { name: fullinfo?.weaver?.name, start: fullinfo?.weaver?.logintime, end: fullinfo?.dayinfo?.end, duration: fullinfo?.userinfo?.workdur, picks: fullinfo?.userinfo?.picks, meters: fullinfo?.userinfo?.meters, rpm: fullinfo?.userinfo?.rpm, mph: fullinfo?.userinfo?.mph, efficiency: fullinfo?.userinfo?.efficiency, starts: fullinfo?.userinfo?.starts, runtime: fullinfo?.userinfo?.runtime, stops: fullinfo?.userinfo?.stops })
+  const [userInfo, setUserInfo] = useState<any>((dayjs(modeCode?.updated).isBefore(dayjs(userinfo?.start)) == true) ? { name: info.weaver?.name, duration: userinfo?.workdur, start: info.weaver?.logintime, end: info.dayinfo?.end, picks: info.userinfo?.picks, meters: info.userinfo?.meters, rpm: info.userinfo?.rpm, mph: info.userinfo?.mph, efficiency: info.userinfo?.efficiency, starts: userinfo?.starts, runtime: userinfo?.runtime, stops: userinfo?.stops } : { name: fullinfo?.weaver?.name, start: fullinfo?.weaver?.logintime, end: fullinfo?.dayinfo?.end, duration: fullinfo?.userinfo?.workdur, picks: fullinfo?.userinfo?.picks, meters: fullinfo?.userinfo?.meters, rpm: fullinfo?.userinfo?.rpm, mph: fullinfo?.userinfo?.mph, efficiency: fullinfo?.userinfo?.efficiency, starts: fullinfo?.userinfo?.starts, runtime: fullinfo?.userinfo?.runtime, stops: fullinfo?.userinfo?.stops })
   const [userDonut, setUserDonut] = useState([] as any)
   const [userDonutSel, setUserDonutSel] = useState({ run: true, other: true, button: true, warp: true, weft: true, tool: true, fabric: true } as any)
   const [shiftDonut, setShiftDonut] = useState([] as any)
@@ -147,11 +147,6 @@ const Overview: React.FC<Props> = memo(({
   }, [])
 
   useEffect(() => {
-    console.log(userInfo)
-    return () => { }
-  }, [userInfo])
-
-  useEffect(() => {
     //fullinfo?.modeCode && setMode({ val: fullinfo?.modeCode?.val, updated: dayjs(fullinfo?.modeCode?.updated) })
     if (period == 'day' || ((!fullinfo?.shift?.shiftstart || !fullinfo?.shift?.shiftend) && period == 'shift')) setPeriodInfo({ name: dayjs(fullinfo?.dayinfo?.start).format('LL'), start: fullinfo?.dayinfo?.start, end: fullinfo?.dayinfo?.end, duration: '', picks: fullinfo?.dayinfo?.picks, meters: fullinfo?.dayinfo?.meters, rpm: fullinfo?.dayinfo?.rpm, mph: fullinfo?.dayinfo?.mph, efficiency: fullinfo?.dayinfo?.efficiency, starts: fullinfo?.dayinfo?.starts, runtime: fullinfo?.dayinfo?.runtime, stops: fullinfo?.dayinfo?.stops });
     else if (period == 'shift') setPeriodInfo({ name: t('shift.shift') + ' ' + fullinfo?.shift?.shiftname, start: fullinfo?.shift?.shiftstart, end: fullinfo?.shift?.shiftend, duration: fullinfo?.shift?.shiftdur, picks: fullinfo?.shiftinfo?.picks, meters: fullinfo?.shiftinfo?.meters, rpm: fullinfo?.shiftinfo?.rpm, mph: fullinfo?.shiftinfo?.mph, efficiency: fullinfo?.shiftinfo?.efficiency, starts: fullinfo?.shiftinfo?.starts, runtime: fullinfo?.shiftinfo?.runtime, stops: fullinfo?.shiftinfo?.stops });
@@ -189,6 +184,7 @@ const Overview: React.FC<Props> = memo(({
   }, [periodInfo, period])
 
   useEffect(() => {
+    if (userInfo.stops === undefined) setUserInfo({ ...userInfo, duration: fullinfo?.userinfo?.workdur, starts: fullinfo?.userinfo?.starts, runtime: fullinfo?.userinfo?.runtime, stops: fullinfo?.userinfo?.stops });
     if (userInfo && Array.isArray(userInfo?.stops)) {
       let obj = []
       obj.push({ reason: 'run', value: modeCode?.val == 1 ? dayjs.duration(userInfo?.runtime).add((dayjs(modeCode?.updated).isBefore(dayjs(userInfo?.start)) == true ? dayjs().diff(dayjs(userInfo?.start)) : dayjs().diff(dayjs(modeCode?.updated)))).asMilliseconds() : dayjs.duration(userInfo?.runtime).asMilliseconds(), count: Number(userInfo?.starts) })
@@ -302,7 +298,7 @@ const Overview: React.FC<Props> = memo(({
                             </Form.Item>
                           </Form>
                           <div style={{ width: '20%', height: height && height / 4 }}>
-                            <Donut data={shiftDonut} selected={shiftDonutSel} text={periodInfo?.efficiency && (Number(Number(periodInfo?.efficiency).toFixed(periodInfo?.efficiency < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng'))} />
+                            <Donut data={shiftDonut} selected={shiftDonutSel} text={periodInfo?.efficiency ? (Number(Number(periodInfo?.efficiency).toFixed(periodInfo?.efficiency < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng')) : '0' + t('tags.efficiency.eng')} />
                           </div></div>
                       </Skeleton>
                     </Card>
@@ -355,7 +351,7 @@ const Overview: React.FC<Props> = memo(({
                             </Form.Item>
                           </Form>
                           <div style={{ width: '20%', height: height && height / 4 }}>
-                            <Donut data={userDonut} selected={userDonutSel} text={t('user.weaver') + '\n' + (userInfo && (Number(Number(userInfo?.efficiency).toFixed(userInfo?.efficiency < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng')))} />
+                            <Donut data={userDonut} selected={userDonutSel} text={t('user.weaver') + '\n' + (userInfo?.efficiency ? (Number(Number(userInfo?.efficiency).toFixed(userInfo?.efficiency < 10 ? 2 : 1)).toLocaleString(i18n.language) + t('tags.efficiency.eng')) : '0' + t('tags.efficiency.eng'))} />
                           </div></div>
                       </Skeleton>
                     </Card>
