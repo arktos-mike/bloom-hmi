@@ -29,16 +29,18 @@ CREATE TABLE IF NOT EXISTS users (
     role text
   );
 CREATE TABLE IF NOT EXISTS modelog (
-    timestamp tstzrange PRIMARY KEY not null default tstzrange(current_timestamp,NULL,'[)'),
-    modecode NUMERIC not null,
+    timestamp tstzrange not null default tstzrange(current_timestamp,NULL,'[)'),
+    modecode NUMERIC PRIMARY KEY not null,
     picks NUMERIC,
     planspeed NUMERIC default NULL,
     plandensity NUMERIC default NULL
   );
 CREATE INDEX IF NOT EXISTS modelog_tstzrange_idx ON modelog USING GIST (timestamp);
-CREATE INDEX IF NOT EXISTS modelog_modecode ON modelog (modecode);
+CREATE INDEX IF NOT EXISTS modelog_tstzrange_lower_idx ON modelog USING btree (lower(timestamp));
+CREATE INDEX IF NOT EXISTS modelog_tstzrange_upper_idx ON modelog USING btree (upper(timestamp));
+CREATE INDEX IF NOT EXISTS modelog_tstzrange_upperinf_idx ON modelog USING btree (upper_inf(timestamp));
 CREATE TABLE IF NOT EXISTS userlog (
-  timestamp tstzrange PRIMARY KEY not null default tstzrange(current_timestamp,NULL,'[)'),
+  timestamp tstzrange not null default tstzrange(current_timestamp,NULL,'[)'),
   id NUMERIC,
   name text not null,
   role text,
@@ -311,7 +313,7 @@ CREATE OR REPLACE FUNCTION picksUpdate()
  LANGUAGE plpgsql
 AS $function$
   begin
-IF (select val from	tags where (tag->>'name' = 'modeCode')) <> 1 AND new.val is not null then
+IF (select val from	tags where (tag->>'name' = 'modeCode')) <> 1 AND new.val is not null AND new.val > 1 then
 UPDATE
   modelog
 SET
@@ -338,13 +340,18 @@ runtime interval,
 stops jsonb)
  language plpgsql
 as $function$
+declare
+exdurs numeric;
+
 begin
-if exists (
+	exdurs :=(
+	with query as (
 select
-	*
+	modecode,
+	upper(ts * tstzrange(starttime, endtime, '[)')) - lower(ts * tstzrange(starttime, endtime, '[)')) as dur
 from
 	modelog,
-	lateral (
+	lateral(
 	select
 		case
 			when upper_inf(timestamp)
@@ -354,37 +361,38 @@ from
 			'[)')
 			else
             timestamp
-		end as tr) timerange
+		end as ts
+	) newtimestamp
 where
 	tstzrange(starttime,
 	endtime,
-	'[)') && tr
-) then
-return QUERY (
-with query as (
+	'[)') && timestamp
+)
 select
-		sum(
-case when not (timestamp &> tstzrange(starttime, endtime, '[)'))
-then ceil(ppicks)
-when (timestamp @> tstzrange(starttime, endtime, '[)'))
-then round(ppicks)
-when not (timestamp &< tstzrange(starttime, endtime, '[)'))
-then
-floor(ppicks)
-else modelog.picks
-end
-) as spicks,
-	justify_hours(sum(dur)) as mototime,
-	count(*) as runstarts,
-		sum(
-ppicks * 6000 /(planspeed * (durqs-exdurs))
- ) as eff,
-	sum(
-ppicks /(100 * plandensity)
-) as meter
+	coalesce((extract(epoch
+	from
+		exdur)), 0) as exdurs
 from
-		modelog,
-		lateral (
+	lateral(
+	select
+		sum(dur) as exdur
+	from
+		query
+	where
+		modecode in (0, 2, 6)) normstop);
+
+return QUERY (
+with aquery as (
+select
+	ts as timestamp,
+	modecode,
+	plandensity,
+	planspeed,
+	modelog.picks,
+	up - low as dur
+from
+	modelog,
+	lateral(
 	select
 		case
 			when upper_inf(timestamp)
@@ -394,111 +402,84 @@ from
 				'[)')
 				else
             timestamp
-			end as tr) timerange,
-		lateral (
+			end as ts
+	) newtimestamp,
+	lateral (
+	select
+		lower(ts * tstzrange(starttime, endtime, '[)')) as low) low,
+	lateral (
+	select
+		upper(ts * tstzrange(starttime, endtime, '[)')) as up) up
+where
+	tstzrange(starttime,
+	endtime,
+	'[)') && timestamp
+),
+bigquery as (
+select
+	sum(ppicks) as spicks,
+	justify_hours(sum(dur)) as mototime,
+	count(*) as runstarts,
+	sum(
+ppicks * 6000 /(planspeed * (durqs-exdurs))
+ ) as eff,
+	sum(
+ppicks /(100 * plandensity)
+) as meter
+from
+	aquery,
+	lateral (
 	select
 		extract(epoch
 	from
-		(upper(tr)-lower(tr))) as durrs) rowsecduration,
-		lateral (
-	select
-		upper(tr * tstzrange(starttime, endtime, '[)'))-lower(tr * tstzrange(starttime, endtime, '[)')) as dur) intduration,
-		lateral (
+		(upper(timestamp)-lower(timestamp))) as durrs) rowsecduration,
+	lateral (
 	select
 		extract(epoch
 	from
 		dur) as durs) intsecduration,
-		lateral (
+	lateral (
 	select
-		case
-			when upper_inf(timestamp)
-				and current_timestamp>lower(timestamp) then
-(durs / durrs) * (
-				select
-					val
-				from
-					tags
-				where
-					(tag->>'name' = 'picksLastRun'))
-				else
-(durs / durrs) * modelog.picks
-			end
+		(durs / durrs) * aquery.picks
 	 as ppicks) partialpicks,
-		lateral (
+	lateral (
 	select
 		extract(epoch
 	from
-		case
-			when (endtime > current_timestamp)
-				and (starttime < current_timestamp) then
-  (current_timestamp-starttime)
-				when (endtime > current_timestamp)
-					and (starttime > current_timestamp) then
-  null
-					else
-  (endtime-starttime)
-				end) as durqs) querysecduration,
-		lateral(
-	select
-		sum((select upper(ts * tstzrange(starttime, endtime, '[)'))-lower(ts * tstzrange(starttime, endtime, '[)')))) as exdur
-	from
-		modelog,
-		lateral (
+		(
 		select
-			case
-				when upper_inf(timestamp)
-					and current_timestamp>lower(timestamp) then
-              tstzrange(lower(timestamp),
-					current_timestamp,
-					'[)')
-					else
-              timestamp
-				end as ts) timeranges
-	where
-		tstzrange(starttime,
-		endtime,
-		'[)') && ts
-			and
-    (modecode = 2
-				or modecode = 0
-				or modecode = 6)) normstop,
-	lateral (
-	select
-		coalesce((extract(epoch
-	from
-		exdur)), 0) as exdurs) normstopsecduration
+			sum(dur)
+		from
+			aquery)) as durqs) querysecduration
 where
-		tstzrange(starttime,
-	endtime,
-	'[)') && tr
-		and modecode = 1
+	modecode = 1
 )
 select
-	query.spicks::numeric,
-	query.meter::numeric,
+	round(bigquery.spicks::numeric),
+	bigquery.meter::numeric,
 	speedMainDrive::numeric,
 	speedCloth::numeric,
-	query.eff::numeric,
-	query.runstarts::numeric,
-	query.mototime,
+	bigquery.eff::numeric,
+	bigquery.runstarts::numeric,
+	bigquery.mototime,
 	descrstop
 from
-	query,
+	bigquery,
 	lateral(
 	select
-		round((query.spicks * 60)/(
+		round((bigquery.spicks * 60)/(
         select
           extract(epoch
         from
-          query.mototime) )) as speedMainDrive
+          bigquery.mototime) )) as speedMainDrive
     ) speedMainDrive,
 	lateral(
 	select
-		query.meter /(
+		bigquery.meter /(
 		select
 			extract(epoch
 		from
-			query.mototime)/ 3600 ) as speedCloth) speedCloth,
+			bigquery.mototime)/ 3600 ) as speedCloth) speedCloth,
 	lateral (
       with t(num,
 	stop) as (
@@ -526,27 +507,12 @@ from
 		lateral(
 		select
 			count(*) as total,
-			sum((select upper(tr * tstzrange(starttime, endtime, '[)'))-lower(tr * tstzrange(starttime, endtime, '[)')))) as dur
+			sum(aquery.dur) as dur
 		from
-			modelog,
-			lateral (
-			select
-				case
-					when upper_inf(timestamp)
-						and current_timestamp>lower(timestamp) then
-                    tstzrange(lower(timestamp),
-						current_timestamp,
-						'[)')
-						else
-                    timestamp
-					end as tr) timerange
+			aquery
 		where
-			tstzrange(starttime,
-			endtime,
-			'[)') && tr
-				and modecode = t.num) stat) descrstops
+			modecode = t.num) stat) descrstops
 );
-end if;
 end;
 
 $function$
@@ -605,8 +571,7 @@ stops jsonb)
 as $function$
 begin
 return QUERY (
-with query as (
-  with dates as (
+with dates as (
 select
 	lower(tstzrange(stime, etime, '[)') * tr) as st,
 	upper(tstzrange(stime, etime, '[)') * tr) as et
@@ -614,14 +579,14 @@ from
 	userlog,
 	lateral (
 	select
-			case
-				when upper_inf(timestamp)
-			and current_timestamp>lower(timestamp) then
-              tstzrange(lower(timestamp),
+		case
+			when upper_inf(userlog.timestamp)
+			and current_timestamp>lower(userlog.timestamp) then
+              tstzrange(lower(userlog.timestamp),
 				current_timestamp,
 				'[)')
 			else
-              timestamp
+              userlog.timestamp
 		end as tr) timerange
 where
 	id = userid
@@ -629,129 +594,144 @@ where
 	and tstzrange(stime,
 	etime,
 	'[)') && tr
-    )
+    ),
+query as (
 select
-	dates.st as st,
-	dates.et as et,
-	spicks,
-	meter,
-	eff,
-	runstarts,
-	mototime
+	ts as timestamp,
+	low,
+	up,
+	tstzrange(dates.st,
+	dates.et ,
+	'[)') as usertr,
+	modecode,
+	plandensity,
+	planspeed,
+	modelog.picks,
+	up - low as dur
 from
+	modelog,
 	dates,
+	lateral(
+	select
+		case
+			when upper_inf(timestamp)
+				and current_timestamp>lower(timestamp) then
+            tstzrange(lower(timestamp),
+				current_timestamp,
+				'[)')
+				else
+            timestamp
+			end as ts
+	) newtimestamp,
 	lateral (
 	select
-		sum(
-        case when not (timestamp &> tstzrange(dates.st, dates.et, '[)'))
-        then ceil(ppicks)
-        when (timestamp @> tstzrange(dates.st, dates.et, '[)'))
-        then round(ppicks)
-        when not (timestamp &< tstzrange(dates.st, dates.et, '[)'))
-        then
-        floor(ppicks)
-        else modelog.picks
-        end
-        ) as spicks,
-		sum(
-        ppicks /(100 * plandensity)
-        ) as meter,
-		sum(
-        ppicks * 6000 /(planspeed * durqs)
-        ) as eff,
-		count(*) as runstarts,
-		justify_hours(sum(dur)) as mototime
-	from
-		modelog,
-		lateral (
-		select
-			case
-				when upper_inf(timestamp)
-					and current_timestamp>lower(timestamp) then
-              tstzrange(lower(timestamp),
-					current_timestamp,
-					'[)')
-					else
-              timestamp
-				end as tr) timerange,
-		lateral (
-		select
-			extract(epoch
-		from
-			(upper(tr)-lower(tr))) as durrs) rowsecduration,
-		lateral (
-		select
-			upper(tr * tstzrange(dates.st, dates.et, '[)'))-lower(tr * tstzrange(dates.st, dates.et, '[)')) as dur) intduration,
-		lateral (
-		select
-			extract(epoch
-		from
-			dur) as durs) intsecduration,
-		lateral (
-		select
-			case
-				when upper_inf(timestamp)
-					and current_timestamp>lower(timestamp) then
-(durs / durrs) * (
-					select
-						val
-					from
-						tags
-					where
-						(tag->>'name' = 'picksLastRun'))
-					else
-(durs / durrs) * modelog.picks
-				end as ppicks) partialpicks,
-		lateral (
-		select
-			extract(epoch
-		from
-			(dates.et-dates.st)) as durqs) querysecduration
-	where
-		tstzrange(dates.st,
-		dates.et,
-		'[)') && tr
-			and modecode = 1
-	) modedata
-
-)
+		lower(ts * tstzrange(dates.st, dates.et, '[)')) as low) low,
+	lateral (
+	select
+		upper(ts * tstzrange(dates.st, dates.et, '[)')) as up) up
+where
+	tstzrange(dates.st,
+	dates.et,
+	'[)') && timestamp
+),
+bigquery as (
 select
-	query.st,
-	query.et,
-	query.spicks::numeric,
-	query.meter::numeric,
-	speedMainDrive::numeric,
-	speedCloth::numeric,
-	query.eff::numeric,
-	query.runstarts::numeric,
-	query.mototime,
-	descrstop
+	ppicks as spicks,
+	timestamp,
+	usertr,
+	modecode,
+	plandensity,
+	planspeed,
+	query.picks,
+	dur,
+	ppicks /(100 * plandensity) as meter,
+	planspeed * extract(epoch
+from
+	dur)/ 60 as planpicks
 from
 	query,
-	lateral(
-	select
-		round((query.spicks * 60)/(
-        select
-          extract(epoch
-        from
-          query.mototime) )) as speedMainDrive
-    ) speedMainDrive,
-	lateral(
-	select
-		query.meter /(
-		select
-			extract(epoch
-		from
-			query.mototime)/ 3600 ) as speedCloth) speedCloth,
 	lateral (
-      with t(num,
+	select
+		extract(epoch
+	from
+		(upper(timestamp)-lower(timestamp))) as durrs) rowsecduration,
+	lateral (
+	select
+		extract(epoch
+	from
+		dur) as durs) intsecduration,
+	lateral (
+	select
+		(durs / durrs) * query.picks
+	 as ppicks) partialpicks
+),
+sftable as (
+select
+	modecode,
+	usertr,
+	sum(planpicks) as planpicks,
+	justify_hours(sum(dur)) as dur,
+	sum(spicks) filter (
+where
+	modecode = 1) as picks,
+	sum (meter) filter (
+where
+	modecode = 1) as meters,
+	round((sum(spicks) filter (where modecode = 1) * 60)/(extract(epoch from sum(dur) filter (where modecode = 1)))) as rpm,
+	(sum(meter) filter (
+where
+	modecode = 1))/(extract(epoch
+from
+	sum(dur) filter (
+where
+	modecode = 1))/ 3600 ) as mph,
+
+	count(distinct timestamp) as starts,
+	justify_hours(sum(dur)) as runtime
+from
+	bigquery
+group by
+	usertr,
+	modecode)
+select
+	distinct on
+	(usertr)
+lower(usertr) as starttime,
+	upper(usertr) as endtime,
+	round(sftable.picks),
+	sftable.meters,
+	sftable.rpm,
+	sftable.mph,
+	sftable.picks * 100 / ppicks as efficiency,
+	case
+		when sftable.picks is null then 0
+		else sftable.starts::numeric
+	end,
+	case
+		when sftable.picks is null then null
+		else sftable.runtime
+	end,
+	descrstop as stops
+from
+	sftable,
+	lateral (
+	select
+		usertr as crow) crow,
+	lateral(
+	select
+			sum(planpicks) as ppicks
+	from
+			sftable
+	where
+			usertr = crow) ppicks,
+	lateral (
+	with t(num,
 	stop) as (
 	select
 		*
 	from
 		(
-	values
-	(2,
+	values (2,
 	'button'),
 	(6,
 	'fabric'),
@@ -765,37 +745,30 @@ from
 	'other') ) as t(num,
 		stop) )
 	select
-		jsonb_agg(json_build_object(t.stop, json_build_object('total', total , 'dur', justify_hours(dur)))) as descrstop
+		jsonb_agg(json_build_object(t.stop, json_build_object('total', coalesce (total, 0) , 'dur', dur))) as descrstop
 	from
-		t,
-		lateral(
+		t
+	left join lateral(
 		select
-			count(*) as total,
-			sum((select upper(tr * tstzrange(query.st, query.et, '[)'))-lower(tr * tstzrange(query.st, query.et, '[)')))) as dur
+			sftable.starts as total,
+			sftable.runtime as dur
 		from
-			modelog,
-			lateral (
-			select
-				case
-					when upper_inf(timestamp)
-						and current_timestamp>lower(timestamp) then
-                    tstzrange(lower(timestamp),
-						current_timestamp,
-						'[)')
-						else
-                    timestamp
-					end as tr) timerange
+			sftable
 		where
-			tstzrange(query.st,
-			query.et,
-			'[)') && tr
-				and modecode = t.num) stat) descrstops
+			usertr = crow
+			and modecode = t.num) stat on
+		true) descrstops
+order by
+	usertr,
+	case
+		modecode when 1 then 1
+		else 2
+	end
 );
 end;
 
 $function$
 ;
-
 create or replace
 function getuserstatinfo(userid numeric,
 starttime timestamp with time zone,
@@ -812,66 +785,199 @@ stops jsonb)
  language plpgsql
 as $function$
 begin
-if exists (
-select
-	*
-from
-	userreport(userid,
-	starttime,
-	endtime)) then
 return QUERY (
-with periods as (
+with dates as (
 select
-	*
+	lower(tstzrange(starttime, endtime, '[)') * tr) as st,
+	upper(tstzrange(starttime, endtime, '[)') * tr) as et
 from
-	userreport(userid,
-	starttime,
-	endtime)
-)
+	userlog,
+	lateral (
+	select
+		case
+			when upper_inf(userlog.timestamp)
+			and current_timestamp>lower(userlog.timestamp) then
+              tstzrange(lower(userlog.timestamp),
+			current_timestamp,
+			'[)')
+			else
+              userlog.timestamp
+		end as tr) timerange
+where
+	id = userid
+	and role = 'weaver'
+	and tstzrange(starttime,
+	endtime,
+	'[)') && tr
+    ),
+query as (
 select
-	justify_hours(sum(upper(tstzrange(periods.starttime, periods.endtime, '[)'))-lower(tstzrange(periods.starttime, periods.endtime, '[)')))),
-	sum(periods.picks),
-	sum(periods.meters),
-	round((sum(periods.picks) * 60)/(
-        select
-          extract(epoch
-        from
-          sum(periods.runtime)))),
-	sum(periods.meters)/(
+	ts as timestamp,
+	low,
+	up,
+	tstzrange(dates.st,
+	dates.et ,
+	'[)') as usertr,
+	modecode,
+	plandensity,
+	planspeed,
+	modelog.picks,
+	up - low as dur
+from
+	modelog,
+	dates,
+	lateral(
+	select
+		case
+			when upper_inf(timestamp)
+				and current_timestamp>lower(timestamp) then
+            tstzrange(lower(timestamp),
+				current_timestamp,
+				'[)')
+				else
+            timestamp
+			end as ts
+	) newtimestamp,
+	lateral (
+	select
+		lower(ts * tstzrange(dates.st, dates.et, '[)')) as low) low,
+	lateral (
+	select
+		upper(ts * tstzrange(dates.st, dates.et, '[)')) as up) up
+where
+	tstzrange(dates.st,
+	dates.et,
+	'[)') && timestamp
+),
+bigquery as (
+select
+	ppicks as spicks,
+	timestamp,
+	usertr,
+	modecode,
+	plandensity,
+	planspeed,
+	query.picks,
+	dur,
+	ppicks /(100 * plandensity) as meter,
+	planspeed * extract(epoch
+from
+	dur)/ 60 as planpicks
+from
+	query,
+	lateral (
 	select
 		extract(epoch
 	from
-		sum(periods.runtime))/ 3600 ) ,
-	sum(periods.picks) * 6000 / sum(periods.picks * 6000 / NULLIF(periods.efficiency,0)),
-	sum(periods.starts),
-	sum(periods.runtime),
-	(
+		(upper(timestamp)-lower(timestamp))) as durrs) rowsecduration,
+	lateral (
 	select
-		jsonb_agg(json_build_object(key, json_build_object('total', total , 'dur', dur)))
+		extract(epoch
+	from
+		dur) as durs) intsecduration,
+	lateral (
+	select
+		(durs / durrs) * query.picks
+	 as ppicks) partialpicks
+),
+sftable as (
+select
+	modecode,
+	sum(planpicks) as planpicks,
+	justify_hours(sum(dur)) as dur,
+	sum(spicks) filter (
+where
+	modecode = 1) as picks,
+	sum (meter) filter (
+where
+	modecode = 1) as meters,
+	round((sum(spicks) filter (where modecode = 1) * 60)/(extract(epoch from sum(dur) filter (where modecode = 1)))) as rpm,
+	(sum(meter) filter (
+where
+	modecode = 1))/(extract(epoch
+from
+	sum(dur) filter (
+where
+	modecode = 1))/ 3600 ) as mph,
+	count(distinct timestamp) as starts,
+	justify_hours(sum(dur)) as runtime
+from
+	bigquery
+group by
+	modecode)
+select
+	workdurs,
+	round(sftable.picks),
+	sftable.meters,
+	sftable.rpm,
+	sftable.mph,
+	sftable.picks * 100 / ppicks as efficiency,
+	case
+		when sftable.picks is null then 0
+		else sftable.starts::numeric
+	end,
+	case
+		when sftable.picks is null then null
+		else sftable.runtime
+	end,
+	descrstop as stops
+from
+	sftable,
+	lateral(
+	select
+		justify_hours(sum(et-st)) as workdurs
+	from
+		dates
+	) workdurs,
+	lateral(
+	select
+		sum(planpicks) as ppicks
+	from
+		sftable
+	) ppicks,
+	lateral (
+	 with t(num,
+	stop) as (
+	select
+		*
 	from
 		(
+	values (2,
+	'button'),
+	(6,
+	'fabric'),
+	(5,
+	'tool'),
+	(4,
+	'weft'),
+	(3,
+	'warp'),
+	(0,
+	'other') ) as t(num,
+		stop) )
+	select
+		jsonb_agg(json_build_object(t.stop, json_build_object('total', coalesce (total, 0) , 'dur', dur)) order by case
+		t.num when 2 then 1 when 6 then 2 when 5 then 3 when 4 then 4 when 4 then 5 when 3 then 6
+		else 7
+	end) as descrstop
+	from
+		t
+	left join lateral(
 		select
-			stopobj.key as key,
-			sum(((stopobj.value::jsonb->>'total')::numeric)) as total,
-			sum(((stopobj.value::jsonb->>'dur')::interval)) as dur
+			sftable.starts as total,
+			sftable.runtime as dur
 		from
-			periods,
-			lateral (
-			select
-				*
-			from
-				jsonb_array_elements(periods.stops)) stop ,
-			lateral (
-			select
-				*
-			from
-				jsonb_each_text(stop.value) ) stopobj
-		group by
-			key) descrstop)
-from
-	periods
+			sftable
+		where
+			modecode = t.num) stat on
+		true) descrstops
+order by
+	case
+		modecode when 1 then 1
+		else 2
+	end
+limit 1
 );
-end if;
 end;
 
 $function$
@@ -907,7 +1013,7 @@ select
 	*
 from
 	t,
-	public.getuserstatinfo(t.userid,
+	getuserstatinfo(t.userid,
 	starttime,
 	endtime));
 end;
@@ -987,8 +1093,8 @@ select
 	data.stops
 from
 	shifts,
-	getstatinfo(shifts.start,
-	shifts.end) as data
+	lateral(select * from getstatinfo(shifts.start,
+  shifts.end) limit 1 ) data
 );
 end;
 

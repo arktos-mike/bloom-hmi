@@ -269,6 +269,9 @@ const App: React.FC = memo(() => {
       //);
       setTags(json);
       let obj = json.find((o: any) => o['tag']['name'] == 'modeCode')
+      if (obj && (modeCode?.val === undefined || dayjs(obj['updated']).isAfter(dayjs(modeCode.updated)))) {
+        setModeCode({ val: obj['val'], updated: dayjs(obj['updated']) })
+      }
       obj && setModeCode({ val: obj['val'], updated: dayjs(obj['updated']) })
       postMessage({ payload: 'removeLoading' }, '*')
     }
@@ -405,7 +408,7 @@ const App: React.FC = memo(() => {
       rpm: 0,
       mph: 0,
       efficiency: 0,
-      start:'',
+      start: '',
       starts: 0,
       runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 },
       stops: {}
@@ -432,6 +435,12 @@ const App: React.FC = memo(() => {
   }, [fullinfo.tags]);
 
   useEffect(() => {
+    if (fullinfo.modeCode && (modeCode?.val === undefined || dayjs(fullinfo.modeCode['updated']).isAfter(dayjs(modeCode.updated)))) {
+      setModeCode({ val: fullinfo.modeCode['val'], updated: dayjs(fullinfo.modeCode['updated']) })
+    }
+  }, [fullinfo.modeCode]);
+
+  useEffect(() => {
     if (period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) { setPeriodName(dayjs(info.dayinfo?.start).format('LL')); setEfficiency(info.dayinfo?.efficiency); }
     else if (period == 'shift') { setPeriodName(t('shift.shift') + ' ' + info.shift?.shiftname); setEfficiency(info.shiftinfo?.efficiency); }
     else if (period == 'month') { setPeriodName(dayjs(info.monthinfo?.start).format('MMMM YYYY')); setEfficiency(info.monthinfo?.efficiency); }
@@ -442,7 +451,9 @@ const App: React.FC = memo(() => {
       const updatedTags = tags.map(obj => mon.find((o: any) => o['tag']!['name'] === obj['tag']['name']) || obj);
       setTags(updatedTags);
       let object = mon.find(o => o['tag']!['name'] == 'modeCode')
-      object && setModeCode({ val: object['val'], updated: dayjs(object['updated']) })
+      if (object && (modeCode?.val === undefined || dayjs(object['updated']).isAfter(dayjs(modeCode.updated)))) {
+        setModeCode({ val: object['val'], updated: dayjs(object['updated']) })
+      }
     }
   }, [mon]);
 
