@@ -29,7 +29,7 @@ const ModeLog: React.FC<Props> = ({
   const div = useRef<HTMLDivElement | null>(null);
   const { t, i18n } = useTranslation();
   const [data, setData] = useState();
-  const [period, setPeriod] = useState([null, null]);
+  const [period, setPeriod] = useState([dayjs().subtract(7, 'days'), dayjs()]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<TablePaginationConfig>({
     hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default', showSizeChanger: false
@@ -186,7 +186,7 @@ const ModeLog: React.FC<Props> = ({
       const response = await fetch('http://localhost:3000/logs/startstops', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
-        body: JSON.stringify({ start: period ? period[0] : dayjs().startOf('day'), end: period ? period[1] : dayjs() }),
+        body: JSON.stringify({ start: period ? period[0] : dayjs().subtract(7, 'days'), end: period ? period[1] : dayjs() }),
       });
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
@@ -199,6 +199,7 @@ const ModeLog: React.FC<Props> = ({
 
   useEffect(() => {
     setHeight(div.current?.offsetHeight ? div.current?.offsetHeight : 0)
+
     return () => { }
   }, [])
 
