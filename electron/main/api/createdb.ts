@@ -441,7 +441,19 @@ from
 		dur) as durs) intsecduration,
 	lateral (
 	select
-		(durs / durrs) * aquery.picks
+  case
+  when upper(timestamp)=current_timestamp
+    and current_timestamp>lower(timestamp) then
+(durs / durrs) * (
+    select
+      val
+    from
+      tags
+    where
+      (tag->>'name' = 'picksLastRun'))
+    else
+(durs / durrs) * aquery.picks
+  end
 	 as ppicks) partialpicks,
 	lateral (
 	select
@@ -665,7 +677,19 @@ from
 		dur) as durs) intsecduration,
 	lateral (
 	select
-		(durs / durrs) * query.picks
+  case
+  when upper(timestamp)=current_timestamp
+    and current_timestamp>lower(timestamp) then
+(durs / durrs) * (
+    select
+      val
+    from
+      tags
+    where
+      (tag->>'name' = 'picksLastRun'))
+    else
+(durs / durrs) * query.picks
+  end
 	 as ppicks) partialpicks
 ),
 sftable as (
@@ -880,7 +904,19 @@ from
 		dur) as durs) intsecduration,
 	lateral (
 	select
-		(durs / durrs) * query.picks
+  case
+  when upper(timestamp)=current_timestamp
+    and current_timestamp>lower(timestamp) then
+(durs / durrs) * (
+    select
+      val
+    from
+      tags
+    where
+      (tag->>'name' = 'picksLastRun'))
+    else
+(durs / durrs) * query.picks
+  end
 	 as ppicks) partialpicks
 ),
 sftable as (
