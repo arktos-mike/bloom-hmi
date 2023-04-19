@@ -272,7 +272,7 @@ const App: React.FC = memo(() => {
       if (obj && (modeCode?.val === undefined || dayjs(obj['updated']).isAfter(dayjs(modeCode.updated)))) {
         setModeCode({ val: obj['val'], updated: dayjs(obj['updated']) })
       }
-      obj && setModeCode({ val: obj['val'], updated: dayjs(obj['updated']) })
+      //obj && setModeCode({ val: obj['val'], updated: dayjs(obj['updated']) })
       postMessage({ payload: 'removeLoading' }, '*')
     }
     catch (error) { /*console.log(error);*/ }
