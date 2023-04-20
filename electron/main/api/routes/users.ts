@@ -137,7 +137,7 @@ router.post('/login', async (req, res) => {
             });
             info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['runtime'] = parseInterval(info.rows[0]['userinfo']['runtime']))
             info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['workdur'] = parseInterval(info.rows[0]['userinfo']['workdur']))
-            info.rows[0]['userinfo']['start'] = info.rows[0]['weaver']['logintime']
+            info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['start'] = info.rows[0]['weaver']['logintime'])
             await sse.send(info.rows[0]['userinfo'], 'userinfo', 'all');
           }
           res.status(200).json({
@@ -196,7 +196,7 @@ router.post('/login/:id', async (req, res) => {
         });
         info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['runtime'] = parseInterval(info.rows[0]['userinfo']['runtime']))
         info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['workdur'] = parseInterval(info.rows[0]['userinfo']['workdur']))
-        info.rows[0]['userinfo']['start'] = info.rows[0]['weaver']['logintime']
+        info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['start'] = info.rows[0]['weaver']['logintime'])
         await sse.send(info.rows[0]['userinfo'], 'userinfo', 'all');
       }
       res.status(200).json({
@@ -208,7 +208,7 @@ router.post('/login/:id', async (req, res) => {
     /*console.log(err);*/
     res.status(500).json({
       message: "notifications.dberror",
-      error: "Database error occurred while signing in!", //Database connection error
+      error: "Database error occurred while signing in!", //Database connection error,
     });
   };
 });
