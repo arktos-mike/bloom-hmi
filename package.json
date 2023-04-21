@@ -67,7 +67,7 @@
     "express-promise-router": "^4.1.1",
     "express-sse": "^0.5.3",
     "jsonwebtoken": "^8.5.1",
-    "modbus-serial": "github:yaacov/node-modbus-serial",
+    "modbus-serial": "^8.0.11",
     "network": "^0.6.1",
     "pg": "^8.7.3",
     "pg-types": "^4.0.0",
