@@ -305,28 +305,6 @@ end;
 $function$
 ;
 create trigger modeupdate before insert on modelog for row execute function modeupdate();
-DROP TRIGGER IF EXISTS picksChanged
-  ON tags;
-DROP FUNCTION IF EXISTS picksUpdate;
-CREATE OR REPLACE FUNCTION picksUpdate()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
-  begin
-IF (select val from	tags where (tag->>'name' = 'modeCode')) <> 1 AND new.val is not null AND new.val > 1 then
-UPDATE
-  modelog
-SET
-	picks = new.val
-where
-	upper(timestamp)=(select max(upper(timestamp)) from modelog WHERE modecode=1 ) ;
-end if;
-  return null;
-  end;
-
-  $function$
-;
-create trigger picksChanged after insert or update on tags for row when (new.tag->>'name'='picksLastRun') execute function picksUpdate();
 create or replace
 function getstatinfo(starttime timestamp with time zone,
 endtime timestamp with time zone)
