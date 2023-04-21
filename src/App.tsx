@@ -479,7 +479,7 @@ const App: React.FC = memo(() => {
 
   useEffect(() => {
     (async () => {
-      setToken(token);
+      //setToken(token);
       await checkShadowUser();
     })();
     return () => { }
