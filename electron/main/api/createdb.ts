@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS users (
   );
 CREATE TABLE IF NOT EXISTS modelog (
     timestamp tstzrange not null default tstzrange(current_timestamp,NULL,'[)'),
-    modecode NUMERIC PRIMARY KEY not null,
+    modecode NUMERIC not null,
     picks NUMERIC,
     planspeed NUMERIC default NULL,
     plandensity NUMERIC default NULL
