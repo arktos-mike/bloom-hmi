@@ -61,7 +61,9 @@ const UserReport: React.FC<Props> = memo(({
 
   const duration2text = (diff: any) => {
     if (diff == null) return null
-    return (diff.days() > 0 ? diff.days() + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + t('shift.secs') : "")
+    let durstr = (diff.days() > 0 ? diff.days() + " " + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + " " + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + " " + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + " " + t('shift.secs') : "")
+    if (durstr == "") durstr = "<1 " + t('shift.secs')
+    return durstr
   }
 
   const stopsAgg = (stops: any) => {
