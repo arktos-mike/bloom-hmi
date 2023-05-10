@@ -392,10 +392,207 @@ const writeModbusData = async function (tagName, val) {
     }
   }
 };
-const readModbusData = async function (client, port, slave) {
+const readModbusData = async function (client, port, slave, group) {
   await client.setID(slave.sId);
   let count = slave.tags.length;
-  await process(slave.tags[count - 1])
+  if (group == true) {
+    const arr = sortAndGroup(slave.tags)
+    if (arr.coils) {
+      try {
+        const data = await client.readCoils(arr.coils.addr, arr.coils.len);
+        port.mbsState = MBS_STATE_GOOD_READ;
+        mbsStatus = "success";
+        arr.coils.tags.forEach(async tag => {
+          let val = data.buffer[tag.addr - arr.coils?.addr];
+          const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false) RETURNING *;', [val, 'dev', slave.name, 'name', tag.name]);
+          if (rows[0] && rows[0]['tag']['group'] == 'event') {
+            sse.send(rows, 'tags', tag.name);
+          }
+          //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
+        }
+        );
+      } catch (e) {
+        port.mbsState = MBS_STATE_FAIL_READ;
+        mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]COILS" + " " + e.message;
+        console.log(mbsStatus);
+        arr.coils.tags.forEach(async tag => {
+          const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *', ['dev', slave.name, 'name', tag.name]);
+          if (rows[0]) {
+            sse.send(rows, 'tags', tag.name);
+          }
+        }
+        );
+      }
+    }
+    if (arr.discr) {
+      try {
+        const data = await client.readDiscreteInputs(arr.discr.addr, arr.discr.len);
+        port.mbsState = MBS_STATE_GOOD_READ;
+        mbsStatus = "success";
+        arr.discr.tags.forEach(async tag => {
+          let val = data.buffer[tag.addr - arr.discr?.addr];
+          const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false) RETURNING *;', [val, 'dev', slave.name, 'name', tag.name]);
+          if (rows[0] && rows[0]['tag']['group'] == 'event') {
+            sse.send(rows, 'tags', tag.name);
+          }
+          //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
+        }
+        );
+      } catch (e) {
+        port.mbsState = MBS_STATE_FAIL_READ;
+        mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]COILS" + " " + e.message;
+        console.log(mbsStatus);
+        arr.discr.tags.forEach(async tag => {
+          const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *', ['dev', slave.name, 'name', tag.name]);
+          if (rows[0]) {
+            sse.send(rows, 'tags', tag.name);
+          }
+        }
+        );
+      }
+    }
+    if (arr.hregs) {
+      try {
+        const data = await client.readHoldingRegisters(arr.hregs.addr, arr.hregs.len);
+        port.mbsState = MBS_STATE_GOOD_READ;
+        mbsStatus = "success";
+        arr.hregs.tags.forEach(async tag => {
+          const buf = data.buffer.slice((tag.addr - arr.hregs?.addr) * 2, (tag.addr - arr.hregs?.addr) * 2 + getByteLength(tag.type))
+          if (slave.swapBytes) { buf.swap16(); }
+          let val;
+          switch (tag.type) {
+            case 'dword':
+              val = slave.swapWords ? buf.readUInt32LE(0) : buf.readUInt32BE(0);
+              break;
+            case 'word':
+              val = slave.swapWords ? buf.readUInt16LE(0) : buf.readUInt16BE(0);
+              break;
+            case 'float':
+              val = slave.swapWords ? buf.readFloatLE(0) : buf.readFloatBE(0);
+              break;
+            default:
+              break;
+          }
+          const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND ( (round(val::numeric,(tag->>$6)::integer)) IS DISTINCT FROM (round($1::numeric,(tag->>$6)::integer)) OR link=false) RETURNING tag, (round(val::numeric,(tag->>$6)::integer)) as val, updated, link;', [val, 'dev', slave.name, 'name', tag.name, 'dec']);
+          if (rows[0] && rows[0]['tag']['group'] == 'event') {
+            sse.send(rows, 'tags', tag.name);
+          }
+          //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
+        }
+        );
+      } catch (e) {
+        port.mbsState = MBS_STATE_FAIL_READ;
+        arr.hregs.tags.forEach(async tag => {
+          //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
+          //console.log(mbsStatus);
+          const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING tag, (round(val::numeric,(tag->>$5)::integer)) as val, updated, link;', ['dev', slave.name, 'name', tag.name, 'dec']);
+          if (rows[0]) {
+            sse.send(rows, 'tags', tag.name);
+          }
+        }
+        );
+      }
+    }
+    if (arr.iregs) {
+      try {
+        const data = await client.readInputRegisters(arr.iregs.addr, arr.iregs.len);
+        port.mbsState = MBS_STATE_GOOD_READ;
+        mbsStatus = "success";
+        arr.iregs.tags.forEach(async tag => {
+          const buf = data.buffer.slice((tag.addr - arr.iregs?.addr) * 2, (tag.addr - arr.iregs?.addr) * 2 + getByteLength(tag.type))
+          if (slave.swapBytes) { buf.swap16(); }
+          let val;
+          switch (tag.type) {
+            case 'dword':
+              val = slave.swapWords ? buf.readUInt32LE(0) : buf.readUInt32BE(0);
+              break;
+            case 'word':
+              val = slave.swapWords ? buf.readUInt16LE(0) : buf.readUInt16BE(0);
+              break;
+            case 'float':
+              val = slave.swapWords ? buf.readFloatLE(0) : buf.readFloatBE(0);
+              break;
+            default:
+              break;
+          }
+          const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND ( (round(val::numeric,(tag->>$6)::integer)) IS DISTINCT FROM (round($1::numeric,(tag->>$6)::integer)) OR link=false) RETURNING tag, (round(val::numeric,(tag->>$6)::integer)) as val, updated, link;', [val, 'dev', slave.name, 'name', tag.name, 'dec']);
+          if (rows[0] && rows[0]['tag']['group'] == 'event') {
+            if (tag.name == 'modeCode') {
+              const info = await db.query('SELECT * FROM getcurrentinfo();');
+              info.rows[0]['userinfo'] && await info.rows[0]['userinfo']['stops'].map((row: any) => {
+                row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+              });
+              info.rows[0]['shiftinfo'] && await info.rows[0]['shiftinfo']['stops'].map((row: any) => {
+                row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+              });
+              info.rows[0]['dayinfo'] && await info.rows[0]['dayinfo']['stops'].map((row: any) => {
+                row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+              });
+              info.rows[0]['monthinfo'] && await info.rows[0]['monthinfo']['stops'].map((row: any) => {
+                row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+              });
+              info.rows[0]['shift'] && (info.rows[0]['shift']['shiftdur'] = parseInterval(info.rows[0]['shift']['shiftdur']))
+              info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['runtime'] = parseInterval(info.rows[0]['userinfo']['runtime']))
+              info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['workdur'] = parseInterval(info.rows[0]['userinfo']['workdur']))
+              info.rows[0]['shiftinfo'] && (info.rows[0]['shiftinfo']['runtime'] = parseInterval(info.rows[0]['shiftinfo']['runtime']))
+              info.rows[0]['dayinfo'] && (info.rows[0]['dayinfo']['runtime'] = parseInterval(info.rows[0]['dayinfo']['runtime']))
+              info.rows[0]['monthinfo'] && (info.rows[0]['monthinfo']['runtime'] = parseInterval(info.rows[0]['monthinfo']['runtime']))
+              info.rows[0]['lifetime'] && (info.rows[0]['lifetime']['motor'] = parseInterval(info.rows[0]['lifetime']['motor']))
+              info.rows[0]['modeCode'] = { val: rows[0]['val'], updated: rows[0]['updated'] }
+              await sse.send(info.rows[0], 'fullinfo', 'all');
+            }
+            await sse.send(rows, 'tags', tag.name);
+          }
+          //console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
+        }
+        );
+      } catch (e) {
+        port.mbsState = MBS_STATE_FAIL_READ;
+        arr.iregs.tags.forEach(async tag => {
+          //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
+          //console.log(mbsStatus);
+          //console.log(e);
+          if (tag.name == 'modeCode') {
+            const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false, val=0 where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *;', ['dev', slave.name, 'name', tag.name]);
+            if (rows[0]) {
+              sse.send(rows, 'tags', tag.name);
+            }
+          }
+          else {
+            const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING tag, (round(val::numeric,(tag->>$5)::integer)) as val, updated, link;', ['dev', slave.name, 'name', tag.name, 'dec']);
+            if (rows[0]) {
+              sse.send(rows, 'tags', tag.name);
+            }
+          }
+        });
+      }
+    }
+  }
+  else {
+    await process(slave.tags[count - 1])
+  }
+
+  function sortAndGroup(arr) {
+    const group1: any[] = [];
+    const group2: any[] = [];
+    const group3: any[] = [];
+    const group4: any[] = [];
+
+    arr.sort((a, b) => a.addr - b.addr);
+
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i].reg === 'r' && arr[i].type === 'bool') {
+        group1.push(arr[i]);
+      } else if (arr[i].reg === 'rw' && arr[i].type === 'bool') {
+        group2.push(arr[i]);
+      } else if (arr[i].reg === 'r' && arr[i].type !== 'bool') {
+        group3.push(arr[i]);
+      } else if (arr[i].reg === 'rw' && arr[i].type !== 'bool') {
+        group4.push(arr[i]);
+      }
+    }
+    return { ...(group1?.length > 0 && { discr: { tags: group1, addr: group1[0]?.addr, len: group1?.length } }), ...(group2?.length > 0 && { coils: { tags: group2, addr: group2[0]?.addr, len: group2?.length } }), ...(group3?.length > 0 && { iregs: { tags: group3, addr: group3[0]?.addr, len: group3[group3.length - 1]?.addr - group3[0]?.addr + getByteLength(group3[group3.length - 1]?.type) / 2 } }), ...(group4?.length > 0 && { hregs: { tags: group4, addr: group4[0]?.addr, len: group4[group4.length - 1]?.addr - group4[0]?.addr + getByteLength(group4[group4.length - 1]?.type) / 2 } }) };
+  }
   async function process(tag) {
     switch (tag.reg) {
       case 'rw':
@@ -530,7 +727,7 @@ const readModbusData = async function (client, port, slave) {
                   info.rows[0]['dayinfo'] && (info.rows[0]['dayinfo']['runtime'] = parseInterval(info.rows[0]['dayinfo']['runtime']))
                   info.rows[0]['monthinfo'] && (info.rows[0]['monthinfo']['runtime'] = parseInterval(info.rows[0]['monthinfo']['runtime']))
                   info.rows[0]['lifetime'] && (info.rows[0]['lifetime']['motor'] = parseInterval(info.rows[0]['lifetime']['motor']))
-                  info.rows[0]['modeCode'] = {val:rows[0]['val'], updated:rows[0]['updated']}
+                  info.rows[0]['modeCode'] = { val: rows[0]['val'], updated: rows[0]['updated'] }
                   await sse.send(info.rows[0], 'fullinfo', 'all');
                 }
                 await sse.send(rows, 'tags', tag.name);
@@ -591,11 +788,11 @@ const runModbus = async function (client, port) {
         break;
 
       case MBS_STATE_NEXT:
-        nextAction = await readModbusData(client, port, slave);
+        nextAction = await readModbusData(client, port, slave, true);
         break;
 
       case MBS_STATE_GOOD_CONNECT:
-        nextAction = writeTrig ? await writeModbusData(writeTag.name, writeTag.val) : await readModbusData(client, port, slave);
+        nextAction = writeTrig ? await writeModbusData(writeTag.name, writeTag.val) : await readModbusData(client, port, slave, true);
         break;
 
       case MBS_STATE_FAIL_CONNECT:
@@ -603,12 +800,12 @@ const runModbus = async function (client, port) {
         break;
       case MBS_STATE_GOOD_WRITE:
       case MBS_STATE_GOOD_READ:
-        nextAction = writeTrig ? await writeModbusData(writeTag.name, writeTag.val) : await readModbusData(client, port, slave);
+        nextAction = writeTrig ? await writeModbusData(writeTag.name, writeTag.val) : await readModbusData(client, port, slave, true);
         break;
 
       case MBS_STATE_FAIL_READ:
       case MBS_STATE_FAIL_WRITE:
-        if (client.isOpen) { port.mbsState = MBS_STATE_NEXT; nextAction = writeTrig ? await writeModbusData(writeTag.name, writeTag.val) : await readModbusData(client, port, slave); }
+        if (client.isOpen) { port.mbsState = MBS_STATE_NEXT; nextAction = writeTrig ? await writeModbusData(writeTag.name, writeTag.val) : await readModbusData(client, port, slave, true); }
         else { nextAction = await connectClient(client, port); }
         break;
 
