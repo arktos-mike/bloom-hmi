@@ -152,7 +152,7 @@ let com2 = { self: 'com2', path: '', conf: {}, scan: 0, timeout: 0, mbsState: MB
 let ip1 = { self: 'ip1', ip: '', port: '', path: '', scan: 0, timeout: 1000, mbsState: MBS_STATE_STEADY, slaves: Array() };
 
 //const arrayToObject = (arr, keyField) =>
-//  Object.assign({}, ...arr.map(item => ({ [item[keyField]]: item })))
+//  Object.assign({}, ...slave.mbarr.map(item => ({ [item[keyField]]: item })))
 let contype = ''
 
 const dbConf = async () => {
@@ -180,7 +180,7 @@ const dbConf = async () => {
     await db.query('DELETE FROM tags WHERE tag->>$1~$2', ['dev', 'rtu']);
     await db.query('INSERT INTO tags(tag,val,link) SELECT * FROM jsonb_to_recordset($1) as x(tag jsonb, val numeric, link boolean) ON CONFLICT (tag) DO NOTHING;', [JSON.stringify(tcpTags)])
     const ip1t = await db.query('SELECT tag->$3 as name, tag->$4 as addr, tag->$5 as type, tag->$6 as reg FROM tags WHERE tag->>$1=$2 ORDER BY tag->>$4 DESC ', ['dev', 'tcp1', 'name', 'addr', 'type', 'reg']);
-    ip1.slaves.push(Object.assign({ name: 'tcp1' }, tcpRows.rows[0].data['tcp1'], { tags: ip1t.rows }));
+    ip1.slaves.push(Object.assign({ name: 'tcp1' }, tcpRows.rows[0].data['tcp1'], { tags: ip1t.rows, mbarr: sortAndGroup(ip1t.rows)}));
     if (ip1.mbsState == MBS_STATE_STEADY && ip1.slaves.length > 0) {
       ip1.mbsState = MBS_STATE_INIT;
       runModbus(client3, ip1)
@@ -217,12 +217,12 @@ const dbConf = async () => {
         case "opCOM1":
           //const com1t = await db.query('SELECT tag->$5 as name, tag->$6 as addr, tag->$7 as type, tag->$8 as reg FROM tags WHERE tag->>$1=$2 AND tag->>$3=$4', ['dev', prop, 'group', 'monitoring', 'name', 'addr', 'type', 'reg']);
           const com1t = await db.query('SELECT tag->$3 as name, tag->$4 as addr, tag->$5 as type, tag->$6 as reg FROM tags WHERE tag->>$1=$2 ORDER BY tag->>$4 DESC ', ['dev', prop, 'name', 'addr', 'type', 'reg']);
-          com1.slaves.push(Object.assign({ name: prop }, rtuRows.rows[0].data[prop], { tags: com1t.rows }));
+          com1.slaves.push(Object.assign({ name: prop }, rtuRows.rows[0].data[prop], { tags: com1t.rows, mbarr: sortAndGroup(com1t.rows) }));
           break;
         case "opCOM2":
           //const com2t = await db.query('SELECT tag->$5 as name, tag->$6 as addr, tag->$7 as type, tag->$8 as reg FROM tags WHERE tag->>$1=$2 AND tag->>$3=$4', ['dev', prop, 'group', 'monitoring', 'name', 'addr', 'type', 'reg']);
           const com2t = await db.query('SELECT tag->$3 as name, tag->$4 as addr, tag->$5 as type, tag->$6 as reg FROM tags WHERE tag->>$1=$2 ORDER BY tag->>$4 DESC ', ['dev', prop, 'name', 'addr', 'type', 'reg']);
-          com2.slaves.push(Object.assign({ name: prop }, rtuRows.rows[0].data[prop], { tags: com2t.rows }));
+          com2.slaves.push(Object.assign({ name: prop }, rtuRows.rows[0].data[prop], { tags: com2t.rows, mbarr: sortAndGroup(com2t.rows) }));
           break;
         default:
         // nothing to do
@@ -396,14 +396,13 @@ const readModbusData = async function (client, port, slave, group) {
   await client.setID(slave.sId);
   let count = slave.tags.length;
   if (group == true) {
-    const arr = sortAndGroup(slave.tags)
-    if (arr.coils) {
+    if (slave.mbarr.coils) {
       try {
-        const data = await client.readCoils(arr.coils.addr, arr.coils.len);
+        const data = await client.readCoils(slave.mbarr.coils.addr, slave.mbarr.coils.len);
         port.mbsState = MBS_STATE_GOOD_READ;
         mbsStatus = "success";
-        arr.coils.tags.forEach(async tag => {
-          let val = data.buffer[tag.addr - arr.coils?.addr];
+        slave.mbarr.coils.tags.forEach(async tag => {
+          let val = data.buffer[tag.addr - slave.mbarr.coils?.addr];
           const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false) RETURNING *;', [val, 'dev', slave.name, 'name', tag.name]);
           if (rows[0] && rows[0]['tag']['group'] == 'event') {
             sse.send(rows, 'tags', tag.name);
@@ -415,7 +414,7 @@ const readModbusData = async function (client, port, slave, group) {
         port.mbsState = MBS_STATE_FAIL_READ;
         mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]COILS" + " " + e.message;
         console.log(mbsStatus);
-        arr.coils.tags.forEach(async tag => {
+        slave.mbarr.coils.tags.forEach(async tag => {
           const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *', ['dev', slave.name, 'name', tag.name]);
           if (rows[0]) {
             sse.send(rows, 'tags', tag.name);
@@ -424,13 +423,13 @@ const readModbusData = async function (client, port, slave, group) {
         );
       }
     }
-    if (arr.discr) {
+    if (slave.mbarr.discr) {
       try {
-        const data = await client.readDiscreteInputs(arr.discr.addr, arr.discr.len);
+        const data = await client.readDiscreteInputs(slave.mbarr.discr.addr, slave.mbarr.discr.len);
         port.mbsState = MBS_STATE_GOOD_READ;
         mbsStatus = "success";
-        arr.discr.tags.forEach(async tag => {
-          let val = data.buffer[tag.addr - arr.discr?.addr];
+        slave.mbarr.discr.tags.forEach(async tag => {
+          let val = data.buffer[tag.addr - slave.mbarr.discr?.addr];
           const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false) RETURNING *;', [val, 'dev', slave.name, 'name', tag.name]);
           if (rows[0] && rows[0]['tag']['group'] == 'event') {
             sse.send(rows, 'tags', tag.name);
@@ -442,7 +441,7 @@ const readModbusData = async function (client, port, slave, group) {
         port.mbsState = MBS_STATE_FAIL_READ;
         mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]COILS" + " " + e.message;
         console.log(mbsStatus);
-        arr.discr.tags.forEach(async tag => {
+        slave.mbarr.discr.tags.forEach(async tag => {
           const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *', ['dev', slave.name, 'name', tag.name]);
           if (rows[0]) {
             sse.send(rows, 'tags', tag.name);
@@ -451,13 +450,13 @@ const readModbusData = async function (client, port, slave, group) {
         );
       }
     }
-    if (arr.hregs) {
+    if (slave.mbarr.hregs) {
       try {
-        const data = await client.readHoldingRegisters(arr.hregs.addr, arr.hregs.len);
+        const data = await client.readHoldingRegisters(slave.mbarr.hregs.addr, slave.mbarr.hregs.len);
         port.mbsState = MBS_STATE_GOOD_READ;
         mbsStatus = "success";
-        arr.hregs.tags.forEach(async tag => {
-          const buf = data.buffer.slice((tag.addr - arr.hregs?.addr) * 2, (tag.addr - arr.hregs?.addr) * 2 + getByteLength(tag.type))
+        slave.mbarr.hregs.tags.forEach(async tag => {
+          const buf = data.buffer.slice((tag.addr - slave.mbarr.hregs?.addr) * 2, (tag.addr - slave.mbarr.hregs?.addr) * 2 + getByteLength(tag.type))
           if (slave.swapBytes) { buf.swap16(); }
           let val;
           switch (tag.type) {
@@ -482,7 +481,7 @@ const readModbusData = async function (client, port, slave, group) {
         );
       } catch (e) {
         port.mbsState = MBS_STATE_FAIL_READ;
-        arr.hregs.tags.forEach(async tag => {
+        slave.mbarr.hregs.tags.forEach(async tag => {
           //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
           //console.log(mbsStatus);
           const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING tag, (round(val::numeric,(tag->>$5)::integer)) as val, updated, link;', ['dev', slave.name, 'name', tag.name, 'dec']);
@@ -493,13 +492,13 @@ const readModbusData = async function (client, port, slave, group) {
         );
       }
     }
-    if (arr.iregs) {
+    if (slave.mbarr.iregs) {
       try {
-        const data = await client.readInputRegisters(arr.iregs.addr, arr.iregs.len);
+        const data = await client.readInputRegisters(slave.mbarr.iregs.addr, slave.mbarr.iregs.len);
         port.mbsState = MBS_STATE_GOOD_READ;
         mbsStatus = "success";
-        arr.iregs.tags.forEach(async tag => {
-          const buf = data.buffer.slice((tag.addr - arr.iregs?.addr) * 2, (tag.addr - arr.iregs?.addr) * 2 + getByteLength(tag.type))
+        slave.mbarr.iregs.tags.forEach(async tag => {
+          const buf = data.buffer.slice((tag.addr - slave.mbarr.iregs?.addr) * 2, (tag.addr - slave.mbarr.iregs?.addr) * 2 + getByteLength(tag.type))
           if (slave.swapBytes) { buf.swap16(); }
           let val;
           switch (tag.type) {
@@ -548,7 +547,7 @@ const readModbusData = async function (client, port, slave, group) {
         );
       } catch (e) {
         port.mbsState = MBS_STATE_FAIL_READ;
-        arr.iregs.tags.forEach(async tag => {
+        slave.mbarr.iregs.tags.forEach(async tag => {
           //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
           //console.log(mbsStatus);
           //console.log(e);
@@ -572,27 +571,6 @@ const readModbusData = async function (client, port, slave, group) {
     await process(slave.tags[count - 1])
   }
 
-  function sortAndGroup(arr) {
-    const group1: any[] = [];
-    const group2: any[] = [];
-    const group3: any[] = [];
-    const group4: any[] = [];
-
-    arr.sort((a, b) => a.addr - b.addr);
-
-    for (let i = 0; i < arr.length; i++) {
-      if (arr[i].reg === 'r' && arr[i].type === 'bool') {
-        group1.push(arr[i]);
-      } else if (arr[i].reg === 'rw' && arr[i].type === 'bool') {
-        group2.push(arr[i]);
-      } else if (arr[i].reg === 'r' && arr[i].type !== 'bool') {
-        group3.push(arr[i]);
-      } else if (arr[i].reg === 'rw' && arr[i].type !== 'bool') {
-        group4.push(arr[i]);
-      }
-    }
-    return { ...(group1?.length > 0 && { discr: { tags: group1, addr: group1[0]?.addr, len: group1?.length } }), ...(group2?.length > 0 && { coils: { tags: group2, addr: group2[0]?.addr, len: group2?.length } }), ...(group3?.length > 0 && { iregs: { tags: group3, addr: group3[0]?.addr, len: group3[group3.length - 1]?.addr - group3[0]?.addr + getByteLength(group3[group3.length - 1]?.type) / 2 } }), ...(group4?.length > 0 && { hregs: { tags: group4, addr: group4[0]?.addr, len: group4[group4.length - 1]?.addr - group4[0]?.addr + getByteLength(group4[group4.length - 1]?.type) / 2 } }) };
-  }
   async function process(tag) {
     switch (tag.reg) {
       case 'rw':
@@ -831,3 +809,25 @@ const runModbus = async function (client, port) {
   if ((port.ip && contype == 'ip') || (!port.ip && contype == 'com')) { runModbus(client, port); }
   else { port.mbsState = MBS_STATE_STEADY; (port.self == 'com1') && resetFlagCOM1(); (port.self == 'com2') && resetFlagCOM2(); (port.self == 'ip1') && resetFlagTCP1(); }
 };
+
+function sortAndGroup(arr) {
+  const group1: any[] = [];
+  const group2: any[] = [];
+  const group3: any[] = [];
+  const group4: any[] = [];
+
+  arr.sort((a, b) => a.addr - b.addr);
+
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i].reg === 'r' && arr[i].type === 'bool') {
+      group1.push(arr[i]);
+    } else if (arr[i].reg === 'rw' && arr[i].type === 'bool') {
+      group2.push(arr[i]);
+    } else if (arr[i].reg === 'r' && arr[i].type !== 'bool') {
+      group3.push(arr[i]);
+    } else if (arr[i].reg === 'rw' && arr[i].type !== 'bool') {
+      group4.push(arr[i]);
+    }
+  }
+  return { ...(group1?.length > 0 && { discr: { tags: group1, addr: group1[0]?.addr, len: group1?.length } }), ...(group2?.length > 0 && { coils: { tags: group2, addr: group2[0]?.addr, len: group2?.length } }), ...(group3?.length > 0 && { iregs: { tags: group3, addr: group3[0]?.addr, len: group3[group3.length - 1]?.addr - group3[0]?.addr + getByteLength(group3[group3.length - 1]?.type) / 2 } }), ...(group4?.length > 0 && { hregs: { tags: group4, addr: group4[0]?.addr, len: group4[group4.length - 1]?.addr - group4[0]?.addr + getByteLength(group4[group4.length - 1]?.type) / 2 } }) };
+}
