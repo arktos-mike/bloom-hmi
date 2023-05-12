@@ -62,7 +62,7 @@ const ModeLog: React.FC<Props> = ({
     return obj;
   }
   const duration2text = (start: any, end: any) => {
-    let diff = dayjs.duration(dayjs(end).diff(start))
+    let diff = dayjs.duration(dayjs(!end?dayjs():end).diff(start))
     let durstr = (diff.days() > 0 ? diff.days() + " " + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + " " + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + " " + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + " " + t('shift.secs') : "")
     if (durstr == "") durstr = "<1 " + t('shift.secs')
     return durstr
