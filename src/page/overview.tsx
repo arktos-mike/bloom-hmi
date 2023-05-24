@@ -169,7 +169,7 @@ const Overview: React.FC<Props> = memo(({
   }, [info?.userinfo, info.weaver?.id && period, info.weaver?.logintime]);
 
   useEffect(() => {
-    if (Array.isArray(userinfo?.stops) && (dayjs(userinfo?.start).isAfter(info?.weaver?.logintime) || info?.weaver?.logintime === undefined || userInfo.stops === undefined)) { setUserInfo({ ...userInfo, picks: userinfo?.picks, meters: userinfo?.meters, rpm: userinfo?.rpm, mph: userinfo?.mph, efficiency: userinfo?.efficiency, starts: userinfo?.starts, duration: userinfo?.workdur, runtime: userinfo?.runtime, stops: userinfo?.stops }); console.log('Update'); console.log(userinfo?.stops) }
+    if (Array.isArray(userinfo?.stops) && (dayjs(userinfo?.start).isAfter(info?.weaver?.logintime) || info?.weaver?.logintime === undefined || userInfo.stops === undefined)) setUserInfo({ ...userInfo, picks: userinfo?.picks, meters: userinfo?.meters, rpm: userinfo?.rpm, mph: userinfo?.mph, efficiency: userinfo?.efficiency, starts: userinfo?.starts, duration: userinfo?.workdur, runtime: userinfo?.runtime, stops: userinfo?.stops });
   }, [userinfo?.stops]);
 
   useEffect(() => {
