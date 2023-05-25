@@ -6,7 +6,7 @@ const Component = (props: any) => {
 
   return (
     <Card style={props.fullSize ? { height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' } : { flex: '1 1 100%', alignSelf: 'center', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} bodyStyle={{ padding: "0px 15px" }}>
-      <Spin spinning={(props.tag?.link == null || props.tag?.link == true) ? false : true } size="small">
+      <Spin spinning={((props.tag?.link == undefined) || (props.tag?.link == null) || (props.tag?.link == true)) ? false : true } size="small">
         <Statistic
           groupSeparator=' '
           decimalSeparator={t('decimalSeparator', '')}
