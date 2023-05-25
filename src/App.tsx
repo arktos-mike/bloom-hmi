@@ -422,14 +422,14 @@ const App: React.FC = memo(() => {
 
   useEffect(() => {
     if (tags.length > 0) {
-      const updatedTags = tags.map(obj => info.tags.find((o: any) => o['tag']!['name'] === obj['tag']['name']) || obj);
+      const updatedTags = tags.map(obj => info.tags.find((o: any) => (o['tag']!['name'] === obj['tag']['name']) && (dayjs(o['updated']).isAfter(dayjs(obj['updated'])))) || obj);
       setTags(updatedTags);
     }
   }, [info.tags]);
 
   useEffect(() => {
     if (tags.length > 0) {
-      const updatedTags = tags.map(obj => fullinfo.tags.find((o: any) => o['tag']!['name'] === obj['tag']['name']) || obj);
+      const updatedTags = tags.map(obj => fullinfo.tags.find((o: any) => (o['tag']!['name'] === obj['tag']['name']) && (dayjs(o['updated']).isAfter(dayjs(obj['updated'])))) || obj);
       setTags(updatedTags);
     }
   }, [fullinfo.tags]);
@@ -448,7 +448,7 @@ const App: React.FC = memo(() => {
 
   useEffect(() => {
     if (tags.length > 0) {
-      const updatedTags = tags.map(obj => mon.find((o: any) => o['tag']!['name'] === obj['tag']['name']) || obj);
+      const updatedTags = tags.map(obj => mon.find((o: any) => (o['tag']!['name'] === obj['tag']['name']) && (dayjs(o['updated']).isAfter(dayjs(obj['updated'])))) || obj);
       setTags(updatedTags);
       let object = mon.find(o => o['tag']!['name'] == 'modeCode')
       if (object && (modeCode?.val === undefined || dayjs(object['updated']).isAfter(dayjs(modeCode.updated)))) {
