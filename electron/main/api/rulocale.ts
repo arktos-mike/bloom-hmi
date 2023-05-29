@@ -76,6 +76,10 @@ const locale = {
       "descr": "Угол останова",
       "eng": "°"
     },
+    "pickAngle": {
+      "descr": "Угол боя",
+      "eng": "°"
+    },
     "planSpeedMainDrive": {
       "descr": "Плановая скорость",
       "eng": "об/мин"

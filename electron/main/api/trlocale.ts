@@ -76,6 +76,10 @@ const locale = {
       "descr": "Durma açısı",
       "eng": "°"
     },
+    "pickAngle": {
+      "descr": "Atkı açısı",
+      "eng": "°"
+    },
     "clothMeters": {
       "descr": "Kumaş",
       "eng": "m"

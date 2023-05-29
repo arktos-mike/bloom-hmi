@@ -195,6 +195,9 @@ const SettingsTech: React.FC<Props> = ({
               <div style={{ marginTop: '15px', width: '75%' }}>
                 <InputNumber className="narrow" eng descr value={activeInput.id == ('shrink') ? activeInput.input : getTagVal('warpShrinkage')} tag={getTag('warpShrinkage')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.warpShrinkage.descr' controls={false} onUpdate={(value: any) => { setTagVal('warpShrinkage', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'shrink', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
               </div>
+              <div style={{ marginTop: '15px', width: '75%' }}>
+                <InputNumber className="narrow" eng descr value={activeInput.id == ('pick') ? activeInput.input : getTagVal('pickAngle')} tag={getTag('pickAngle')} userRights={['admin', 'manager', 'fixer']} token={token} placeholder='tags.pickAngle.descr' controls={false} onUpdate={(value: any) => { setTagVal('pickAngle', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'plan', id: 'pick', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
+              </div>
             </Skeleton>
           </Card>
         </Col>

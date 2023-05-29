@@ -76,6 +76,10 @@ const locale = {
       "descr": "Stop angle",
       "eng": "°"
     },
+    "pickAngle": {
+      "descr": "Picking angle",
+      "eng": "°"
+    },
     "clothMeters": {
       "descr": "Cloth",
       "eng": "m"

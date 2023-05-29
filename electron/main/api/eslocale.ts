@@ -76,6 +76,10 @@ const locale = {
       "descr": "Ángulo de parada",
       "eng": "°"
     },
+    "pickAngle": {
+      "descr": "Ángulo de picada",
+      "eng": "°"
+    },
     "clothMeters": {
       "descr": "Tela",
       "eng": "m"
