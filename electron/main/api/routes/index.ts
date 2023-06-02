@@ -1,5 +1,6 @@
 // ./routes/index.ts
 export { updFlagCOM1, updFlagCOM2, resetFlagCOM1, resetFlagCOM2, updFlagTCP1, resetFlagTCP1, updFlagConn, resetFlagConn } from './config'
+export { usbPath, usbAttach, usbDetach } from './users'
 import config from './config'
 import locales from './locales'
 import users from './users'

@@ -3,7 +3,12 @@ dotenv.config()
 import { app, BrowserWindow, shell, ipcMain, screen } from 'electron'
 import { join } from 'path'
 import { release } from 'os'
+import { WebUSB } from 'usb';
+const webusb = new WebUSB({
+  allowAllDevices: true
+});
 import './api/server'
+import { usbPath, usbAttach, usbDetach } from './api/routes'
 
 //app.commandLine.appendSwitch('host-rules', 'MAP * 127.0.0.1');
 //==============================================================
@@ -11,7 +16,7 @@ app.commandLine.appendSwitch("--touch-events");
 app.commandLine.appendSwitch("--enable-touch-events");
 app.commandLine.appendSwitch("touch-events", "true");
 app.commandLine.appendSwitch("top-chrome-touch-ui", "true");
-app.commandLine.appendSwitch("--touch-events","enabled");
+app.commandLine.appendSwitch("--touch-events", "enabled");
 // Disable GPU Acceleration for Windows 7
 //if (release().startsWith('6.1'))
 app.disableHardwareAcceleration()
@@ -102,9 +107,21 @@ async function createWindow() {
   })
 }
 
-app.whenReady().then(createWindow)
+app.whenReady().then(async () => {
+  webusb.addEventListener('connect', usbAttach);
+  webusb.addEventListener('disconnect', usbDetach);
+  createWindow();
+
+  app.on('activate', () => {
+    // On macOS it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
+});
 
 app.on('window-all-closed', () => {
+  webusb.addEventListener('connect', usbAttach);
+  webusb.addEventListener('disconnect', usbDetach);
   win = null
   if (process.platform !== 'darwin') app.quit()
 })

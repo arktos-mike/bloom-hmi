@@ -4,7 +4,7 @@ import cors from 'cors'
 import express from 'express'
 import compression from 'compression'
 import mountRoutes from './routes'
-import { sse, updFlagCOM1, updFlagCOM2, resetFlagCOM1, resetFlagCOM2, updFlagTCP1, resetFlagTCP1, updFlagConn, resetFlagConn } from './routes'
+import { sse, updFlagCOM1, updFlagCOM2, resetFlagCOM1, resetFlagCOM2, updFlagTCP1, resetFlagTCP1, updFlagConn, resetFlagConn, usbPath, usbAttach, usbDetach } from './routes'
 import db from '../db'
 import * as bcrypt from 'bcrypt';
 import createTableText from './createdb'
@@ -17,6 +17,7 @@ import { SerialPort } from 'serialport'
 import parseInterval from 'postgres-interval'
 import ModbusRTU from 'modbus-serial'
 import sudo from 'sudo-prompt'
+
 const options = {
   name: 'Electron',
 };
@@ -181,7 +182,7 @@ const dbConf = async () => {
     await db.query('DELETE FROM tags WHERE tag->>$1~$2', ['dev', 'rtu']);
     await db.query('INSERT INTO tags(tag,val,link) SELECT * FROM jsonb_to_recordset($1) as x(tag jsonb, val numeric, link boolean) ON CONFLICT (tag) DO NOTHING;', [JSON.stringify(tcpTags)])
     const ip1t = await db.query('SELECT tag->$3 as name, tag->$4 as addr, tag->$5 as type, tag->$6 as reg FROM tags WHERE tag->>$1=$2 ORDER BY tag->>$4 DESC ', ['dev', 'tcp1', 'name', 'addr', 'type', 'reg']);
-    ip1.slaves.push(Object.assign({ name: 'tcp1' }, tcpRows.rows[0].data['tcp1'], { tags: ip1t.rows, mbarr: sortAndGroup(ip1t.rows)}));
+    ip1.slaves.push(Object.assign({ name: 'tcp1' }, tcpRows.rows[0].data['tcp1'], { tags: ip1t.rows, mbarr: sortAndGroup(ip1t.rows) }));
     if (ip1.mbsState == MBS_STATE_STEADY && ip1.slaves.length > 0) {
       ip1.mbsState = MBS_STATE_INIT;
       runModbus(client3, ip1)

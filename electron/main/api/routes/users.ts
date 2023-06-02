@@ -4,9 +4,38 @@ import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { sse } from './'
 import parseInterval from 'postgres-interval'
+import { WebUSB } from 'usb';
+import drivelist from 'drivelist';
+import fs from 'fs';
+import { join } from 'path'
+const webusb = new WebUSB({
+  allowAllDevices: true
+});
 // create a new express-promise-router
 // this has the same API as the normal express router except
 // it allows you to use async functions as route handlers
+export let usbPath: string | null = null;
+export const usbAttach = async () => {
+  usbPath=null;
+  let x = 0;
+  while((x<500) && (usbPath == null)){
+    const drives = await drivelist.list();
+    if (drives[0]) {
+    usbPath = drives.filter(d => d.isRemovable == true).map(d => d?.mountpoints[0]?.path)[0]
+    }
+    x=x+1;
+  }
+  usbPath && fs.readdir(usbPath, (err, files) => {
+    if (err) throw err;
+    const id = files.filter(f => f.includes('.auth')).map(f => f.replace('.texauth', ''))[0]
+    console.log(id);
+  });
+};
+
+export const usbDetach = async () => {
+  usbPath = null
+};
+
 const router = PromiseRouter();
 // export our router to be mounted by the parent application
 
