@@ -399,6 +399,16 @@ const App: React.FC = memo(() => {
     }
   );
 
+  const usbtoken = useSSE(
+    'auth',
+    '',
+    {
+      parser(input: string) {
+        return JSON.parse(input);
+      },
+    }
+  );
+
   const userinfo = useSSE(
     'userinfo',
     {
@@ -464,6 +474,12 @@ const App: React.FC = memo(() => {
     })();
     return () => { }
   }, [dayjs().minute(), updatedReminders])
+
+  useEffect(() => {
+    usbtoken && setToken(usbtoken || token);
+        openNotificationWithIcon('success', t('notifications.userok'), 3, t('notifications.userok'), '',{ backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
+    return () => { }
+  }, [usbtoken])
 
   useEffect(() => {
     (reminders || []).map((note: any) => (

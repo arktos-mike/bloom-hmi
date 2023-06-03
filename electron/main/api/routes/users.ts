@@ -8,6 +8,7 @@ import { WebUSB } from 'usb';
 import drivelist from 'drivelist';
 import fs from 'fs';
 import { join } from 'path'
+
 const webusb = new WebUSB({
   allowAllDevices: true
 });
@@ -16,20 +17,34 @@ const webusb = new WebUSB({
 // it allows you to use async functions as route handlers
 export let usbPath: string | null = null;
 export const usbAttach = async () => {
-  usbPath=null;
+  usbPath = null;
   let x = 0;
-  while((x<500) && (usbPath == null)){
+  while ((x < 500) && (usbPath == null)) {
     const drives = await drivelist.list();
     if (drives[0]) {
-    usbPath = drives.filter(d => d.isRemovable == true).map(d => d?.mountpoints[0]?.path)[0]
+      usbPath = drives.filter(d => d.isRemovable == true).map(d => d?.mountpoints[0]?.path)[0]
     }
-    x=x+1;
+    x = x + 1;
   }
-  usbPath && fs.readdir(usbPath, (err, files) => {
-    if (err) throw err;
-    const id = files.filter(f => f.includes('.auth')).map(f => f.replace('.texauth', ''))[0]
-    console.log(id);
-  });
+  try {
+    const { rows } = await db.query(`SELECT data->'opIP'->'name' as name FROM hwconfig where name = $1`, ['ipConf'])
+    const serverName = rows[0]['name']
+    if (usbPath && serverName) {
+      const filePath = join(usbPath, serverName + '.auth');
+      const fileContent = fs.readFileSync(filePath, 'utf-8');
+      const decoded = jwt.decode(fileContent)
+      if (decoded) {
+        const response = await fetch('http://localhost:3000/users/login/' + decoded.id, {
+          method: 'POST'
+        });
+        await sse.send(fileContent, 'auth', 'token');
+      } else {
+        throw new Error();
+      }
+    }
+  }
+  catch (err) {
+  };
 };
 
 export const usbDetach = async () => {
@@ -38,6 +53,46 @@ export const usbDetach = async () => {
 
 const router = PromiseRouter();
 // export our router to be mounted by the parent application
+
+router.post('/saveAuth/:id', async (req, res) => {
+  try {
+    const data = await db.query(`SELECT * FROM users WHERE id= $1;`, [req.params.id])
+    const user = data.rows;
+    if ((user.length === 0) || (usbPath == null)) {
+      res.status(400).json({
+        message: "notifications.servererror",
+        error: "User is not registered, Sign Up first",
+      });
+    }
+    else {
+      const { rows } = await db.query(`SELECT data->'opIP'->'name' as name FROM hwconfig where name = $1`, ['ipConf'])
+      const serverName = rows[0]['name']
+
+      const token = jwt.sign(
+        Object.assign(
+          { id: user[0].id },
+          { name: user[0].name },
+          user[0].email && { email: user[0].email },
+          user[0].phonenumber && { phonenumber: user[0].phonenumber },
+          { role: user[0].role }
+        ),
+        process.env['SECRET_KEY'] || 'g@&hGgG&n34b%F7_f123K9',
+      );
+      fs.writeFileSync(join(usbPath, serverName + '.auth'), token);
+      res.status(200).json({
+        message: "notifications.confupdate",
+        token: token,
+        filePath: join(usbPath, serverName + '.auth')
+      });
+    }
+  } catch (err) {
+    /*console.log(err);*/
+    res.status(500).json({
+      message: "notifications.servererror",
+      error: "Server error occurred",
+    });
+  };
+});
 
 router.get('/', async (req, res) => {
   const { rows } = await db.query('SELECT id, name, email, phonenumber, role FROM users ORDER BY name;');
