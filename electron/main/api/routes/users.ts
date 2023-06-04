@@ -8,6 +8,7 @@ import { WebUSB } from 'usb';
 import drivelist from 'drivelist';
 import fs from 'fs';
 import { join } from 'path'
+import fetch from 'node-fetch'
 
 const webusb = new WebUSB({
   allowAllDevices: true
@@ -40,15 +41,20 @@ export const usbAttach = async () => {
           const response = await fetch('http://localhost:3000/users/login/' + decoded.id, {
             method: 'POST'
           });
-          await sse.send(fileContent, 'auth', 'token');
+          if (response.ok) {
+            await sse.send(fileContent, 'auth', 'token');
+          }
         }
         else {
+          console.log('logout id ' + decoded.id)
           const res = await fetch('http://localhost:3000/users/logout', {
             method: 'POST',
             headers: { 'content-type': 'application/json;charset=UTF-8', },
             body: JSON.stringify({ id: decoded.id, logoutby: 'id' }),
           });
-          await sse.send(null, 'auth', 'token');
+          if (res.ok) {
+            await sse.send(null, 'auth', 'token');
+          }
         }
       } else {
         throw new Error();
@@ -56,6 +62,7 @@ export const usbAttach = async () => {
     }
   }
   catch (err) {
+    //console.log(err);
   };
 };
 
