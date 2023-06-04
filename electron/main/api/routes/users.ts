@@ -46,7 +46,6 @@ export const usbAttach = async () => {
           }
         }
         else {
-          console.log('logout id ' + decoded.id)
           const res = await fetch('http://localhost:3000/users/logout', {
             method: 'POST',
             headers: { 'content-type': 'application/json;charset=UTF-8', },
