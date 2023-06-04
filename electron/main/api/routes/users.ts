@@ -34,10 +34,22 @@ export const usbAttach = async () => {
       const fileContent = fs.readFileSync(filePath, 'utf-8');
       const decoded = jwt.decode(fileContent)
       if (decoded) {
-        const response = await fetch('http://localhost:3000/users/login/' + decoded.id, {
-          method: 'POST'
-        });
-        await sse.send(fileContent, 'auth', 'token');
+        const data = await db.query(`SELECT * FROM userlog WHERE id= $1 AND upper_inf(timestamp);`, [decoded.id])
+        const user = data.rows;
+        if (user.length === 0) {
+          const response = await fetch('http://localhost:3000/users/login/' + decoded.id, {
+            method: 'POST'
+          });
+          await sse.send(fileContent, 'auth', 'token');
+        }
+        else {
+          const res = await fetch('http://localhost:3000/users/logout', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json;charset=UTF-8', },
+            body: JSON.stringify({ id: decoded.id, logoutby: 'id' }),
+          });
+          await sse.send(null, 'auth', 'token');
+        }
       } else {
         throw new Error();
       }

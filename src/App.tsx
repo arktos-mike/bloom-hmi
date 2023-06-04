@@ -476,8 +476,13 @@ const App: React.FC = memo(() => {
   }, [dayjs().minute(), updatedReminders])
 
   useEffect(() => {
-    usbtoken && setToken(usbtoken || token);
-        openNotificationWithIcon('success', t('notifications.userok'), 3, t('notifications.userok'), '',{ backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
+    if (usbtoken) {
+      setToken(usbtoken || token);
+      openNotificationWithIcon('success', t('notifications.userok'), 3, t('notifications.userok'), '', { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
+    }
+    else {
+      if (usbtoken == null) setToken(null);
+    }
     return () => { }
   }, [usbtoken])
 
