@@ -57,6 +57,11 @@ router.get('/user', async (req, res) => {
   res.status(200).send(rows)
 })
 
+router.get('/admuser', async (req, res) => {
+  const { rows } = await db.query(`SELECT id, name, lower(timestamp) as logintime FROM userlog WHERE upper_inf(timestamp) AND role<>$1 ORDER BY id`, ['weaver']);
+  res.status(200).send(rows)
+})
+
 router.post('/userlog', async (req, res) => {
   const { start, end } = req.body;
   const { rows } = await db.query(`SELECT * FROM userlog WHERE tstzrange($1,$2,'[)') && timestamp ORDER BY timestamp DESC`, [start, end]);

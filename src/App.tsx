@@ -88,7 +88,7 @@ const App: React.FC = memo(() => {
 
   const checkLogin = async () => {
     try {
-      const ans = await fetch('http://localhost:3000/logs/user');
+      const ans = await fetch('http://localhost:3000/logs/admuser');
       const json = await ans.json();
       if (!ans.ok) { throw Error(ans.statusText); }
       if (json.length) {
@@ -96,10 +96,23 @@ const App: React.FC = memo(() => {
           method: 'POST'
         });
         const jsonb = await response.json();
-        setToken(jsonb.token || null);
+        setToken(jsonb.token || token);
         if (!response.ok) { /*throw Error(response.statusText);*/ }
       }
-      else { setToken(null); }
+      else {
+        const ans = await fetch('http://localhost:3000/logs/user');
+        const json = await ans.json();
+        if (!ans.ok) { throw Error(ans.statusText); }
+        if (json.length) {
+          const response = await fetch('http://localhost:3000/users/login/' + json[0].id, {
+            method: 'POST'
+          });
+          const jsonb = await response.json();
+          setToken(jsonb.token || token);
+          if (!response.ok) { /*throw Error(response.statusText);*/ }
+        }
+        else { setToken(null); }
+      }
     }
     catch (error) { /*console.log(error);*/ }
   }
@@ -476,15 +489,20 @@ const App: React.FC = memo(() => {
   }, [dayjs().minute(), updatedReminders])
 
   useEffect(() => {
-    if (usbtoken) {
-      setToken(usbtoken || token);
-      openNotificationWithIcon('success', t('notifications.userok'), 3, t('notifications.userok'), '', { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
-    }
-    else {
-      if (usbtoken == null) setToken(null);
-    }
+    (async () => {
+      await checkLogin();
+      usbtoken && openNotificationWithIcon('success', t('notifications.userok'), 3, '', '', { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
+    })();
     return () => { }
   }, [usbtoken])
+
+  useEffect(() => {
+    (async () => {
+        await checkLogin();
+        await checkShadowUser();
+    })();
+    return () => { }
+  }, [usbtoken==null])
 
   useEffect(() => {
     (reminders || []).map((note: any) => (
