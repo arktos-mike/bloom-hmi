@@ -81,7 +81,7 @@ const App: React.FC = memo(() => {
       if (json.length && (token && (json[0].id != JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id))) {
         setShadowUser(json[0]);
       }
-      else { setShadowUser({ id: null, name: null, logintime: json[0].logintime }) }
+      else { setShadowUser({ id: null, name: null, logintime: json[0]?.logintime }); }
     }
     catch (error) { /*console.log(error);*/ }
   }
@@ -492,17 +492,10 @@ const App: React.FC = memo(() => {
     (async () => {
       await checkLogin();
       usbtoken && openNotificationWithIcon('success', t('notifications.userok'), 3, '', '', { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
+      if (usbtoken == null) { await checkShadowUser(); }
     })();
     return () => { }
   }, [usbtoken])
-
-  useEffect(() => {
-    (async () => {
-        await checkLogin();
-        await checkShadowUser();
-    })();
-    return () => { }
-  }, [usbtoken==null])
 
   useEffect(() => {
     (reminders || []).map((note: any) => (
