@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Modal, Button, Form, Input, Checkbox, notification, Select } from 'antd'
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
+import { LockOutlined, UploadOutlined, UserOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import UserEdit from "./UserEdit";
 import UserRegister from "./UserRegister";
@@ -80,6 +80,30 @@ const UserLogin: React.FC<Props> = ({
     setIsModalVisible(false)
     form.resetFields()
   }
+
+  const confirmSave = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/users/saveAuth/' + JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id, {
+          method: 'POST'
+        });
+        const json = await response.json();
+        openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
+        if (!response.ok) { /*throw Error(response.statusText);*/ }
+    }
+    catch (error) { /*console.log(error);*/ }
+  };
+  const confirmShadowSave = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/users/saveAuth/' + shadowUser.id, {
+          method: 'POST'
+        });
+        const json = await response.json();
+        openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
+        if (!response.ok) { /*throw Error(response.statusText);*/ }
+    }
+    catch (error) { /*console.log(error);*/ }
+  };
+
   const handleOk = async () => {
     form.resetFields();
     try {
@@ -155,11 +179,13 @@ const UserLogin: React.FC<Props> = ({
             label={t('user.curuser')}
           >
             <span className="text" style={{ color: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "" }}>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</span>
+            {token && <Button shape="circle" icon={< UploadOutlined />} size="middle" type="primary" style={{ margin: 10 }} onClick={confirmSave}></Button>}
           </Form.Item>
           {shadowUser?.name && <Form.Item
             label={t('user.weaver')}
           >
             <span className="text" style={{ color: "#87d068" }}>{shadowUser?.name}</span>
+            <Button shape="circle" icon={< UploadOutlined />} size="middle" type="primary" style={{ margin: 10 }} onClick={confirmShadowSave}></Button>
           </Form.Item>}
           <Form.Item
             label={t('user.user')}
