@@ -10,6 +10,7 @@ const { Option } = Select;
 type Props = {
   isModalVisible: boolean;
   token: any;
+  usb: boolean;
   shadowUser: any;
   setToken: (val: any) => void;
   setRemember: (val: boolean) => void;
@@ -22,6 +23,7 @@ const UserLogin: React.FC<Props> = ({
   isModalVisible,
   setIsModalVisible,
   token,
+  usb,
   shadowUser,
   setToken,
   setRemember,
@@ -179,13 +181,13 @@ const UserLogin: React.FC<Props> = ({
             label={t('user.curuser')}
           >
             <span className="text" style={{ color: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "" }}>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</span>
-            {token && <Button shape="circle" icon={<SaveOutlined />} size="middle" type="primary" style={{ margin: 10 }} onClick={confirmSave}></Button>}
+            {(token && usb) && <Button shape="circle" icon={<SaveOutlined />} size="middle" type="primary" style={{ margin: 10 }} onClick={confirmSave}></Button>}
           </Form.Item>
           {shadowUser?.name && <Form.Item
             label={t('user.weaver')}
           >
             <span className="text" style={{ color: "#87d068" }}>{shadowUser?.name}</span>
-            <Button shape="circle" icon={<SaveOutlined />} size="middle" type="primary" style={{ margin: 10 }} onClick={confirmShadowSave}></Button>
+            {usb && <Button shape="circle" icon={<SaveOutlined />} size="middle" type="primary" style={{ margin: 10 }} onClick={confirmShadowSave}></Button>}
           </Form.Item>}
           <Form.Item
             label={t('user.user')}

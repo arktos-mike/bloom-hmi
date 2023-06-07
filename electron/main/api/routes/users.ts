@@ -28,6 +28,7 @@ export const usbAttach = async () => {
     x = x + 1;
   }
   try {
+    await sse.send(true, 'usb', 'attach');
     const { rows } = await db.query(`SELECT data->'opIP'->'name' as name FROM hwconfig where name = $1`, ['ipConf'])
     const serverName = rows[0]['name']
     if (usbPath && serverName) {
@@ -67,6 +68,7 @@ export const usbAttach = async () => {
 
 export const usbDetach = async () => {
   usbPath = null
+  await sse.send(false, 'usb', 'detach');
 };
 
 const router = PromiseRouter();
