@@ -7,7 +7,7 @@ import db from '../../db'
 const router = PromiseRouter();
 // export our router to be mounted by the parent application
 router.get('/', async (req, res) => {
-  const { rows } = await db.query(`SELECT * FROM lifetime`);
+  const { rows } = await db.query(`SELECT type, serialno, mfgdate, round(picks) as picks, cloth, motor FROM lifetime`);
   res.status(200).send(rows)
 })
 

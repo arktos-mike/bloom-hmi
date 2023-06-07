@@ -257,10 +257,7 @@ set
 	current_timestamp(3),
 	'[)'
   ),
-	picks = (case
-		when (modecode = 1) then (picksLastRun)
-		else null
-	end)
+	picks = picksLastRun
 where
 	upper_inf(timestamp) returning modecode, (current_timestamp(3)-lower(timestamp)) into code, clock;
 
@@ -1226,7 +1223,7 @@ where
 
 shift :=(select row_to_json(e)::jsonb from (select * from shiftdetect(current_timestamp)) e);
 
-lifetime :=(select row_to_json(e)::jsonb from (select * from lifetime) e);
+lifetime :=(select row_to_json(e)::jsonb from (select type, serialno, mfgdate, round(picks) as picks, cloth, motor from lifetime) e);
 
 weaver :=(
 select
