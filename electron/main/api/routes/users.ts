@@ -100,7 +100,7 @@ router.post('/saveAuth/:id', async (req, res) => {
       );
       fs.writeFileSync(join(usbPath, serverName + '.auth'), token);
       res.status(200).json({
-        message: "notifications.confupdate",
+        message: "notifications.datasaved",
         token: token,
         filePath: join(usbPath, serverName + '.auth')
       });

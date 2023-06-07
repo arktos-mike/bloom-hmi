@@ -520,6 +520,11 @@ const App: React.FC = memo(() => {
   }, [remindersFilter])
 
   useEffect(() => {
+    openNotificationWithIcon(usb ? 'success' : 'success', usb ? t('notifications.usbattach') : t('notifications.usbdetach'), 3, '', '', { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
+    return () => { }
+  }, [usb])
+
+  useEffect(() => {
     (async () => {
       //setToken(token);
       await checkShadowUser();
@@ -588,7 +593,7 @@ const App: React.FC = memo(() => {
             <div className="speed"><Spin wrapperClassName="speed" spinning={modeCode?.val == 1 ? !getTagLink('speedMainDrive') : !getTagLink('stopAngle')}>{modeCode?.val == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode?.val == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}<div className="sub">{modeCode?.val == 1 ? t('tags.speedMainDrive.eng') : '°'}</div></Spin></div>
             <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode?.val).color }}><Spin wrapperClassName="mode" spinning={!getTagLink('modeCode')}>{modeCodeObj(modeCode?.val).text + ' '}{modeCodeObj(modeCode?.val).icon}<div className='stopwatch'>{stopwatch(modeCode?.updated)}</div></Spin></div>
             <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{(period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) ? dayjs().format('L') : period == 'shift' ? periodName : period == 'month' ? dayjs().format('MMM YY') : ''}<div className="percent">{efficiency ? Number(Number(efficiency).toFixed((efficiency && (efficiency < 10)) ? 2 : 1).toString()).toLocaleString(i18n.language) + '%' : ''}</div></Space></div><div className="progress"><Progress percent={efficiency ? efficiency : 0} showInfo={false} size="small" /></div></div>
-            {usb && <div className="usb"><UsbTwoTone twoToneColor="#52c41a" style={{ fontSize: '200%' }}/></div>}
+            {usb && <div className="usb"><UsbTwoTone twoToneColor="#52c41a" style={{ fontSize: '200%' }} /></div>}
             <div className="user">
               <div className="user" onClick={() => { !visible && showUserDialog() }}>
                 <Avatar.Group size='large'>
