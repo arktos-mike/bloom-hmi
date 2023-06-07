@@ -414,7 +414,7 @@ const App: React.FC = memo(() => {
 
   const usb = useSSE(
     'usb',
-    false,
+    undefined,
     {
       parser(input: string) {
         return JSON.parse(input);
@@ -520,7 +520,7 @@ const App: React.FC = memo(() => {
   }, [remindersFilter])
 
   useEffect(() => {
-    openNotificationWithIcon(usb ? 'success' : 'success', usb ? t('notifications.usbattach') : t('notifications.usbdetach'), 3, '', '', { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
+    (usb !== undefined) && openNotificationWithIcon(usb ? 'success' : 'success', usb ? t('notifications.usbattach') : t('notifications.usbdetach'), 3, '', '', { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
     return () => { }
   }, [usb])
 

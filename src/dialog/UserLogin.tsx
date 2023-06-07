@@ -10,7 +10,7 @@ const { Option } = Select;
 type Props = {
   isModalVisible: boolean;
   token: any;
-  usb: boolean;
+  usb: any;
   shadowUser: any;
   setToken: (val: any) => void;
   setRemember: (val: boolean) => void;
