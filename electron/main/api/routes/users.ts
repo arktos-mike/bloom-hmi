@@ -20,7 +20,7 @@ export let usbPath: string | null = null;
 export const usbAttach = async () => {
   usbPath = null;
   let x = 0;
-  while ((x < 500) && (usbPath == null)) {
+  while ((x < 5000) && (usbPath == null)) {
     const drives = await drivelist.list();
     if (drives[0]) {
       usbPath = drives.filter(d => d.isRemovable == true).map(d => d?.mountpoints[0]?.path)[0]
@@ -43,7 +43,7 @@ export const usbAttach = async () => {
             method: 'POST'
           });
           if (response.ok) {
-            await sse.send(fileContent, 'auth', 'token');
+            await sse.send({token: fileContent, updated: new Date()}, 'auth', 'token');
           }
         }
         else {
@@ -53,7 +53,7 @@ export const usbAttach = async () => {
             body: JSON.stringify({ id: decoded.id, logoutby: 'id' }),
           });
           if (res.ok) {
-            await sse.send(null, 'auth', 'token');
+            await sse.send({token: null, updated: new Date()}, 'auth', 'token');
           }
         }
       } else {

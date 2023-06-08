@@ -424,7 +424,10 @@ const App: React.FC = memo(() => {
 
   const usbtoken = useSSE(
     'auth',
-    '',
+    {
+      token: '',
+      updated: '',
+    },
     {
       parser(input: string) {
         return JSON.parse(input);
@@ -501,8 +504,8 @@ const App: React.FC = memo(() => {
   useEffect(() => {
     (async () => {
       await checkLogin();
-      usbtoken && openNotificationWithIcon('success', t('notifications.userok'), 3, '', '', { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
-      if (usbtoken == null) { await checkShadowUser(); }
+      usbtoken?.token && openNotificationWithIcon('success', t('notifications.userok'), 3, '', '', { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
+      if (usbtoken?.token == null) { await checkShadowUser(); }
     })();
     return () => { }
   }, [usbtoken])
