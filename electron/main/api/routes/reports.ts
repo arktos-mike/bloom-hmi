@@ -14,7 +14,6 @@ const router = PromiseRouter();
 router.post('/saveReport', async (req, res) => {
   try {
     const { blob, fileName } = req.body;
-
     if ((blob.length === 0) || (usbPath == null)) {
       res.status(400).json({
         message: "notifications.servererror",
@@ -24,17 +23,18 @@ router.post('/saveReport', async (req, res) => {
     else {
       const { rows } = await db.query(`SELECT data->'opIP'->'name' as name FROM hwconfig where name = $1`, ['ipConf'])
       const serverName = rows[0]['name']
-      fs.writeFileSync(join(usbPath, serverName + '_' + fileName), blob);
+      const buffer = await blob.arrayBuffer();
+      fs.writeFileSync(join(usbPath, serverName.replace(' ', '_') + '_' + fileName.replace(' ', '_')), Buffer.from(buffer));
       res.status(200).json({
         message: "notifications.datasaved",
-        filePath: join(usbPath, serverName + '_' + fileName)
+        filePath: join(usbPath, serverName.replace(' ', '_') + '_' + fileName.replace(' ', '_'))
       });
     }
   } catch (err) {
     /*console.log(err);*/
     res.status(500).json({
       message: "notifications.servererror",
-      error: "Server error occurred",
+      error: "Server error occurred"
     });
   };
 })

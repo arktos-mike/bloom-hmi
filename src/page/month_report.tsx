@@ -13,6 +13,7 @@ import { isEqual } from 'lodash';
 import * as ExcelJs from 'exceljs';
 import { saveWorkbook } from "./utils";
 import { addTitle, adjustColumnWidth } from './utils/excelUtils';
+import { notification } from 'antd'
 dayjs.extend(duration);
 
 interface DataType {
@@ -140,7 +141,18 @@ const MonthReport: React.FC<Props> = memo(({
     });
   };
 
-  const saveReport = () => {
+  const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
+    if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
+      notification[type]({
+        message: message,
+        description: descr,
+        placement: 'bottomRight',
+        duration: dur,
+        style: style,
+      });
+  };
+
+  const saveReport = async () => {
     const workbook = new ExcelJs.Workbook();
     const worksheet = workbook.addWorksheet(t('panel.loom'));
     worksheet.properties.defaultRowHeight = 20;
@@ -170,7 +182,7 @@ const MonthReport: React.FC<Props> = memo(({
         { header: t('stop.other') + ", " + t('shift.hours'), key: 'stopsoh', },
       ];
     worksheet.duplicateRow(1, 4, true);
-    addTitle(worksheet, t('menu.monthReport') + ' ' + lifetime?.type + ' (' + lifetime?.serialno + '）' , dayjs(period[0]).format('MMMM YYYY'))
+    addTitle(worksheet, t('menu.monthReport') + ' ' + lifetime?.type + ' (' + lifetime?.serialno + '）', dayjs(period[0]).format('MMMM YYYY'))
     worksheet.getRow(5).font = { name: 'PTSans', family: 4, size: 9, bold: true }
     worksheet.getRow(5).eachCell((cell, number) => {
       cell.fill = {
@@ -357,7 +369,8 @@ const MonthReport: React.FC<Props> = memo(({
       stopsoh: record?.stops.filter((stop: any) => stop?.other?.total)[0] && (Number(dayjs.duration((record?.stops.filter((stop: any) => stop?.other?.total))[0]?.other.dur).asHours().toFixed(1)))
     })));
     adjustColumnWidth(worksheet3);
-    saveWorkbook(workbook, t('menu.monthReport') + '_' + lifetime?.type + '_(' + lifetime?.serialno + ')_' + dayjs(period[0]).format('MMMM YYYY') + '.xlsx');
+    const json = await saveWorkbook(workbook, t('menu.monthReport') + '_' + lifetime?.type + '_(' + lifetime?.serialno + ')_' + dayjs(period[0]).format('MMMM YYYY') + '.xlsx');
+    openNotificationWithIcon((json?.error || json == null) ? 'warning' : 'success', t(json?.message || 'notifications.servererror'), 3, '', (json?.error || json == null) ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
   };
 
   const shiftColumns: ColumnsType<ShiftDataType> = [
@@ -864,7 +877,7 @@ const MonthReport: React.FC<Props> = memo(({
       <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}><h1 style={{ margin: 10 }}>{t('log.select')}</h1>
         <DatePicker style={{ flexGrow: 1 }} picker="month" format='MMMM YYYY' defaultValue={dayjs()} onChange={(e: any) => { setPeriod([e ? e?.startOf('month') : dayjs().startOf('month'), e ? e?.endOf('month') : dayjs()]) }} />
         {false && <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={confirm} ></Button>}
-        {usb && <Button shape="circle" icon={<SaveOutlined style={{fontSize:'130%'}}/>} size="large" type="primary" style={{ margin: 10 }} onClick={saveReport} ></Button>}
+        {usb && <Button shape="circle" icon={<SaveOutlined style={{ fontSize: '130%' }} />} size="large" type="primary" style={{ margin: 10 }} onClick={saveReport} ></Button>}
       </div>
       <Tabs size='small' type='card' animated={{ inkBar: true, tabPane: true }} items={items} />
     </div>

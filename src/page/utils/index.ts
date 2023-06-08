@@ -1,23 +1,28 @@
 import { IStyleAttr, ITableHeader } from "../types";
 import { Workbook, Worksheet } from "exceljs";
 import { Row } from "exceljs";
-
 export const DEFAULT_COLUMN_WIDTH = 20;
 export const DEFAULT_ROW_HEIGHT = 20;
 
 export function saveWorkbook(workbook: Workbook, fileName: string) {
   // 导出文件
+  let json: any;
   workbook.xlsx.writeBuffer().then((async data => {
     const blob = new Blob([data], { type: '' });
+    const formData = new FormData();
+    formData.append('file', blob);
+    formData.append('fileName', fileName);
     try {
       const response = await fetch('http://localhost:3000/reports/saveReport', {
         method: 'POST',
-        headers: { 'content-type': 'application/json;charset=UTF-8', },
-        body: JSON.stringify({ blob: blob, fileName: fileName }),
+        body: formData,
       });
+      json = await response.json();
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
     }
     catch (error) { /*console.log(error);*/ }
   }))
+  return json;
 }
 
 // 根据 antd 的 column 生成 exceljs 的 column
