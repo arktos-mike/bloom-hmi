@@ -81,7 +81,7 @@ router.post('/saveAuth/:id', async (req, res) => {
     if ((user.length === 0) || (usbPath == null)) {
       res.status(400).json({
         message: "notifications.servererror",
-        error: "User is not registered, Sign Up first",
+        error: "Can't find or save auth info",
       });
     }
     else {

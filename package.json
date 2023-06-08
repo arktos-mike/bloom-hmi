@@ -88,6 +88,7 @@
     "antd": "^4.23.5",
     "electron": "^19.0.7",
     "electron-builder": "^5.5.0",
+    "exceljs": "^4.3.0",
     "i18next": "^21.8.14",
     "i18next-fetch-backend": "^5.0.1",
     "i18next-react-native-async-storage": "^1.0.4",

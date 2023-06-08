@@ -1,6 +1,6 @@
 import { Modal, Table, Badge, Space, Tabs } from 'antd';
 import type { ColumnsType, TableProps } from 'antd/es/table';
-import { ScheduleOutlined, ReconciliationOutlined, TeamOutlined, MinusCircleTwoTone, PlusCircleTwoTone, ToolOutlined, QuestionCircleOutlined, ExclamationCircleOutlined, DeleteOutlined, BarChartOutlined } from '@ant-design/icons';
+import { ScheduleOutlined, ReconciliationOutlined, TeamOutlined, MinusCircleTwoTone, PlusCircleTwoTone, ToolOutlined, QuestionCircleOutlined, ExclamationCircleOutlined, DeleteOutlined, BarChartOutlined, SaveOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "../components/Icons"
 import { FilterValue, SorterResult } from 'antd/es/table/interface';
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react'
@@ -10,6 +10,9 @@ import 'dayjs/locale/en-gb';
 import duration from 'dayjs/plugin/duration';
 import { Button, ColumnPlot, DatePicker } from '@/components';
 import { isEqual } from 'lodash';
+import * as ExcelJs from 'exceljs';
+import { saveWorkbook } from "./utils";
+import { addTitle, adjustColumnWidth } from './utils/excelUtils';
 dayjs.extend(duration);
 
 interface DataType {
@@ -54,10 +57,14 @@ interface ShiftDataType {
 
 type Props = {
   token: any;
+  usb: any;
+  lifetime: any;
 };
 
 const MonthReport: React.FC<Props> = memo(({
-  token
+  token,
+  usb,
+  lifetime
 }
 ) => {
   const { t, i18n } = useTranslation();
@@ -131,6 +138,226 @@ const MonthReport: React.FC<Props> = memo(({
       cancelButtonProps: { size: 'large' },
       onOk: () => { },
     });
+  };
+
+  const saveReport = () => {
+    const workbook = new ExcelJs.Workbook();
+    const worksheet = workbook.addWorksheet(t('panel.loom'));
+    worksheet.properties.defaultRowHeight = 20;
+    worksheet.columns =
+      [
+        { header: t('report.date'), key: 'starttime', },
+        { header: t('tags.picks.descr'), key: 'picks', },
+        { header: t('tags.clothMeters.descr') + ", " + t('tags.clothMeters.eng'), key: 'meters', },
+        { header: t('tags.speedMainDrive.descr') + ", " + t('tags.speedMainDrive.eng'), key: 'rpm', },
+        { header: t('tags.speedCloth.descr') + ", " + t('tags.speedCloth.eng'), key: 'mph', },
+        { header: t('tags.efficiency.descr') + ", %", key: 'efficiency', },
+        { header: t('report.starts'), key: 'starts', },
+        { header: t('report.starts') + ", " + t('shift.hours'), key: 'startsh', },
+        { header: t('report.stops'), key: 'stops', },
+        { header: t('report.stops') + ", " + t('shift.hours'), key: 'stopsh', },
+        { header: t('stop.button'), key: 'stopsb', },
+        { header: t('stop.button') + ", " + t('shift.hours'), key: 'stopsbh', },
+        { header: t('stop.warp'), key: 'stopswa', },
+        { header: t('stop.warp') + ", " + t('shift.hours'), key: 'stopswah', },
+        { header: t('stop.weft'), key: 'stopswe', },
+        { header: t('stop.weft') + ", " + t('shift.hours'), key: 'stopsweh', },
+        { header: t('stop.tool'), key: 'stopst', },
+        { header: t('stop.tool') + ", " + t('shift.hours'), key: 'stopsth', },
+        { header: t('stop.fabric'), key: 'stopsf', },
+        { header: t('stop.fabric') + ", " + t('shift.hours'), key: 'stopsfh', },
+        { header: t('stop.other'), key: 'stopso', },
+        { header: t('stop.other') + ", " + t('shift.hours'), key: 'stopsoh', },
+      ];
+    worksheet.duplicateRow(1, 4, true);
+    addTitle(worksheet, t('menu.monthReport') + ' ' + lifetime?.type + ' (' + lifetime?.serialno + '）' , dayjs(period[0]).format('MMMM YYYY'))
+    worksheet.getRow(5).font = { name: 'PTSans', family: 4, size: 9, bold: true }
+    worksheet.getRow(5).eachCell((cell, number) => {
+      cell.fill = {
+        type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFececec' }
+      }
+      cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+    })
+    worksheet.addRows((data || []).map((record: any) => ({
+      ...record,
+      starttime: dayjs(record?.starttime).format('LL'),
+      picks: record?.picks && (Number(record?.picks)),
+      meters: record?.meters && (Number(Number(record?.meters).toFixed(2))),
+      rpm: record?.rpm && (Number(Number(record?.rpm).toFixed(1))),
+      mph: record?.mph && (Number(Number(record?.mph).toFixed(2))),
+      efficiency: record?.efficiency && (Number(Number(record?.efficiency).toFixed(2))),
+      starts: record?.runtime && (Number(record?.starts)),
+      startsh: record?.runtime && (Number(dayjs.duration(record?.runtime).asHours().toFixed(1))),
+      stops: record?.stops && (Number(stopsAgg(record?.stops).total)),
+      stopsh: record?.stops && (Number(stopsAgg(record?.stops).dur.asHours().toFixed(1))),
+      stopsb: record?.stops.filter((stop: any) => stop?.button?.total)[0] && (Number(record?.stops.filter((stop: any) => stop?.button?.total)[0]?.button.total)),
+      stopsbh: record?.stops.filter((stop: any) => stop?.button?.total)[0] && (Number(dayjs.duration((record?.stops.filter((stop: any) => stop?.button?.total))[0]?.button.dur).asHours().toFixed(1))),
+      stopswa: record?.stops.filter((stop: any) => stop?.warp?.total)[0] && (Number(record?.stops.filter((stop: any) => stop?.warp?.total)[0]?.warp.total)),
+      stopswah: record?.stops.filter((stop: any) => stop?.warp?.total)[0] && (Number(dayjs.duration((record?.stops.filter((stop: any) => stop?.warp?.total))[0]?.warp.dur).asHours().toFixed(1))),
+      stopswe: record?.stops.filter((stop: any) => stop?.weft?.total)[0] && (Number(record?.stops.filter((stop: any) => stop?.weft?.total)[0]?.weft.total)),
+      stopsweh: record?.stops.filter((stop: any) => stop?.weft?.total)[0] && (Number(dayjs.duration((record?.stops.filter((stop: any) => stop?.weft?.total))[0]?.weft.dur).asHours().toFixed(1))),
+      stopst: record?.stops.filter((stop: any) => stop?.tool?.total)[0] && (Number(record?.stops.filter((stop: any) => stop?.tool?.total)[0]?.tool.total)),
+      stopsth: record?.stops.filter((stop: any) => stop?.tool?.total)[0] && (Number(dayjs.duration((record?.stops.filter((stop: any) => stop?.tool?.total))[0]?.tool.dur).asHours().toFixed(1))),
+      stopsf: record?.stops.filter((stop: any) => stop?.fabric?.total)[0] && (Number(record?.stops.filter((stop: any) => stop?.fabric?.total)[0]?.fabric.total)),
+      stopsfh: record?.stops.filter((stop: any) => stop?.fabric?.total)[0] && (Number(dayjs.duration((record?.stops.filter((stop: any) => stop?.fabric?.total))[0]?.fabric.dur).asHours().toFixed(1))),
+      stopso: record?.stops.filter((stop: any) => stop?.other?.total)[0] && (Number(record?.stops.filter((stop: any) => stop?.other?.total)[0]?.other.total)),
+      stopsoh: record?.stops.filter((stop: any) => stop?.other?.total)[0] && (Number(dayjs.duration((record?.stops.filter((stop: any) => stop?.other?.total))[0]?.other.dur).asHours().toFixed(1)))
+    })));
+    worksheet.addRow({
+      starttime: period[0] && dayjs(period[0]).format('MMMM YYYY'),
+      picks: total && total[0] && total[0]['picks'] && (Number(total && total[0] && total[0]['picks'])),
+      meters: total && total[0] && total[0]['meters'] && (Number(Number(total && total[0] && total[0]['meters']).toFixed(2))),
+      rpm: total && total[0] && total[0]['rpm'] && (Number(Number(total && total[0] && total[0]['rpm']).toFixed(1))),
+      mph: total && total[0] && total[0]['mph'] && (Number(Number(total && total[0] && total[0]['mph']).toFixed(2))),
+      efficiency: total && total[0] && total[0]['efficiency'] && (Number(Number(total && total[0] && total[0]['efficiency']).toFixed(2))),
+      starts: total && total[0] && total[0]['runtime'] && (Number(total && total[0] && total[0]['starts'])),
+      startsh: total && total[0] && total[0]['runtime'] && (Number(dayjs.duration(total && total[0] && total[0]['runtime']).asHours().toFixed(1))),
+      stops: total && total[0] && total[0]['stops'] && (Number(stopsAgg(total && total[0] && total[0]['stops']).total)),
+      stopsh: total && total[0] && total[0]['stops'] && (Number(stopsAgg(total && total[0] && total[0]['stops']).dur.asHours().toFixed(1))),
+      stopsb: total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.button?.total)[0] && (Number(total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.button?.total)[0]['button']['total'])),
+      stopsbh: total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.button?.total)[0] && (Number(dayjs.duration((total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.button?.total))[0]['button']['dur']).asHours().toFixed(1))),
+      stopswa: total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.warp?.total)[0] && (Number(total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.warp?.total)[0]['warp']['total'])),
+      stopswah: total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.warp?.total)[0] && (Number(dayjs.duration((total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.warp?.total))[0]['warp']['dur']).asHours().toFixed(1))),
+      stopswe: total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.weft?.total)[0] && (Number(total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.weft?.total)[0]['weft']['total'])),
+      stopsweh: total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.weft?.total)[0] && (Number(dayjs.duration((total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.weft?.total))[0]['weft']['dur']).asHours().toFixed(1))),
+      stopst: total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.tool?.total)[0] && (Number(total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.tool?.total)[0]['tool']['total'])),
+      stopsth: total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.tool?.total)[0] && (Number(dayjs.duration((total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.tool?.total))[0]['tool']['dur']).asHours().toFixed(1))),
+      stopsf: total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.fabric?.total)[0] && (Number(total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.fabric?.total)[0]['fabric']['total'])),
+      stopsfh: total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.fabric?.total)[0] && (Number(dayjs.duration((total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.fabric?.total))[0]['fabric']['dur']).asHours().toFixed(1))),
+      stopso: total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.other?.total)[0] && (Number(total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.other?.total)[0]['other']['total'])),
+      stopsoh: total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.other?.total)[0] && (Number(dayjs.duration((total && total[0] && (total[0]['stops'] as []).filter((stop: any) => stop?.other?.total))[0]['other']['dur']).asHours().toFixed(1)))
+    });
+    worksheet.getRow(6 + (data || []).length).font = { name: 'PTSans', family: 4, size: 11, bold: true }
+    adjustColumnWidth(worksheet);
+    const worksheet2 = workbook.addWorksheet(t('panel.weavers'));
+    worksheet2.properties.defaultRowHeight = 20;
+    worksheet2.columns =
+      [
+        { header: t('user.weaver'), key: 'userid', },
+        { header: t('report.date'), key: 'starttime', },
+        { header: t('shift.duration') + ", " + t('shift.hours'), key: 'workdur', },
+        { header: t('tags.picks.descr'), key: 'picks', },
+        { header: t('tags.clothMeters.descr') + ", " + t('tags.clothMeters.eng'), key: 'meters', },
+        { header: t('tags.speedMainDrive.descr') + ", " + t('tags.speedMainDrive.eng'), key: 'rpm', },
+        { header: t('tags.speedCloth.descr') + ", " + t('tags.speedCloth.eng'), key: 'mph', },
+        { header: t('tags.efficiency.descr') + ", %", key: 'efficiency', },
+        { header: t('report.starts'), key: 'starts', },
+        { header: t('report.starts') + ", " + t('shift.hours'), key: 'startsh', },
+        { header: t('report.stops'), key: 'stops', },
+        { header: t('report.stops') + ", " + t('shift.hours'), key: 'stopsh', },
+        { header: t('stop.button'), key: 'stopsb', },
+        { header: t('stop.button') + ", " + t('shift.hours'), key: 'stopsbh', },
+        { header: t('stop.warp'), key: 'stopswa', },
+        { header: t('stop.warp') + ", " + t('shift.hours'), key: 'stopswah', },
+        { header: t('stop.weft'), key: 'stopswe', },
+        { header: t('stop.weft') + ", " + t('shift.hours'), key: 'stopsweh', },
+        { header: t('stop.tool'), key: 'stopst', },
+        { header: t('stop.tool') + ", " + t('shift.hours'), key: 'stopsth', },
+        { header: t('stop.fabric'), key: 'stopsf', },
+        { header: t('stop.fabric') + ", " + t('shift.hours'), key: 'stopsfh', },
+        { header: t('stop.other'), key: 'stopso', },
+        { header: t('stop.other') + ", " + t('shift.hours'), key: 'stopsoh', },
+      ];
+    worksheet2.duplicateRow(1, 4, true);
+    addTitle(worksheet2, t('menu.monthReport') + ' ' + lifetime?.type + ' (' + lifetime?.serialno + '）', dayjs(period[0]).format('MMMM YYYY'))
+    worksheet2.getRow(5).font = { name: 'PTSans', family: 4, size: 9, bold: true }
+    worksheet2.getRow(5).eachCell((cell, number) => {
+      cell.fill = {
+        type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFececec' }
+      }
+      cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+    })
+    worksheet2.addRows((userData || []).map((record: any) => ({
+      ...record,
+      userid: (users.filter((item: any) => item.id == Number(record.userid)))[0]['name'],
+      starttime: period[0] && dayjs(period[0]).format('MMMM YYYY'),
+      workdur: record?.workdur && Number(dayjs.duration(record.workdur).asHours().toFixed(1)),
+      picks: record?.picks && (Number(record?.picks)),
+      meters: record?.meters && (Number(Number(record?.meters).toFixed(2))),
+      rpm: record?.rpm && (Number(Number(record?.rpm).toFixed(1))),
+      mph: record?.mph && (Number(Number(record?.mph).toFixed(2))),
+      efficiency: record?.efficiency && (Number(Number(record?.efficiency).toFixed(2))),
+      stops: record?.stops && (Number(stopsAgg(record?.stops).total)),
+      stopsh: record?.stops && (Number(stopsAgg(record?.stops).dur.asHours().toFixed(1))),
+      stopsb: record?.stops.filter((stop: any) => stop?.button?.total)[0] && (Number(record?.stops.filter((stop: any) => stop?.button?.total)[0]?.button.total)),
+      stopsbh: record?.stops.filter((stop: any) => stop?.button?.total)[0] && (Number(dayjs.duration((record?.stops.filter((stop: any) => stop?.button?.total))[0]?.button.dur).asHours().toFixed(1))),
+      stopswa: record?.stops.filter((stop: any) => stop?.warp?.total)[0] && (Number(record?.stops.filter((stop: any) => stop?.warp?.total)[0]?.warp.total)),
+      stopswah: record?.stops.filter((stop: any) => stop?.warp?.total)[0] && (Number(dayjs.duration((record?.stops.filter((stop: any) => stop?.warp?.total))[0]?.warp.dur).asHours().toFixed(1))),
+      stopswe: record?.stops.filter((stop: any) => stop?.weft?.total)[0] && (Number(record?.stops.filter((stop: any) => stop?.weft?.total)[0]?.weft.total)),
+      stopsweh: record?.stops.filter((stop: any) => stop?.weft?.total)[0] && (Number(dayjs.duration((record?.stops.filter((stop: any) => stop?.weft?.total))[0]?.weft.dur).asHours().toFixed(1))),
+      stopst: record?.stops.filter((stop: any) => stop?.tool?.total)[0] && (Number(record?.stops.filter((stop: any) => stop?.tool?.total)[0]?.tool.total)),
+      stopsth: record?.stops.filter((stop: any) => stop?.tool?.total)[0] && (Number(dayjs.duration((record?.stops.filter((stop: any) => stop?.tool?.total))[0]?.tool.dur).asHours().toFixed(1))),
+      stopsf: record?.stops.filter((stop: any) => stop?.fabric?.total)[0] && (Number(record?.stops.filter((stop: any) => stop?.fabric?.total)[0]?.fabric.total)),
+      stopsfh: record?.stops.filter((stop: any) => stop?.fabric?.total)[0] && (Number(dayjs.duration((record?.stops.filter((stop: any) => stop?.fabric?.total))[0]?.fabric.dur).asHours().toFixed(1))),
+      stopso: record?.stops.filter((stop: any) => stop?.other?.total)[0] && (Number(record?.stops.filter((stop: any) => stop?.other?.total)[0]?.other.total)),
+      stopsoh: record?.stops.filter((stop: any) => stop?.other?.total)[0] && (Number(dayjs.duration((record?.stops.filter((stop: any) => stop?.other?.total))[0]?.other.dur).asHours().toFixed(1)))
+    })));
+    adjustColumnWidth(worksheet2);
+    const worksheet3 = workbook.addWorksheet(t('panel.shifts'));
+    worksheet3.properties.defaultRowHeight = 20;
+    worksheet3.columns =
+      [
+        { header: t('shift.shift'), key: 'shiftname', },
+        { header: t('report.date'), key: 'starttime', },
+        { header: t('tags.picks.descr'), key: 'picks', },
+        { header: t('tags.clothMeters.descr') + ", " + t('tags.clothMeters.eng'), key: 'meters', },
+        { header: t('tags.speedMainDrive.descr') + ", " + t('tags.speedMainDrive.eng'), key: 'rpm', },
+        { header: t('tags.speedCloth.descr') + ", " + t('tags.speedCloth.eng'), key: 'mph', },
+        { header: t('tags.efficiency.descr') + ", %", key: 'efficiency', },
+        { header: t('report.starts'), key: 'starts', },
+        { header: t('report.starts') + ", " + t('shift.hours'), key: 'startsh', },
+        { header: t('report.stops'), key: 'stops', },
+        { header: t('report.stops') + ", " + t('shift.hours'), key: 'stopsh', },
+        { header: t('stop.button'), key: 'stopsb', },
+        { header: t('stop.button') + ", " + t('shift.hours'), key: 'stopsbh', },
+        { header: t('stop.warp'), key: 'stopswa', },
+        { header: t('stop.warp') + ", " + t('shift.hours'), key: 'stopswah', },
+        { header: t('stop.weft'), key: 'stopswe', },
+        { header: t('stop.weft') + ", " + t('shift.hours'), key: 'stopsweh', },
+        { header: t('stop.tool'), key: 'stopst', },
+        { header: t('stop.tool') + ", " + t('shift.hours'), key: 'stopsth', },
+        { header: t('stop.fabric'), key: 'stopsf', },
+        { header: t('stop.fabric') + ", " + t('shift.hours'), key: 'stopsfh', },
+        { header: t('stop.other'), key: 'stopso', },
+        { header: t('stop.other') + ", " + t('shift.hours'), key: 'stopsoh', },
+      ];
+    worksheet3.duplicateRow(1, 4, true);
+    addTitle(worksheet3, t('menu.monthReport') + ' ' + lifetime?.type + ' (' + lifetime?.serialno + '）', dayjs(period[0]).format('MMMM YYYY'))
+    worksheet3.getRow(5).font = { name: 'PTSans', family: 4, size: 9, bold: true }
+    worksheet3.getRow(5).eachCell((cell, number) => {
+      cell.fill = {
+        type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFececec' }
+      }
+      cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+    })
+    worksheet3.addRows((shiftData || []).map((record: any) => ({
+      ...record,
+      shiftname: t('shift.shift') + ' ' + record.shiftname,
+      starttime: dayjs(record.starttime).format('L LTS') + ' - ' + dayjs(record.endtime).format('L LTS'),
+      picks: record?.picks && (Number(record?.picks)),
+      meters: record?.meters && (Number(Number(record?.meters).toFixed(2))),
+      rpm: record?.rpm && (Number(Number(record?.rpm).toFixed(1))),
+      mph: record?.mph && (Number(Number(record?.mph).toFixed(2))),
+      efficiency: record?.efficiency && (Number(Number(record?.efficiency).toFixed(2))),
+      starts: record?.runtime && (Number(record?.starts)),
+      startsh: record?.runtime && (Number(dayjs.duration(record?.runtime).asHours().toFixed(1))),
+      stops: record?.stops && (Number(stopsAgg(record?.stops).total)),
+      stopsh: record?.stops && (Number(stopsAgg(record?.stops).dur.asHours().toFixed(1))),
+      stopsb: record?.stops.filter((stop: any) => stop?.button?.total)[0] && (Number(record?.stops.filter((stop: any) => stop?.button?.total)[0]?.button.total)),
+      stopsbh: record?.stops.filter((stop: any) => stop?.button?.total)[0] && (Number(dayjs.duration((record?.stops.filter((stop: any) => stop?.button?.total))[0]?.button.dur).asHours().toFixed(1))),
+      stopswa: record?.stops.filter((stop: any) => stop?.warp?.total)[0] && (Number(record?.stops.filter((stop: any) => stop?.warp?.total)[0]?.warp.total)),
+      stopswah: record?.stops.filter((stop: any) => stop?.warp?.total)[0] && (Number(dayjs.duration((record?.stops.filter((stop: any) => stop?.warp?.total))[0]?.warp.dur).asHours().toFixed(1))),
+      stopswe: record?.stops.filter((stop: any) => stop?.weft?.total)[0] && (Number(record?.stops.filter((stop: any) => stop?.weft?.total)[0]?.weft.total)),
+      stopsweh: record?.stops.filter((stop: any) => stop?.weft?.total)[0] && (Number(dayjs.duration((record?.stops.filter((stop: any) => stop?.weft?.total))[0]?.weft.dur).asHours().toFixed(1))),
+      stopst: record?.stops.filter((stop: any) => stop?.tool?.total)[0] && (Number(record?.stops.filter((stop: any) => stop?.tool?.total)[0]?.tool.total)),
+      stopsth: record?.stops.filter((stop: any) => stop?.tool?.total)[0] && (Number(dayjs.duration((record?.stops.filter((stop: any) => stop?.tool?.total))[0]?.tool.dur).asHours().toFixed(1))),
+      stopsf: record?.stops.filter((stop: any) => stop?.fabric?.total)[0] && (Number(record?.stops.filter((stop: any) => stop?.fabric?.total)[0]?.fabric.total)),
+      stopsfh: record?.stops.filter((stop: any) => stop?.fabric?.total)[0] && (Number(dayjs.duration((record?.stops.filter((stop: any) => stop?.fabric?.total))[0]?.fabric.dur).asHours().toFixed(1))),
+      stopso: record?.stops.filter((stop: any) => stop?.other?.total)[0] && (Number(record?.stops.filter((stop: any) => stop?.other?.total)[0]?.other.total)),
+      stopsoh: record?.stops.filter((stop: any) => stop?.other?.total)[0] && (Number(dayjs.duration((record?.stops.filter((stop: any) => stop?.other?.total))[0]?.other.dur).asHours().toFixed(1)))
+    })));
+    adjustColumnWidth(worksheet3);
+    saveWorkbook(workbook, t('menu.monthReport') + '_' + lifetime?.type + '_(' + lifetime?.serialno + ')_' + dayjs(period[0]).format('MMMM YYYY') + '.xlsx');
   };
 
   const shiftColumns: ColumnsType<ShiftDataType> = [
@@ -637,6 +864,7 @@ const MonthReport: React.FC<Props> = memo(({
       <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}><h1 style={{ margin: 10 }}>{t('log.select')}</h1>
         <DatePicker style={{ flexGrow: 1 }} picker="month" format='MMMM YYYY' defaultValue={dayjs()} onChange={(e: any) => { setPeriod([e ? e?.startOf('month') : dayjs().startOf('month'), e ? e?.endOf('month') : dayjs()]) }} />
         {false && <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={confirm} ></Button>}
+        {usb && <Button shape="circle" icon={<SaveOutlined style={{fontSize:'130%'}}/>} size="large" type="primary" style={{ margin: 10 }} onClick={saveReport} ></Button>}
       </div>
       <Tabs size='small' type='card' animated={{ inkBar: true, tabPane: true }} items={items} />
     </div>

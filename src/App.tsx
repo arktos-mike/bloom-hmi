@@ -622,8 +622,8 @@ const App: React.FC = memo(() => {
                   <Route index element={<Overview period={period} setPeriod={setPeriod} pieces={Math.max(Number(pieces), (fullinfo.rolls != null) ? fullinfo.rolls : all?.rolls)} tags={tags} token={token} modeCode={modeCode} info={info} fullinfo={fullinfo.lifetime.mfgdate ? fullinfo : all} userinfo={userinfo} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
                   <Route path={'/machineInfo'} element={<MachineInfo lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} tags={tags} modeCode={modeCode} />} />
                   <Route path={'/reminders'} element={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Reminders activeInput={activeInput} setActiveInput={setActiveInput} setUpdatedReminders={setUpdatedReminders} /> : <Navigate to="/" /> : <Navigate to="/" />} />
-                  <Route path={'/reports'} element={<MonthReport token={token} />} />
-                  <Route path={'/reports/monthReport'} element={<MonthReport token={token} />} />
+                  <Route path={'/reports'} element={<MonthReport token={token} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
+                  <Route path={'/reports/monthReport'} element={<MonthReport token={token} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
                   <Route path={'/reports/userReport'} element={<UserReport token={token} shadowUser={shadowUser} />} />
                   <Route path={'/logs'} element={<ModeLog token={token} />} />
                   <Route path={'/logs/modelog'} element={<ModeLog token={token} />} />
