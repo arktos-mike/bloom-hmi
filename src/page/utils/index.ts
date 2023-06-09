@@ -4,10 +4,10 @@ import { Row } from "exceljs";
 export const DEFAULT_COLUMN_WIDTH = 20;
 export const DEFAULT_ROW_HEIGHT = 20;
 
-export function saveWorkbook(workbook: Workbook, fileName: string) {
+export async function saveWorkbook(workbook: Workbook, fileName: string) {
   // 导出文件
   let json: any;
-  workbook.xlsx.writeBuffer().then((async data => {
+  await workbook.xlsx.writeBuffer().then((async data => {
     const blob = new Blob([data], { type: '' });
     const formData = new FormData();
     formData.append('file', blob);

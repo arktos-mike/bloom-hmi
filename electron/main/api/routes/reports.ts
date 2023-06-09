@@ -4,6 +4,9 @@ import db from '../../db'
 import { usbPath } from './'
 import fs from 'fs';
 import { join } from 'path'
+import multer from 'multer'
+
+const upload = multer()
 
 // create a new express-promise-router
 // this has the same API as the normal express router except
@@ -11,10 +14,13 @@ import { join } from 'path'
 const router = PromiseRouter();
 // export our router to be mounted by the parent application
 
-router.post('/saveReport', async (req, res) => {
+router.post('/saveReport', upload.single('file'), async (req, res) => {
   try {
-    const { blob, fileName } = req.body;
-    if ((blob.length === 0) || (usbPath == null)) {
+    const blob = req.file
+    //const fileName = Buffer.from(req.body.fileName, 'latin1').toString('utf8')
+    const fileName = req.body.fileName
+    console.log(blob, fileName)
+    if ((blob == undefined) || (usbPath == null)) {
       res.status(400).json({
         message: "notifications.servererror",
         error: "Can't save report to file",
@@ -23,8 +29,7 @@ router.post('/saveReport', async (req, res) => {
     else {
       const { rows } = await db.query(`SELECT data->'opIP'->'name' as name FROM hwconfig where name = $1`, ['ipConf'])
       const serverName = rows[0]['name']
-      const buffer = await blob.arrayBuffer();
-      fs.writeFileSync(join(usbPath, serverName.replace(' ', '_') + '_' + fileName.replace(' ', '_')), Buffer.from(buffer));
+      fs.writeFileSync(join(usbPath, serverName.replace(' ', '_') + '_' + fileName.replace(' ', '_')), blob.buffer);
       res.status(200).json({
         message: "notifications.datasaved",
         filePath: join(usbPath, serverName.replace(' ', '_') + '_' + fileName.replace(' ', '_'))
@@ -34,7 +39,8 @@ router.post('/saveReport', async (req, res) => {
     /*console.log(err);*/
     res.status(500).json({
       message: "notifications.servererror",
-      error: "Server error occurred"
+      error: "Server error occurred",
+      err: err
     });
   };
 })
