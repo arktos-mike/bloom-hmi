@@ -133,7 +133,7 @@ const ModeLog: React.FC<Props> = ({
       start: dayjs(record.timestamp['lower']).format('LL LTS'),
     })));
     adjustColumnWidth(worksheet);
-    const json = await saveWorkbook(workbook, t('menu.monthReport') + '_' + lifetime?.type + '_(' + lifetime?.serialno + ')_' + ((period ? period[0].format('L LTS') : dayjs().subtract(7, 'days').format('L LTS')) + '_' + (period ? period[1].format('L LTS') : dayjs().format('L LTS'))) + '.xlsx');
+    const json = await saveWorkbook(workbook, t('menu.modelog') + '_' + lifetime?.type + '_(' + lifetime?.serialno + ')_' + ((period ? period[0].format('L LTS') : dayjs().subtract(7, 'days').format('L LTS')) + '_' + (period ? period[1].format('L LTS') : dayjs().format('L LTS'))) + '.xlsx');
     openNotificationWithIcon((json?.error || json == null) ? 'warning' : 'success', t(json?.message || 'notifications.servererror'), 3, '', (json?.error || json == null) ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
   };
 
