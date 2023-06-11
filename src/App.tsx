@@ -624,11 +624,11 @@ const App: React.FC = memo(() => {
                   <Route path={'/reminders'} element={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Reminders activeInput={activeInput} setActiveInput={setActiveInput} setUpdatedReminders={setUpdatedReminders} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                   <Route path={'/reports'} element={<MonthReport token={token} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
                   <Route path={'/reports/monthReport'} element={<MonthReport token={token} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
-                  <Route path={'/reports/userReport'} element={<UserReport token={token} shadowUser={shadowUser} />} />
-                  <Route path={'/logs'} element={<ModeLog token={token} />} />
-                  <Route path={'/logs/modelog'} element={<ModeLog token={token} />} />
-                  <Route path={'/logs/userlog'} element={<UserLog token={token} />} />
-                  <Route path={'/logs/clothlog'} element={<ClothLog token={token} />} />
+                  <Route path={'/reports/userReport'} element={<UserReport token={token} shadowUser={shadowUser} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
+                  <Route path={'/logs'} element={<ModeLog token={token} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
+                  <Route path={'/logs/modelog'} element={<ModeLog token={token} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
+                  <Route path={'/logs/userlog'} element={<UserLog token={token} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
+                  <Route path={'/logs/clothlog'} element={<ClothLog token={token} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
                   <Route path={'/settings'} element={<SettingsTech tags={tags} token={token} activeInput={activeInput} setActiveInput={setActiveInput} modeCode={modeCode} />} />
                   <Route path={'/settings/settingsTech'} element={<SettingsTech tags={tags} token={token} activeInput={activeInput} setActiveInput={setActiveInput} modeCode={modeCode} />} />
                   <Route path={'/settings/settingsOp'} element={<SettingsOp token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />

@@ -21,6 +21,14 @@ const locale = {
     "settingsDev": "ADQUISICIÓN DE DATOS",
     "settingsTech": "TECNOLOGÍA"
   },
+  "stop": {
+    "other": "otro",
+    "button": "parada normal mediante botón",
+    "warp": "rotura de la urdimbre",
+    "weft": "rotura de la trama",
+    "tool": "fallo del equipo",
+    "fabric": "producción de rollos de tela"
+  },
   "shift": {
     "shift": "Turno",
     "days": "d",

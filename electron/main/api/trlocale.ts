@@ -21,6 +21,14 @@ const locale = {
     "settingsDev": "VERI TOPLAMA",
     "settingsTech": "TEKNOLOJİ"
   },
+  "stop": {
+    "other": "diğer",
+    "button": "düğme ile normal durdurma",
+    "warp": "çözgü kırılması",
+    "weft": "atkı kırılması",
+    "tool": "ekipman hatası",
+    "fabric": "kumaş rulo üretimi"
+  },
   "shift": {
     "shift": "Vardiya",
     "days": "g",

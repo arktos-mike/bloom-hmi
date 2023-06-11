@@ -8,6 +8,9 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/en-gb';
 import duration from 'dayjs/plugin/duration';
 import { Button, RangePicker } from '@/components';
+import * as ExcelJs from 'exceljs';
+import { saveWorkbook } from "./utils";
+import { addTitle, adjustColumnWidth } from './utils/excelUtils';
 dayjs.extend(duration);
 
 interface DataType {
@@ -18,10 +21,14 @@ interface DataType {
 
 type Props = {
   token: any;
+  usb: any;
+  lifetime: any;
 };
 
 const ClothLog: React.FC<Props> = ({
-  token
+  token,
+  usb,
+  lifetime
 }
 ) => {
   const [height, setHeight] = useState<number | undefined>(0)

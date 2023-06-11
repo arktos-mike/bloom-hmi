@@ -1,6 +1,6 @@
 import { Modal, notification, Table } from 'antd';
 import type { ColumnsType, TablePaginationConfig, TableProps } from 'antd/es/table';
-import { ToolOutlined, QuestionCircleOutlined, SyncOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
+import { ToolOutlined, QuestionCircleOutlined, SyncOutlined, ExclamationCircleOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { ButtonIcon, FabricFullIcon, WarpBeamIcon, WeftIcon } from "../components/Icons"
 import { FilterValue, SorterResult } from 'antd/es/table/interface';
 import React, { useEffect, useRef, useState } from 'react'
@@ -9,6 +9,9 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/en-gb';
 import duration from 'dayjs/plugin/duration';
 import { Button, RangePicker } from '@/components';
+import * as ExcelJs from 'exceljs';
+import { saveWorkbook } from "./utils";
+import { addTitle, adjustColumnWidth } from './utils/excelUtils';
 dayjs.extend(duration);
 
 interface DataType {
@@ -19,17 +22,21 @@ interface DataType {
 
 type Props = {
   token: any;
+  usb: any;
+  lifetime: any;
 };
 
 const ModeLog: React.FC<Props> = ({
-  token
+  token,
+  usb,
+  lifetime
 }
 ) => {
   const [height, setHeight] = useState<number | undefined>(0)
   const div = useRef<HTMLDivElement | null>(null);
   const { t, i18n } = useTranslation();
   const [data, setData] = useState();
-  const [period, setPeriod] = useState([dayjs().subtract(7, 'days'), dayjs()]);
+  const [period, setPeriod] = useState<any>([dayjs().subtract(7, 'days'), dayjs()]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<TablePaginationConfig>({
     hideOnSinglePage: true, responsive: true, position: ["bottomCenter"], size: 'default', showSizeChanger: false
@@ -51,18 +58,18 @@ const ModeLog: React.FC<Props> = ({
 
   const modeCodeObj = (code: Number) => {
     let obj;
-    if (code == 0) { obj = { color: '#000000FF', text: t('tags.mode.init'), icon: <QuestionCircleOutlined style={{ fontSize: '175%', color: '#000000FF', paddingInline: 5 }} /> } }
-    else if (code == 1) { obj = { color: '#43A047FF', text: t('tags.mode.run'), icon: <SyncOutlined style={{ fontSize: '175%', color: '#43A047FF', paddingInline: 5 }} /> } }
-    else if (code == 2) { obj = { color: '#7339ABFF', text: t('tags.mode.stop'), icon: <ButtonIcon style={{ fontSize: '175%', color: '#7339ABFF', paddingInline: 5 }} /> } }
-    else if (code == 3) { obj = { color: '#FF7F27FF', text: t('tags.mode.stop'), icon: <WarpBeamIcon style={{ fontSize: '175%', color: '#FF7F27FF', paddingInline: 5 }} /> } }
-    else if (code == 4) { obj = { color: '#FFB300FF', text: t('tags.mode.stop'), icon: <WeftIcon style={{ fontSize: '175%', color: '#FFB300FF', paddingInline: 5 }} /> } }
-    else if (code == 5) { obj = { color: '#E53935FF', text: t('tags.mode.stop'), icon: <ToolOutlined style={{ fontSize: '175%', color: '#E53935FF', paddingInline: 5 }} /> } }
-    else if (code == 6) { obj = { color: '#005498FF', text: t('tags.mode.stop'), icon: <FabricFullIcon style={{ fontSize: '175%', color: '#005498FF', paddingInline: 5 }} /> } }
-    else { obj = { color: '#00000000', text: t('tags.mode.unknown'), icon: <QuestionCircleOutlined style={{ fontSize: '175%', color: '#00000000', paddingInline: 5 }} /> } }
+    if (code == 0) { obj = { color: '#000000FF', text: t('tags.mode.init'), details: t('tags.mode.init'), icon: <QuestionCircleOutlined style={{ fontSize: '175%', color: '#000000FF', paddingInline: 5 }} /> } }
+    else if (code == 1) { obj = { color: '#43A047FF', text: t('tags.mode.run'), details: t('tags.mode.run'), icon: <SyncOutlined style={{ fontSize: '175%', color: '#43A047FF', paddingInline: 5 }} /> } }
+    else if (code == 2) { obj = { color: '#7339ABFF', text: t('tags.mode.stop'), details: t('tags.mode.stop') + ' - ' + t('stop.button'), icon: <ButtonIcon style={{ fontSize: '175%', color: '#7339ABFF', paddingInline: 5 }} /> } }
+    else if (code == 3) { obj = { color: '#FF7F27FF', text: t('tags.mode.stop'), details: t('tags.mode.stop') + ' - ' + t('stop.warp'), icon: <WarpBeamIcon style={{ fontSize: '175%', color: '#FF7F27FF', paddingInline: 5 }} /> } }
+    else if (code == 4) { obj = { color: '#FFB300FF', text: t('tags.mode.stop'), details: t('tags.mode.stop') + ' - ' + t('stop.weft'), icon: <WeftIcon style={{ fontSize: '175%', color: '#FFB300FF', paddingInline: 5 }} /> } }
+    else if (code == 5) { obj = { color: '#E53935FF', text: t('tags.mode.stop'), details: t('tags.mode.stop') + ' - ' + t('stop.tool'), icon: <ToolOutlined style={{ fontSize: '175%', color: '#E53935FF', paddingInline: 5 }} /> } }
+    else if (code == 6) { obj = { color: '#005498FF', text: t('tags.mode.stop'), details: t('tags.mode.stop') + ' - ' + t('stop.fabric'), icon: <FabricFullIcon style={{ fontSize: '175%', color: '#005498FF', paddingInline: 5 }} /> } }
+    else { obj = { color: '#00000000', text: t('tags.mode.unknown'), details: t('tags.mode.stop') + ' - ' + t('stop.other'), icon: <QuestionCircleOutlined style={{ fontSize: '175%', color: '#00000000', paddingInline: 5 }} /> } }
     return obj;
   }
   const duration2text = (start: any, end: any) => {
-    let diff = dayjs.duration(dayjs(!end?dayjs():end).diff(start))
+    let diff = dayjs.duration(dayjs(!end ? dayjs() : end).diff(start))
     let durstr = (diff.days() > 0 ? diff.days() + " " + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + " " + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + " " + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + " " + t('shift.secs') : "")
     if (durstr == "") durstr = "<1 " + t('shift.secs')
     return durstr
@@ -97,6 +104,39 @@ const ModeLog: React.FC<Props> = ({
     catch (error) { console.log(error) }
     fetchData();
   };
+
+  const saveReport = async () => {
+    const workbook = new ExcelJs.Workbook();
+    const worksheet = workbook.addWorksheet(t('panel.loom'));
+    worksheet.properties.defaultRowHeight = 20;
+    worksheet.columns =
+      [
+        { header: t('log.event'), key: 'modecode', },
+        { header: t('tags.picks.descr'), key: 'picks', },
+        { header: t('shift.duration'), key: 'duration', },
+        { header: t('shift.starttime'), key: 'start', },
+      ];
+    worksheet.duplicateRow(1, 4, true);
+    addTitle(worksheet, t('menu.modelog') + ' ' + lifetime?.type + ' (' + lifetime?.serialno + '）', (period ? period[0].format('L LTS') : dayjs().subtract(7, 'days').format('L LTS')) + ' - ' + (period ? period[1].format('L LTS') : dayjs().format('L LTS')))
+    worksheet.getRow(5).font = { name: 'PTSans', family: 4, size: 9, bold: true }
+    worksheet.getRow(5).eachCell((cell, number) => {
+      cell.fill = {
+        type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFececec' }
+      }
+      cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+    })
+    worksheet.addRows((data || []).map((record: any) => ({
+      ...record,
+      modecode: modeCodeObj(record?.modecode).details,
+      picks: record?.picks && (Number(record?.picks)),
+      duration: duration2text(record.timestamp['lower'], record.timestamp['upper']),
+      start: dayjs(record.timestamp['lower']).format('LL LTS'),
+    })));
+    adjustColumnWidth(worksheet);
+    const json = await saveWorkbook(workbook, t('menu.monthReport') + '_' + lifetime?.type + '_(' + lifetime?.serialno + ')_' + ((period ? period[0].format('L LTS') : dayjs().subtract(7, 'days').format('L LTS')) + '_' + (period ? period[1].format('L LTS') : dayjs().format('L LTS'))) + '.xlsx');
+    openNotificationWithIcon((json?.error || json == null) ? 'warning' : 'success', t(json?.message || 'notifications.servererror'), 3, '', (json?.error || json == null) ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
+  };
+
   const confirm = () => {
     Modal.confirm({
       title: t('confirm.title'),
@@ -224,6 +264,7 @@ const ModeLog: React.FC<Props> = ({
         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}><h1 style={{ margin: 10 }}>{t('log.select')}</h1>
           <RangePicker style={{ flexGrow: 1 }} defaultValue={[dayjs().subtract(7, 'days'), dayjs()]} onChange={(e: any) => { setPeriod([e ? e[0]?.startOf('minute') : dayjs().startOf('day'), e ? e[1]?.endOf('minute') : dayjs()]) }} />
           <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" danger={true} style={{ margin: 10 }} onClick={confirm} ></Button>
+          {usb && <Button shape="circle" icon={<SaveOutlined style={{ fontSize: '130%' }} />} size="large" type="primary" style={{ margin: 10 }} onClick={saveReport} ></Button>}
         </div>
         <Table
           columns={columns}
