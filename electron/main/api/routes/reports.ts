@@ -5,7 +5,8 @@ import { usbPath } from './'
 import fs from 'fs';
 import { join } from 'path'
 import multer from 'multer'
-
+import { transliterate as tr, slugify } from 'transliteration';
+slugify.config({ lowercase: true, separator: '_' });
 const upload = multer()
 
 // create a new express-promise-router
@@ -29,10 +30,10 @@ router.post('/saveReport', upload.single('file'), async (req, res) => {
     else {
       const { rows } = await db.query(`SELECT data->'opIP'->'name' as name FROM hwconfig where name = $1`, ['ipConf'])
       const serverName = rows[0]['name']
-      fs.writeFileSync(join(usbPath, serverName.replace(' ', '_') + '_' + fileName.replace(' ', '_')), blob.buffer);
+      fs.writeFileSync(join(usbPath, slugify(tr(serverName)) + '_' + slugify(tr(fileName))), blob.buffer);
       res.status(200).json({
         message: "notifications.datasaved",
-        filePath: join(usbPath, serverName.replace(' ', '_') + '_' + fileName.replace(' ', '_'))
+        filePath: join(usbPath, slugify(tr(serverName)) + '_' + slugify(tr(fileName)))
       });
     }
   } catch (err) {
