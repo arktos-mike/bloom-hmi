@@ -1,6 +1,6 @@
 import { Modal, notification, Table, Tag } from 'antd';
 import type { ColumnsType, TablePaginationConfig, TableProps } from 'antd/es/table';
-import { LogoutOutlined, UserSwitchOutlined, InteractionOutlined, UnlockOutlined, IdcardOutlined, FieldTimeOutlined, QuestionCircleOutlined, ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
+import { LogoutOutlined, UserSwitchOutlined, InteractionOutlined, UnlockOutlined, IdcardOutlined, FieldTimeOutlined, QuestionCircleOutlined, ExclamationCircleOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 import { FilterValue, SorterResult } from 'antd/es/table/interface';
 import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
@@ -99,6 +99,41 @@ const UserLog: React.FC<Props> = ({
     catch (error) { console.log(error) }
     fetchData();
   };
+
+  const saveReport = async () => {
+    const workbook = new ExcelJs.Workbook();
+    const worksheet = workbook.addWorksheet(t('panel.loom'));
+    worksheet.properties.defaultRowHeight = 20;
+    worksheet.columns =
+      [
+        { header: t('user.id'), key: 'id', },
+        { header: t('user.name'), key: 'name', },
+        { header: t('user.role'), key: 'role', },
+        { header: t('log.login'), key: 'login', },
+        { header: t('log.logout'), key: 'logout', },
+      ];
+    worksheet.duplicateRow(1, 4, true);
+    addTitle(worksheet, t('menu.userlog') + ' ' + lifetime?.type + ' (' + lifetime?.serialno + '）', (period ? period[0].format('L LTS') : dayjs().subtract(7, 'days').format('L LTS')) + ' - ' + (period ? period[1].format('L LTS') : dayjs().format('L LTS')))
+    worksheet.getRow(5).font = { name: 'PTSans', family: 4, size: 9, bold: true }
+    worksheet.getRow(5).eachCell((cell, number) => {
+      cell.fill = {
+        type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFececec' }
+      }
+      cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+    })
+    worksheet.addRows((data || []).map((record: any) => ({
+      ...record,
+      id: record.id,
+      name: record.name,
+      role: t('user.' + record.role),
+      login: dayjs(record.timestamp['lower']).format('LL LTS'),
+      logout: (record.timestamp['upper'] ? dayjs(record.timestamp['upper']).format('LL LTS') : ''),
+    })));
+    adjustColumnWidth(worksheet);
+    const json = await saveWorkbook(workbook, t('menu.monthReport') + '_' + lifetime?.type + '_(' + lifetime?.serialno + ')_' + ((period ? period[0].format('L LTS') : dayjs().subtract(7, 'days').format('L LTS')) + '_' + (period ? period[1].format('L LTS') : dayjs().format('L LTS'))) + '.xlsx');
+    openNotificationWithIcon((json?.error || json == null) ? 'warning' : 'success', t(json?.message || 'notifications.servererror'), 3, '', (json?.error || json == null) ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
+  };
+
   const confirm = () => {
     Modal.confirm({
       title: t('confirm.title'),
@@ -218,6 +253,7 @@ const UserLog: React.FC<Props> = ({
         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}><h1 style={{ margin: 10 }}>{t('log.select')}</h1>
           <RangePicker style={{ flexGrow: 1 }} defaultValue={[dayjs().subtract(7, 'days'), dayjs()]} onChange={(e: any) => { setPeriod([e ? e[0]?.startOf('minute') : dayjs().startOf('day'), e ? e[1]?.endOf('minute') : dayjs()]) }} />
           <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" danger={true} style={{ margin: 10 }} onClick={confirm} ></Button>
+          {usb && <Button shape="circle" icon={<SaveOutlined style={{ fontSize: '130%' }} />} size="large" type="primary" style={{ margin: 10 }} onClick={saveReport} ></Button>}
         </div>
         <Table
           columns={columns}
