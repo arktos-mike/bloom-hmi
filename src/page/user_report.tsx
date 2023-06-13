@@ -205,6 +205,10 @@ const UserReport: React.FC<Props> = memo(({
     });
     worksheet.getRow(6 + (data || []).length).font = { name: 'PTSans', family: 4, size: 11, bold: true }
     adjustColumnWidth(worksheet);
+    for (let rowNum = 6; rowNum <= 6 + (data || []).length; rowNum++) {
+      const row = worksheet.getRow(rowNum);
+      row.height = 20;
+    }
     const json = await saveWorkbook(workbook, t('menu.userReport') + '_' + lifetime?.type + '_(' + lifetime?.serialno + ')_' + ((users || []).filter((item: any) => item.id == Number(user)))[0]['name'] + '_' + dayjs(period[0]).format('MMMM YYYY') + '.xlsx');
     openNotificationWithIcon((json?.error || json == null) ? 'warning' : 'success', t(json?.message || 'notifications.servererror'), 3, '', (json?.error || json == null) ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
   };
