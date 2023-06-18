@@ -5,7 +5,7 @@ import { initReactI18next } from 'react-i18next';
 
 const getLng = async () => {
   try {
-    const response = await fetch('http://localhost:3000/locales/lng');
+    const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/locales/lng');
     if (!response.ok) { /*throw Error(response.statusText);*/ }
     const data = await response.json();
     return data.lng
@@ -20,14 +20,14 @@ const detectUserLanguage = (callback: (arg0: any) => void) => {
 
 i18n.use(AsyncStoragePlugin(detectUserLanguage)).use(Fetch).use(initReactI18next).init({
   backend: {
-    loadPath: 'http://localhost:3000/locales/translations?lng={{lng}}&ns={{ns}}',
+    loadPath: (window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/locales/translations?lng={{lng}}&ns={{ns}}',
     requestOptions: {
       method: 'POST',
     },
   },
-  supportedLngs: ['ru', 'en','es','tr'],
+  supportedLngs: ['ru', 'en', 'es', 'tr'],
   fallbackLng: ['en'],
-  preload: ['ru', 'en','es','tr'],
+  preload: ['ru', 'en', 'es', 'tr'],
   ns: 'translation',
   defaultNS: 'translation',
   interpolation: {

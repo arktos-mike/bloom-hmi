@@ -7,6 +7,7 @@ const { Option } = Select;
 type Props = {
   isModalVisible: boolean;
   token: any;
+  decypher: any;
   setToken: (val: any) => void;
   setIsModalVisible: (val: boolean) => void;
   activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string };
@@ -16,6 +17,7 @@ const UserEdit: React.FC<Props> = ({
   isModalVisible,
   setIsModalVisible,
   token,
+  decypher,
   setToken,
   activeInput,
   setActiveInput,
@@ -37,14 +39,14 @@ const UserEdit: React.FC<Props> = ({
   useEffect(() => {
     if (form && isModalVisible) {
       form.setFieldsValue({
-        user: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon'),
-        email: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).email : '',
-        phone: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).phonenumber : '',
-        role: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : ''
+        user: (token && decypher) ? decypher?.name : t('user.anon'),
+        email: (token && decypher) ? decypher?.email : '',
+        phone: (token && decypher) ? decypher?.phonenumber : '',
+        role: (token && decypher) ? decypher?.role : ''
       })
     }
     return () => { }
-  }, [form, token])
+  }, [form, token, decypher])
 
   const openNotificationWithIcon = (type: string, message: string, dur: number, descr?: string, style?: React.CSSProperties) => {
     if (type == 'success' || type == 'warning' || type == 'info' || type == 'error')
@@ -58,10 +60,10 @@ const UserEdit: React.FC<Props> = ({
   };
   const onFinish = async (values: { user: any; oldpassword: any; newpassword: any; email: any; phone: any; role: any; }) => {
     try {
-      const response = await fetch('http://localhost:3000/users/update', {
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/users/update', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
-        body: JSON.stringify({ id: JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id, name: values.user, email: values.email, phonenumber: values.phone, role: values.role, oldpassword: values.oldpassword, newpassword: values.newpassword }),
+        body: JSON.stringify({ id: decypher?.id, name: values.user, email: values.email, phonenumber: values.phone, role: values.role, oldpassword: values.oldpassword, newpassword: values.newpassword }),
       });
       const json = await response.json();
       if (json.token) { setToken(json.token); setIsModalVisible(false) }
@@ -98,10 +100,10 @@ const UserEdit: React.FC<Props> = ({
           form={form}
           preserve={false}
           initialValues={{
-            user: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon'),
-            email: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).email : '',
-            phone: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).phonenumber : '',
-            role: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : ''
+            user: (token && decypher) ? decypher?.name : t('user.anon'),
+            email: (token && decypher) ? decypher?.email : '',
+            phone: (token && decypher) ? decypher?.phonenumber : '',
+            role: (token && decypher) ? decypher?.role : ''
           }}
         >
           <Form.Item
@@ -133,11 +135,11 @@ const UserEdit: React.FC<Props> = ({
             label={t('user.role')}
             rules={[{ required: true, message: t('user.fill') }]}
           >
-            <Select disabled={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? true : false : false} >
-              <Option disabled={token ? false : true} value="weaver">{t('user.weaver')}</Option>
-              <Option disabled={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? false : true : true} value="fixer">{t('user.fixer')}</Option>
-              <Option disabled={token ? ['manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? false : true : true} value="manager">{t('user.manager')}</Option>
-              <Option disabled={token ? (JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? false : true) : true} value='admin'>{t('user.admin')}</Option>
+            <Select disabled={(token && decypher) ? decypher?.role == 'admin' ? true : false : false} >
+              <Option disabled={(token && decypher) ? false : true} value="weaver">{t('user.weaver')}</Option>
+              <Option disabled={(token && decypher) ? ['fixer', 'manager', 'admin'].includes(decypher?.role) ? false : true : true} value="fixer">{t('user.fixer')}</Option>
+              <Option disabled={(token && decypher) ? ['manager', 'admin'].includes(decypher?.role) ? false : true : true} value="manager">{t('user.manager')}</Option>
+              <Option disabled={(token && decypher) ? (decypher?.role == 'admin' ? false : true) : true} value='admin'>{t('user.admin')}</Option>
             </Select>
           </Form.Item>
 

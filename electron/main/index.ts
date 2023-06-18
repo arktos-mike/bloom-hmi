@@ -9,6 +9,9 @@ const webusb = new WebUSB({
 });
 import './api/server'
 import { usbPath, usbAttach, usbDetach } from './api/routes'
+import express from 'express'
+import cors from 'cors'
+import compression from 'compression'
 
 //app.commandLine.appendSwitch('host-rules', 'MAP * 127.0.0.1');
 //==============================================================
@@ -44,6 +47,28 @@ const preload = join(__dirname, '../preload/index.js')
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin
 const url = `http://${process.env['VITE_DEV_SERVER_HOST']}:${process.env['VITE_DEV_SERVER_PORT']}`
 const indexHtml = join(ROOT_PATH.dist, 'index.html')
+
+async function createReactServer() {
+  const web = express();
+  web.use(express.json())
+  web.use(express.urlencoded({ extended: true }))
+  web.use(cors())
+  web.use(compression())
+  if (app.isPackaged) {
+    web.use(express.static(ROOT_PATH.dist));
+    web.get('/', function (req, res) {
+      res.sendFile(indexHtml);
+    });
+  } else {
+    web.use(express.static(ROOT_PATH.dist));
+    web.get('/', function (req, res) {
+      res.redirect(`http://${process.env['VITE_DEV_SERVER_HOST']}:${process.env['VITE_DEV_SERVER_PORT']}`);
+    });
+  }
+  web.listen(8080, () => {
+    //console.log(`Web Server listening on port `, 8080)
+  });
+}
 
 async function createWindow() {
   win = new BrowserWindow({
@@ -111,11 +136,15 @@ app.whenReady().then(async () => {
   webusb.addEventListener('connect', usbAttach);
   webusb.addEventListener('disconnect', usbDetach);
   createWindow();
+  createReactServer();
 
   app.on('activate', () => {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+      createReactServer();
+    }
   });
 });
 
@@ -140,6 +169,7 @@ app.on('activate', () => {
     allWindows[0].focus()
   } else {
     createWindow()
+    createReactServer()
   }
 })
 

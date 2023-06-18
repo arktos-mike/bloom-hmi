@@ -31,6 +31,7 @@ interface DataType {
 
 type Props = {
   token: any;
+  decypher: any;
   shadowUser: any;
   usb: any;
   lifetime: any;
@@ -38,6 +39,7 @@ type Props = {
 
 const UserReport: React.FC<Props> = memo(({
   token,
+  decypher,
   shadowUser,
   usb,
   lifetime
@@ -47,7 +49,7 @@ const UserReport: React.FC<Props> = memo(({
   const [data, setData] = useState();
   const [users, setUsers] = useState();
   const [total, setTotal] = useState();
-  const [user, setUser] = useState(token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id : Number(shadowUser?.id));
+  const [user, setUser] = useState(token && decypher && decypher?.role == 'weaver' ? decypher?.id : Number(shadowUser?.id));
   const [period, setPeriod] = useState([dayjs().startOf('month'), dayjs()]);
   const [loading, setLoading] = useState(false);
   const [filteredInfo, setFilteredInfo] = useState<Record<string, FilterValue | null>>({});
@@ -293,7 +295,7 @@ const UserReport: React.FC<Props> = memo(({
     try {
       if (user && period[0] && period[1]) {
         setLoading(true);
-        const response = await fetch('http://localhost:3000/shifts/getuserstatinfo', {
+        const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/shifts/getuserstatinfo', {
           method: 'POST',
           headers: { 'content-type': 'application/json;charset=UTF-8', },
           body: JSON.stringify({ id: user, start: period ? period[0] : dayjs().startOf('month'), end: period ? period[1] : dayjs() }),
@@ -308,7 +310,7 @@ const UserReport: React.FC<Props> = memo(({
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost:3000/users/weavers');
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/users/weavers');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setUsers(json);
@@ -320,7 +322,7 @@ const UserReport: React.FC<Props> = memo(({
     try {
       if (user && period[0] && period[1]) {
         setLoading(true);
-        const response = await fetch('http://localhost:3000/reports/userreport', {
+        const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/reports/userreport', {
           method: 'POST',
           headers: { 'content-type': 'application/json;charset=UTF-8', },
           body: JSON.stringify({ id: user, start: period ? period[0] : dayjs().startOf('month'), end: period ? period[1] : dayjs() }),
@@ -364,7 +366,7 @@ const UserReport: React.FC<Props> = memo(({
     <div ref={div} className='wrapper'>
       <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
         <h1 style={{ margin: 10 }}>{t('user.weaver')}</h1>
-        <Select style={{ width: '100%' }} userRights={['admin', 'manager']} token={token}
+        <Select style={{ width: '100%' }} userRights={['admin', 'manager']} token={token} decypher={decypher}
           value={user ? user : null}
           onChange={(value: any) => { setUser(value) }}
           options={
@@ -374,7 +376,7 @@ const UserReport: React.FC<Props> = memo(({
           } />
         <h1 style={{ margin: 10 }}>{t('log.select')}</h1>
         <DatePicker style={{ flexGrow: 1 }} picker="month" format='MMMM YYYY' defaultValue={dayjs()} onChange={(e: any) => { setPeriod([e ? e?.startOf('month') : dayjs().startOf('month'), e ? e?.endOf('month') : dayjs()]) }} />
-        {false && <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={confirm} ></Button>}
+        {false && <Button userRights={['admin', 'manager']} token={token} decypher={decypher} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={confirm} ></Button>}
         {usb && <Button shape="circle" icon={<SaveOutlined style={{ fontSize: '130%' }} />} size="large" type="primary" style={{ margin: 10 }} onClick={saveReport} ></Button>}
       </div>
       <Table

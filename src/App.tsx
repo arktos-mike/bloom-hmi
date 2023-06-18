@@ -26,7 +26,6 @@ import rulocale from 'antd/lib/locale/ru_RU';
 import trlocale from 'antd/lib/locale/tr_TR';
 import eslocale from 'antd/lib/locale/es_ES';
 import enlocale from 'antd/lib/locale/en_US';
-
 import Keyboard, { KeyboardReactInterface } from 'react-simple-keyboard'
 import 'styles/keyboard.css'
 import enlayout from "simple-keyboard-layouts/build/layouts/english";
@@ -47,7 +46,6 @@ import { Breadcrumb } from './components';
 import Reminders from './page/reminders';
 
 import { differenceWith, isEqual } from 'lodash-es';
-
 import type { InputRef } from 'antd';
 
 const { Header, Content, Footer } = Layout;
@@ -75,10 +73,10 @@ const App: React.FC = memo(() => {
 
   const checkShadowUser = async () => {
     try {
-      const ans = await fetch('http://localhost:3000/logs/user');
+      const ans = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/logs/user');
       const json = await ans.json();
       if (!ans.ok) { throw Error(ans.statusText); }
-      if (json.length && (token && (json[0].id != JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id))) {
+      if (json.length && token && decypher && (json[0].id != decypher?.id)) {
         setShadowUser(json[0]);
       }
       else { setShadowUser({ id: null, name: null, logintime: json[0]?.logintime }); }
@@ -88,11 +86,11 @@ const App: React.FC = memo(() => {
 
   const checkLogin = async () => {
     try {
-      const ans = await fetch('http://localhost:3000/logs/admuser');
+      const ans = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/logs/admuser');
       const json = await ans.json();
       if (!ans.ok) { throw Error(ans.statusText); }
       if (json.length) {
-        const response = await fetch('http://localhost:3000/users/login/' + json[0].id, {
+        const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/users/login/' + json[0].id, {
           method: 'POST'
         });
         const jsonb = await response.json();
@@ -100,11 +98,11 @@ const App: React.FC = memo(() => {
         if (!response.ok) { /*throw Error(response.statusText);*/ }
       }
       else {
-        const ans = await fetch('http://localhost:3000/logs/user');
+        const ans = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/logs/user');
         const json = await ans.json();
         if (!ans.ok) { throw Error(ans.statusText); }
         if (json.length) {
-          const response = await fetch('http://localhost:3000/users/login/' + json[0].id, {
+          const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/users/login/' + json[0].id, {
             method: 'POST'
           });
           const jsonb = await response.json();
@@ -145,6 +143,7 @@ const App: React.FC = memo(() => {
   const [bufferTemp, setBufferTemp] = useState('')
   const [lngs, setLngs] = useState({ data: [] })
   const [token, setToken] = useState<string | null>(null)
+  const [decypher, setDecypher] = useState<any>(null)
   const [shadowUser, setShadowUser] = useState(all?.weaver)
   const [remember, setRemember] = useState(true)
   const [control, setControl] = useState(false)
@@ -216,7 +215,7 @@ const App: React.FC = memo(() => {
 
   const avatarColor = () => {
     let color;
-    let role = token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role
+    let role = token && decypher && decypher?.role
     if (role == 'fixer') { color = "#108ee9" }
     else if (role == 'weaver') { color = "#87d068" }
     else if (role == 'manager') { color = "#2db7f5" }
@@ -261,9 +260,24 @@ const App: React.FC = memo(() => {
     return (diff.days() > 0 ? diff.days() + t('shift.days') + " " : "") + (diff.hours() > 0 ? diff.hours() + t('shift.hours') + " " : "") + (diff.minutes() > 0 ? diff.minutes() + t('shift.mins') + " " : "") + (diff.seconds() > 0 ? diff.seconds() + t('shift.secs') : "")
   }
 
+  const decypherToken = async (token: any) => {
+    try {
+      if (token !== null) {
+        const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/users/decode/' + token, {
+          method: 'POST'
+        });
+        if (!response.ok) { /*throw Error(response.statusText);*/ }
+        const json = await response.json();
+        setDecypher(json?.decoded);
+      }
+      else setDecypher(null)
+    }
+    catch (error) { setDecypher(null)/*console.log(error);*/ }
+  }
+
   const fetchLngs = async () => {
     try {
-      const response = await fetch('http://localhost:3000/locales');
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/locales');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setLngs({ data: json });
@@ -273,7 +287,7 @@ const App: React.FC = memo(() => {
 
   const fetchTags = async () => {
     try {
-      const response = await fetch('http://localhost:3000/tags');
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/tags');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       //json.map((tag: any) => (
@@ -293,7 +307,7 @@ const App: React.FC = memo(() => {
 
   const fetchAll = async () => {
     try {
-      const response = await fetch('http://localhost:3000/tags/full');
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/tags/full');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setAll(json);
@@ -315,7 +329,7 @@ const App: React.FC = memo(() => {
 
   const fetchReminders = async () => {
     try {
-      const response = await fetch('http://localhost:3000/reminders/active');
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/reminders/active');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setRemindersFilter(differenceWith(json, (reminders || []), isEqual));
@@ -505,6 +519,7 @@ const App: React.FC = memo(() => {
     (async () => {
       await checkLogin();
       usbtoken?.token && openNotificationWithIcon('success', t('notifications.userok'), 3, '', '', { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
+      usbtoken?.token && await decypherToken(usbtoken?.token)
       if (usbtoken?.token == null) { await checkShadowUser(); }
     })();
     return () => { }
@@ -530,6 +545,7 @@ const App: React.FC = memo(() => {
   useEffect(() => {
     (async () => {
       //setToken(token);
+      await decypherToken(token);
       await checkShadowUser();
     })();
     return () => { }
@@ -592,7 +608,7 @@ const App: React.FC = memo(() => {
             <div className="logo" onClick={showDrawer}>
               <img src={logo} className="applogo" alt=""></img>
             </div>
-            <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={location.pathname == '/' ? ['overview'] : [location.pathname.split("/").slice(-1)[0]]} defaultSelectedKeys={['overview']} items={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? smallItemsSA : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? smallItemsMan : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? smallItemsFix : smallItems : smallItems} />
+            <Menu style={{ fontSize: '150%' }} disabledOverflow theme='dark' mode="horizontal" selectedKeys={location.pathname == '/' ? ['overview'] : [location.pathname.split("/").slice(-1)[0]]} defaultSelectedKeys={['overview']} items={(token && decypher) ? decypher?.role == 'admin' ? smallItemsSA : decypher?.role == 'manager' ? smallItemsMan : decypher?.role == 'fixer' ? smallItemsFix : smallItems : smallItems} />
             <div className="speed"><Spin wrapperClassName="speed" spinning={modeCode?.val == 1 ? !getTagLink('speedMainDrive') : !getTagLink('stopAngle')}>{modeCode?.val == 1 ? <DashboardOutlined style={{ fontSize: '80%', paddingInline: 5 }} /> : <AimOutlined style={{ fontSize: '80%', paddingInline: 5 }} />}{modeCode?.val == 1 ? getTagVal('speedMainDrive') : getTagVal('stopAngle')}<div className="sub">{modeCode?.val == 1 ? t('tags.speedMainDrive.eng') : '°'}</div></Spin></div>
             <div className="mode" style={{ backgroundColor: modeCodeObj(modeCode?.val).color }}><Spin wrapperClassName="mode" spinning={!getTagLink('modeCode')}>{modeCodeObj(modeCode?.val).text + ' '}{modeCodeObj(modeCode?.val).icon}<div className='stopwatch'>{stopwatch(modeCode?.updated)}</div></Spin></div>
             <div className="shift"><div className="text"><Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>{(period == 'day' || ((!info.shift.shiftstart || !info.shift.shiftend) && period == 'shift')) ? dayjs().format('L') : period == 'shift' ? periodName : period == 'month' ? dayjs().format('MMM YY') : ''}<div className="percent">{efficiency ? Number(Number(efficiency).toFixed((efficiency && (efficiency < 10)) ? 2 : 1).toString()).toLocaleString(i18n.language) + '%' : ''}</div></Space></div><div className="progress"><Progress percent={efficiency ? efficiency : 0} showInfo={false} size="small" /></div></div>
@@ -605,8 +621,8 @@ const App: React.FC = memo(() => {
                   </Tooltip>}
                   <Avatar size={50} style={{ backgroundColor: avatarColor() }} icon={<UserOutlined />} />
                 </Avatar.Group>
-                <table><tbody><tr><td><div className='username'>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</div></td></tr><tr><td><div className='userrole'>{t(token ? 'user.' + JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : '')}</div></td></tr></tbody></table>
-              </div><UserLogin shadowUser={shadowUser} usb={usb} token={token} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} activeInput={activeInput} setActiveInput={setActiveInput} />
+                <table><tbody><tr><td><div className='username'>{(token && decypher) ? decypher?.name : t('user.anon')}</div></td></tr><tr><td><div className='userrole'>{t((token && decypher) ? 'user.' + decypher?.role : '')}</div></td></tr></tbody></table>
+              </div><UserLogin shadowUser={shadowUser} usb={usb} token={token} decypher={decypher} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} activeInput={activeInput} setActiveInput={setActiveInput} />
             </div>
             <div className="clock">
               <div className="time">{curTime}</div><div className="date">{curDate}</div>
@@ -619,22 +635,22 @@ const App: React.FC = memo(() => {
               </div>
               <div className="site-layout-content">
                 <Routes>
-                  <Route index element={<Overview period={period} setPeriod={setPeriod} pieces={Math.max(Number(pieces), (fullinfo.rolls != null) ? fullinfo.rolls : all?.rolls)} tags={tags} token={token} modeCode={modeCode} info={info} fullinfo={fullinfo.lifetime.mfgdate ? fullinfo : all} userinfo={userinfo} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
+                  <Route index element={<Overview period={period} setPeriod={setPeriod} pieces={Math.max(Number(pieces), (fullinfo.rolls != null) ? fullinfo.rolls : all?.rolls)} tags={tags} token={token} decypher={decypher} modeCode={modeCode} info={info} fullinfo={fullinfo.lifetime.mfgdate ? fullinfo : all} userinfo={userinfo} shadowUser={shadowUser} reminders={reminders} setUpdatedReminders={setUpdatedReminders} />} />
                   <Route path={'/machineInfo'} element={<MachineInfo lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} tags={tags} modeCode={modeCode} />} />
-                  <Route path={'/reminders'} element={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Reminders activeInput={activeInput} setActiveInput={setActiveInput} setUpdatedReminders={setUpdatedReminders} /> : <Navigate to="/" /> : <Navigate to="/" />} />
-                  <Route path={'/reports'} element={<MonthReport token={token} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
-                  <Route path={'/reports/monthReport'} element={<MonthReport token={token} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
-                  <Route path={'/reports/userReport'} element={<UserReport token={token} shadowUser={shadowUser} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
-                  <Route path={'/logs'} element={<ModeLog token={token} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
-                  <Route path={'/logs/modelog'} element={<ModeLog token={token} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
-                  <Route path={'/logs/userlog'} element={<UserLog token={token} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
-                  <Route path={'/logs/clothlog'} element={<ClothLog token={token} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
-                  <Route path={'/settings'} element={<SettingsTech tags={tags} token={token} activeInput={activeInput} setActiveInput={setActiveInput} modeCode={modeCode} />} />
-                  <Route path={'/settings/settingsTech'} element={<SettingsTech tags={tags} token={token} activeInput={activeInput} setActiveInput={setActiveInput} modeCode={modeCode} />} />
-                  <Route path={'/settings/settingsOp'} element={<SettingsOp token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
-                  <Route path={'/settings/settingsDev'} element={<SettingsDev token={token} activeInput={activeInput} setActiveInput={setActiveInput} />} />
-                  <Route path={'/users'} element={token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? <Users activeInput={activeInput} setActiveInput={setActiveInput} token={token} /> : <Navigate to="/" /> : <Navigate to="/" />} />
-                  <Route path={'/shifts'} element={token ? ['manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? <Shifts activeInput={activeInput} setActiveInput={setActiveInput} setUpdated={setUpdated} /> : <Navigate to="/" /> : <Navigate to="/" />} />
+                  <Route path={'/reminders'} element={(token && decypher) ? ['fixer', 'manager', 'admin'].includes(decypher?.role) ? <Reminders activeInput={activeInput} setActiveInput={setActiveInput} setUpdatedReminders={setUpdatedReminders} /> : <Navigate to="/" /> : <Navigate to="/" />} />
+                  <Route path={'/reports'} element={<MonthReport token={token} decypher={decypher} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
+                  <Route path={'/reports/monthReport'} element={<MonthReport token={token} decypher={decypher} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
+                  <Route path={'/reports/userReport'} element={<UserReport token={token} decypher={decypher} shadowUser={shadowUser} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
+                  <Route path={'/logs'} element={<ModeLog token={token} decypher={decypher} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
+                  <Route path={'/logs/modelog'} element={<ModeLog token={token} decypher={decypher} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
+                  <Route path={'/logs/userlog'} element={<UserLog token={token} decypher={decypher} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
+                  <Route path={'/logs/clothlog'} element={<ClothLog token={token} decypher={decypher} usb={usb} lifetime={fullinfo.lifetime.mfgdate ? fullinfo.lifetime : all?.lifetime} />} />
+                  <Route path={'/settings'} element={<SettingsTech tags={tags} token={token} decypher={decypher} activeInput={activeInput} setActiveInput={setActiveInput} modeCode={modeCode} />} />
+                  <Route path={'/settings/settingsTech'} element={<SettingsTech tags={tags} token={token} decypher={decypher} activeInput={activeInput} setActiveInput={setActiveInput} modeCode={modeCode} />} />
+                  <Route path={'/settings/settingsOp'} element={<SettingsOp token={token} decypher={decypher} activeInput={activeInput} setActiveInput={setActiveInput} />} />
+                  <Route path={'/settings/settingsDev'} element={<SettingsDev token={token} decypher={decypher} activeInput={activeInput} setActiveInput={setActiveInput} />} />
+                  <Route path={'/users'} element={(token && decypher) ? decypher?.role == 'admin' ? <Users activeInput={activeInput} setActiveInput={setActiveInput} token={token} decypher={decypher} /> : <Navigate to="/" /> : <Navigate to="/" />} />
+                  <Route path={'/shifts'} element={(token && decypher) ? ['manager', 'admin'].includes(decypher?.role) ? <Shifts activeInput={activeInput} setActiveInput={setActiveInput} setUpdated={setUpdated} /> : <Navigate to="/" /> : <Navigate to="/" />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
                 <Drawer

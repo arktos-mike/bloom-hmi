@@ -28,7 +28,7 @@ const Component = (props: any) => {
       });
   }
 
-  if (props.userRights && (props.token ? props.userRights.includes(JSON.parse(Buffer.from(props.token.split('.')[1], 'base64').toString()).role) ? false : true : true)) {
+  if (props.userRights && ((props.token && props.decypher) ? props.userRights.includes(props.decypher?.role) ? false : true : true)) {
     return (
       <Button shape={props.shape} danger={props.danger} style={props.style} onClick={() => { openNotificationWithIcon('error', t('notifications.rightserror'), 2, '', { backgroundColor: '#fff2f0', border: '2px solid #ffccc7' }); }} type="primary" icon={props.icon} size='large' >{t(props.text)}</Button>
     );

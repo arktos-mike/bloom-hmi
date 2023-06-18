@@ -14,7 +14,7 @@ const Component = (props: any) => {
       });
   }
 
-  if (props.userRights && (props.token ? props.userRights.includes(JSON.parse(Buffer.from(props.token.split('.')[1], 'base64').toString()).role) ? false : true : true)) {
+  if (props.userRights && ((props.token && props.decypher) ? props.userRights.includes(props.decypher?.role) ? false : true : true)) {
     return (
       <div style={{ alignItems: 'center', justifyContent: 'center' }} >
         <span style={{ marginRight: '15px' }}>{t(props.text)}</span>

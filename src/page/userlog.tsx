@@ -24,12 +24,14 @@ interface DataType {
 
 type Props = {
   token: any;
+  decypher: any;
   usb: any;
   lifetime: any;
 };
 
 const UserLog: React.FC<Props> = ({
   token,
+  decypher,
   usb,
   lifetime
 }
@@ -83,7 +85,7 @@ const UserLog: React.FC<Props> = ({
         openNotificationWithIcon('warning', t('notifications.dataerror'), 3, '', { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' });
       }
       else {
-        const response = await fetch('http://localhost:3000/logs/userlog/delete', {
+        const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/logs/userlog/delete', {
           method: 'POST',
           headers: { 'content-type': 'application/json;charset=UTF-8', },
           body: JSON.stringify({ start: period[0], end: period[1] }),
@@ -219,7 +221,7 @@ const UserLog: React.FC<Props> = ({
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/logs/userlog', {
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/logs/userlog', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
         body: JSON.stringify({ start: period ? period[0] : dayjs().subtract(7, 'days'), end: period ? period[1] : dayjs() }),
@@ -256,7 +258,7 @@ const UserLog: React.FC<Props> = ({
       <div>
         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}><h1 style={{ margin: 10 }}>{t('log.select')}</h1>
           <RangePicker style={{ flexGrow: 1 }} defaultValue={[dayjs().subtract(7, 'days'), dayjs()]} onChange={(e: any) => { setPeriod([e ? e[0]?.startOf('minute') : dayjs().startOf('day'), e ? e[1]?.endOf('minute') : dayjs()]) }} />
-          <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" danger={true} style={{ margin: 10 }} onClick={confirm} ></Button>
+          <Button userRights={['admin', 'manager']} token={token} decypher={decypher} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" danger={true} style={{ margin: 10 }} onClick={confirm} ></Button>
           {usb && <Button shape="circle" icon={<SaveOutlined style={{ fontSize: '130%' }} />} size="large" type="primary" style={{ margin: 10 }} onClick={saveReport} ></Button>}
         </div>
         <Table

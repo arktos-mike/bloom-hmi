@@ -18,12 +18,14 @@ type Props = {
   activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string };
   setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string }) => void;
   token: any;
+  decypher: any;
 };
 
 const Users: React.FC<Props> = ({
   activeInput,
   setActiveInput,
-  token
+  token,
+  decypher
 }
 ) => {
   const [height, setHeight] = useState<number | undefined>(0)
@@ -49,7 +51,7 @@ const Users: React.FC<Props> = ({
 
   const handleDelete = async (id: Number) => {
     try {
-      const response = await fetch('http://localhost:3000/users/' + id, {
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/users/' + id, {
         method: 'DELETE',
       });
       const json = await response.json();
@@ -146,7 +148,7 @@ const Users: React.FC<Props> = ({
       render: (_, record) => (
         <Space size="middle">
           <Button shape="circle" icon={< EditOutlined />} size="large" type="primary" onClick={() => { handleEdit(record) }}></Button>
-          {record.id == (token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id : '') ? <Button shape="circle" icon={<PlusOutlined />} size="large" type="primary" style={{ background: "#87d068", borderColor: "#87d068" }} onClick={() => { setRegVisible(true) }}></Button> : <Button shape="circle" icon={<DeleteOutlined />} size="large" type="primary" danger={true} onClick={() => { confirm(record.id) }}></Button>}
+          {record.id == ((token && decypher) ? decypher?.id : '') ? <Button shape="circle" icon={<PlusOutlined />} size="large" type="primary" style={{ background: "#87d068", borderColor: "#87d068" }} onClick={() => { setRegVisible(true) }}></Button> : <Button shape="circle" icon={<DeleteOutlined />} size="large" type="primary" danger={true} onClick={() => { confirm(record.id) }}></Button>}
         </Space>
       ),
       width: '13%',
@@ -155,7 +157,7 @@ const Users: React.FC<Props> = ({
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/users');
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/users');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setPagination({ ...pagination, total: json.length });
@@ -199,7 +201,7 @@ const Users: React.FC<Props> = ({
           showSorterTooltip={false}
         />
         <UserEditSA isModalVisible={editVisible} setIsModalVisible={setEditVisible} user={user} activeInput={activeInput} setActiveInput={setActiveInput} />
-        <UserRegister isModalVisible={regVisible} setIsModalVisible={setRegVisible} activeInput={activeInput} setActiveInput={setActiveInput} token={token} />
+        <UserRegister isModalVisible={regVisible} setIsModalVisible={setRegVisible} activeInput={activeInput} setActiveInput={setActiveInput} token={token} decypher={decypher} />
       </div>
     </div>
   )

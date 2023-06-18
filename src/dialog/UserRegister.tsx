@@ -8,6 +8,7 @@ type Props = {
     isModalVisible: boolean;
     setIsModalVisible: (val: boolean) => void;
     token: any;
+    decypher: any;
     activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string };
     setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: any, showKeyboard: boolean, descr: string, pattern: string }) => void;
 };
@@ -16,7 +17,8 @@ const UserRegister: React.FC<Props> = ({
     setIsModalVisible,
     activeInput,
     setActiveInput,
-    token
+    token,
+    decypher
 }) => {
     const [form] = Form.useForm()
     const { t } = useTranslation();
@@ -44,7 +46,7 @@ const UserRegister: React.FC<Props> = ({
     };
     const onFinish = async (values: { user: any; password: any; email: any; phone: any; role: any; }) => {
         try {
-            const response = await fetch('http://localhost:3000/users/register', {
+            const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/users/register', {
                 method: 'POST',
                 headers: { 'content-type': 'application/json;charset=UTF-8', },
                 body: JSON.stringify({ name: values.user, email: values.email, phonenumber: values.phone, role: values.role, password: values.password }),
@@ -120,10 +122,10 @@ const UserRegister: React.FC<Props> = ({
                         rules={[{ required: true, message: t('user.fill') }]}
                     >
                         <Select placeholder={t('user.role')}>
-                            <Option disabled={token ? false : true} value="weaver">{t('user.weaver')}</Option>
-                            <Option disabled={token ? ['fixer', 'manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? false : true : true} value="fixer">{t('user.fixer')}</Option>
-                            <Option disabled={token ? ['manager', 'admin'].includes(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role) ? false : true : true} value="manager">{t('user.manager')}</Option>
-                            <Option disabled={token ? (JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'admin' ? false : true) : true} value='admin'>{t('user.admin')}</Option>
+                            <Option disabled={(token && decypher) ? false : true} value="weaver">{t('user.weaver')}</Option>
+                            <Option disabled={(token && decypher) ? ['fixer', 'manager', 'admin'].includes(decypher?.role) ? false : true : true} value="fixer">{t('user.fixer')}</Option>
+                            <Option disabled={(token && decypher) ? ['manager', 'admin'].includes(decypher?.role) ? false : true : true} value="manager">{t('user.manager')}</Option>
+                            <Option disabled={(token && decypher) ? (decypher?.role == 'admin' ? false : true) : true} value='admin'>{t('user.admin')}</Option>
                         </Select>
                     </Form.Item>
 

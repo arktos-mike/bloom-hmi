@@ -14,7 +14,7 @@ dayjs.extend(localizedFormat);
 
 ReactDOM.render(
   <React.StrictMode>
-    <HashRouter><SSEProvider endpoint="http://localhost:3000/tags/events"><App /></SSEProvider></HashRouter>
+    <HashRouter><SSEProvider endpoint={(window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : (window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + '') + ':3000/tags/events'}><App /></SSEProvider></HashRouter>
   </React.StrictMode>,
   document.getElementById('root')
 )

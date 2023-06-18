@@ -15,12 +15,14 @@ const { Option } = Select;
 
 type Props = {
   token: any;
+  decypher: any;
   activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string };
   setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string }) => void;
 };
 
 const SettingsOp: React.FC<Props> = ({
   token,
+  decypher,
   activeInput,
   setActiveInput,
 }) => {
@@ -30,7 +32,7 @@ const SettingsOp: React.FC<Props> = ({
     try {
       i18n.changeLanguage(lang)
       dayjs.locale(lang == 'en' ? 'en-gb' : lang)
-      await fetch('http://localhost:3000/locales/' + lang, {
+      await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/locales/' + lang, {
         method: 'PATCH',
       });
     }
@@ -67,7 +69,7 @@ const SettingsOp: React.FC<Props> = ({
 
   const fetchLngs = async () => {
     try {
-      const response = await fetch('http://localhost:3000/locales');
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/locales');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setLngs({ data: json });
@@ -77,7 +79,7 @@ const SettingsOp: React.FC<Props> = ({
 
   const fetchSync = async () => {
     try {
-      const response = await fetch('http://localhost:3000/datetime');
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/datetime');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setSync(json.sync);
@@ -88,7 +90,7 @@ const SettingsOp: React.FC<Props> = ({
 
   const getIP = async () => {
     try {
-      const response = await fetch('http://localhost:3000/config/getinterfaces');
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/config/getinterfaces');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       await response.json();
       slider.current?.goTo(slide);
@@ -98,7 +100,7 @@ const SettingsOp: React.FC<Props> = ({
 
   const fetchIP = async () => {
     try {
-      const response = await fetch('http://localhost:3000/config');
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/config');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setOpIP(json['ipConf']['opIP']);
@@ -122,7 +124,7 @@ const SettingsOp: React.FC<Props> = ({
 
   const onReboot = async () => {
     try {
-      const response = await fetch('http://localhost:3000/reboot', {
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/reboot', {
         method: 'POST',
       });
       const json = await response.json();
@@ -135,7 +137,7 @@ const SettingsOp: React.FC<Props> = ({
   const onIPChange = async (values: { dhcp: any; ip: any; mask: any; gw: any; }) => {
     setNetLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/config/update', {
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/config/update', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
         body: JSON.stringify({ opIP: { wired: { dhcp: values.dhcp, ip_address: values.ip, netmask: values.mask, gateway_ip: values.gw } } }),
@@ -152,7 +154,7 @@ const SettingsOp: React.FC<Props> = ({
   const onWifiChange = async (values: { dhcp: any; ip: any; mask: any; gw: any; ssid: any; pwd: any; }) => {
     setNetLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/config/update', {
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/config/update', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
         body: JSON.stringify({ opIP: { wifi: { ssid: values.ssid, pwd: values.pwd }, wireless: { dhcp: values.dhcp, ip_address: values.ip, netmask: values.mask, gateway_ip: values.gw } } }),
@@ -169,7 +171,7 @@ const SettingsOp: React.FC<Props> = ({
   const onNetChange = async (values: { name: any; }) => {
     setNetLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/config/update', {
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/config/update', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
         body: JSON.stringify({ opIP: { name: values.name } }),
@@ -186,7 +188,7 @@ const SettingsOp: React.FC<Props> = ({
   const onFinish = async (values: { date: any; time: any; sync: any; ntp: any; }) => {
     try {
       let dt = dayjs(dayjs(values.time).date(dayjs(values.date).get('date')).month(dayjs(values.date).get('month')).year(dayjs(values.date).get('year')))
-      const response = await fetch('http://localhost:3000/datetime', {
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/datetime', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
         body: JSON.stringify({ unix: dt.unix(), iso: dt.toISOString(), sync: values.sync, tz: selectedTimezone.value || selectedTimezone, ntp: values.ntp || ntp }),
@@ -288,7 +290,7 @@ const SettingsOp: React.FC<Props> = ({
         <Col span={12} style={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch' }}>
           <Card title={t('panel.actions')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
             <Skeleton loading={loading} round active paragraph={false}>
-              <Button confirm userRights={['fixer', 'admin', 'manager']} token={token} onClick={onReboot} icon={<ReloadOutlined style={{ fontSize: '200%' }} />} text="system.reboot" />
+              <Button confirm userRights={['fixer', 'admin', 'manager']} token={token} decypher={decypher} onClick={onReboot} icon={<ReloadOutlined style={{ fontSize: '200%' }} />} text="system.reboot" />
             </Skeleton>
           </Card>
         </Col>
@@ -315,16 +317,16 @@ const SettingsOp: React.FC<Props> = ({
                           colon={false}
                         >
                           <Form.Item label={<WifiOutlined style={{ fontSize: '130%', color: opIP.wireless.status == 'invisible' ? '#bcbcbc' : opIP.wireless.status == 'activating' ? '#06bab2' : opIP.wireless.status == 'activated' ? '#65bd22' : '#b6162e' }} />} >
-                            <span style={{ fontSize: '16px' }}>{opIP.wireless.mac_address}<br/>{opIP.wireless.ip_address }<br/>{opIP.wireless.netmask}<br/>{opIP.wireless.gateway_ip}</span>
+                            <span style={{ fontSize: '16px' }}>{opIP.wireless.mac_address}<br />{opIP.wireless.ip_address}<br />{opIP.wireless.netmask}<br />{opIP.wireless.gateway_ip}</span>
                           </Form.Item>
                           <Form.Item label={<PartitionOutlined style={{ fontSize: '130%', color: opIP.wired.status == 'invisible' ? '#bcbcbc' : opIP.wired.status == 'activating' ? '#06bab2' : opIP.wired.status == 'activated' ? '#65bd22' : '#b6162e' }} />} >
-                            <span style={{ fontSize: '16px' }}>{opIP.wired.mac_address }<br/>{opIP.wired.ip_address}<br/>{opIP.wired.netmask}<br/>{opIP.wired.gateway_ip}</span>
+                            <span style={{ fontSize: '16px' }}>{opIP.wired.mac_address}<br />{opIP.wired.ip_address}<br />{opIP.wired.netmask}<br />{opIP.wired.gateway_ip}</span>
                           </Form.Item>
                           <Form.Item name="name" label={t('ip.name')} rules={[{ required: true, message: t('user.fill') }]} >
-                            <Input userRights={['admin', 'manager']} token={token} className="narrow" placeholder={t('ip.name')} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'net', id: 'name', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'email' }) }} />
+                            <Input userRights={['admin', 'manager']} token={token} decypher={decypher} className="narrow" placeholder={t('ip.name')} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'net', id: 'name', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'email' }) }} />
                           </Form.Item>
                           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                            <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
+                            <Button userRights={['admin', 'manager']} token={token} decypher={decypher} htmlType="submit" text="user.submit" />
                           </Form.Item>
                         </Form>
                       </div>
@@ -342,28 +344,28 @@ const SettingsOp: React.FC<Props> = ({
                           colon={false}
                         >
                           <Form.Item name="dhcp" valuePropName="checked" label={t('ip.dhcp')}>
-                            <Checkbox userRights={['admin', 'manager']} token={token} text=''></Checkbox>
+                            <Checkbox userRights={['admin', 'manager']} token={token} decypher={decypher} text=''></Checkbox>
                           </Form.Item>
                           <Form.Item
                             name="ip"
                             label={t('ip.ip')}
                           >
-                            <InputNumber disable={formIP.getFieldValue('dhcp')} userRights={['admin', 'manager']} token={token} placeholder='ip.ip' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'ip', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                            <InputNumber disable={formIP.getFieldValue('dhcp')} userRights={['admin', 'manager']} token={token} decypher={decypher} placeholder='ip.ip' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'ip', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
                           </Form.Item>
                           <Form.Item
                             name="mask"
                             label={t('ip.mask')}
                           >
-                            <InputNumber disable={formIP.getFieldValue('dhcp')} userRights={['admin', 'manager']} token={token} placeholder='ip.mask' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'mask', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                            <InputNumber disable={formIP.getFieldValue('dhcp')} userRights={['admin', 'manager']} token={token} decypher={decypher} placeholder='ip.mask' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'mask', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
                           </Form.Item>
                           <Form.Item
                             name="gw"
                             label={t('ip.gw')}
                           >
-                            <InputNumber disable={formIP.getFieldValue('dhcp')} userRights={['admin', 'manager']} token={token} placeholder='ip.gw' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'gw', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                            <InputNumber disable={formIP.getFieldValue('dhcp')} userRights={['admin', 'manager']} token={token} decypher={decypher} placeholder='ip.gw' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'ip', id: 'gw', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
                           </Form.Item>
                           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                            <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
+                            <Button userRights={['admin', 'manager']} token={token} decypher={decypher} htmlType="submit" text="user.submit" />
                           </Form.Item>
                         </Form>
                       </div>
@@ -381,37 +383,37 @@ const SettingsOp: React.FC<Props> = ({
                           colon={false}
                         >
                           <Form.Item name="ssid" label={t('ip.ssid')} >
-                            <Input userRights={['admin', 'manager']} token={token} className="narrow" placeholder={t('ip.ssid')} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'wifi', id: 'ssid', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'default' }) }} />
+                            <Input userRights={['admin', 'manager']} token={token} decypher={decypher} className="narrow" placeholder={t('ip.ssid')} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'wifi', id: 'ssid', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'default' }) }} />
                           </Form.Item>
                           <Form.Item
                             label={t('user.password')}
                             name="pwd"
                           >
-                            <InputPassword userRights={['admin', 'manager']} token={token} onChange={(e: { target: { value: any; }; }) => { setActiveInput({ ...activeInput, input: e.target.value }); }} onFocus={(e: { target: { value: any; placeholder: any; }; }) => { setActiveInput({ showKeyboard: true, form: 'wifi', id: 'pwd', num: false, showInput: false, input: e.target.value, descr: e.target.placeholder, pattern: 'default' }) }} visibilityToggle={true} placeholder={t('user.password')} prefix={<LockOutlined className="site-form-item-icon" />} />
+                            <InputPassword userRights={['admin', 'manager']} token={token} decypher={decypher} onChange={(e: { target: { value: any; }; }) => { setActiveInput({ ...activeInput, input: e.target.value }); }} onFocus={(e: { target: { value: any; placeholder: any; }; }) => { setActiveInput({ showKeyboard: true, form: 'wifi', id: 'pwd', num: false, showInput: false, input: e.target.value, descr: e.target.placeholder, pattern: 'default' }) }} visibilityToggle={true} placeholder={t('user.password')} prefix={<LockOutlined className="site-form-item-icon" />} />
                           </Form.Item>
                           <Form.Item name="dhcp" valuePropName="checked" label={t('ip.dhcp')}>
-                            <Checkbox userRights={['admin', 'manager']} token={token} text=''></Checkbox>
+                            <Checkbox userRights={['admin', 'manager']} token={token} decypher={decypher} text=''></Checkbox>
                           </Form.Item>
                           <Form.Item
                             name="ip"
                             label={t('ip.ip')}
                           >
-                            <InputNumber disable={formWifi.getFieldValue('dhcp')} userRights={['admin', 'manager']} token={token} placeholder='ip.ip' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'wifi', id: 'ip', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                            <InputNumber disable={formWifi.getFieldValue('dhcp')} userRights={['admin', 'manager']} token={token} decypher={decypher} placeholder='ip.ip' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'wifi', id: 'ip', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
                           </Form.Item>
                           <Form.Item
                             name="mask"
                             label={t('ip.mask')}
                           >
-                            <InputNumber disable={formWifi.getFieldValue('dhcp')} userRights={['admin', 'manager']} token={token} placeholder='ip.mask' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'wifi', id: 'mask', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                            <InputNumber disable={formWifi.getFieldValue('dhcp')} userRights={['admin', 'manager']} token={token} decypher={decypher} placeholder='ip.mask' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'wifi', id: 'mask', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
                           </Form.Item>
                           <Form.Item
                             name="gw"
                             label={t('ip.gw')}
                           >
-                            <InputNumber disable={formWifi.getFieldValue('dhcp')} userRights={['admin', 'manager']} token={token} placeholder='ip.gw' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'wifi', id: 'gw', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                            <InputNumber disable={formWifi.getFieldValue('dhcp')} userRights={['admin', 'manager']} token={token} decypher={decypher} placeholder='ip.gw' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'wifi', id: 'gw', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
                           </Form.Item>
                           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                            <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
+                            <Button userRights={['admin', 'manager']} token={token} decypher={decypher} htmlType="submit" text="user.submit" />
                           </Form.Item>
                         </Form>
                       </div>
@@ -440,17 +442,17 @@ const SettingsOp: React.FC<Props> = ({
                 </Form.Item>
                 <Form.Item label={t('time.ntp')}  >
                   <Form.Item name="sync" style={{ display: 'inline-block', width: 'calc(15%)' }} valuePropName="checked" >
-                    <Checkbox userRights={['admin', 'manager']} token={token} text=''></Checkbox>
+                    <Checkbox userRights={['admin', 'manager']} token={token} decypher={decypher} text=''></Checkbox>
                   </Form.Item>
                   <Form.Item className='form-item-narrow' name="ntp" style={{ display: 'inline-block', width: 'calc(85%)' }} >
-                    <Input userRights={['admin', 'manager']} token={token} className="narrow" placeholder={t('time.ntp')} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'time', id: 'ntp', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'email' }) }} />
+                    <Input userRights={['admin', 'manager']} token={token} decypher={decypher} className="narrow" placeholder={t('time.ntp')} onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'time', id: 'ntp', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'email' }) }} />
                   </Form.Item>
                 </Form.Item>
                 <Form.Item
                   name="timezone"
                   label={t('time.timezone')}
                 >
-                  <TimeZone userRights={['admin', 'manager']} token={token}
+                  <TimeZone userRights={['admin', 'manager']} token={token} decypher={decypher}
                     value={selectedTimezone}
                     onChange={setSelectedTimezone}
                   />
@@ -459,16 +461,16 @@ const SettingsOp: React.FC<Props> = ({
                   name="date"
                   label={t('time.date')}
                 >
-                  <DatePicker userRights={['admin', 'manager']} token={token} />
+                  <DatePicker userRights={['admin', 'manager']} token={token} decypher={decypher} />
                 </Form.Item>
                 <Form.Item
                   name="time"
                   label={t('time.time')}
                 >
-                  <TimePicker userRights={['admin', 'manager']} token={token} />
+                  <TimePicker userRights={['admin', 'manager']} token={token} decypher={decypher} />
                 </Form.Item>
                 <Form.Item wrapperCol={{ offset: 8, span: 16 }} className='form-item-narrow' >
-                  <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="time.submit" />
+                  <Button userRights={['admin', 'manager']} token={token} decypher={decypher} htmlType="submit" text="time.submit" />
                 </Form.Item>
               </Form>
             </Skeleton>

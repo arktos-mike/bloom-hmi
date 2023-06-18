@@ -13,7 +13,7 @@ export async function saveWorkbook(workbook: Workbook, fileName: string) {
     formData.append('file', blob);
     formData.append('fileName', fileName);
     try {
-      const response = await fetch('http://localhost:3000/reports/saveReport', {
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/reports/saveReport', {
         method: 'POST',
         body: formData,
       });

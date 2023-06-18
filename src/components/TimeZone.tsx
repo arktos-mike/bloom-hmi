@@ -14,7 +14,7 @@ const Component = (props: any) => {
         style: style,
       });
   }
-  if (props.userRights && (props.token ? props.userRights.includes(JSON.parse(Buffer.from(props.token.split('.')[1], 'base64').toString()).role) ? false : true : true)) {
+  if (props.userRights && ((props.token && props.decypher) ? props.userRights.includes(props.decypher?.role) ? false : true : true)) {
     return (<div style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => { openNotificationWithIcon('error', t('notifications.rightserror'), 2, '', { backgroundColor: '#fff2f0', border: '2px solid #ffccc7' }); }}>
       <TimezoneSelect
         value={Intl.DateTimeFormat().resolvedOptions().timeZone == 'UTC' ? 'Etc/GMT' : Intl.DateTimeFormat().resolvedOptions().timeZone}

@@ -94,7 +94,7 @@ const Shifts: React.FC<Props> = ({
         openNotificationWithIcon('warning', t('notifications.dataerror'), 3, '', { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' });
       }
       else {
-        const response = await fetch('http://localhost:3000/shifts/', {
+        const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/shifts/', {
           method: 'POST',
           headers: { 'content-type': 'application/json;charset=UTF-8', },
           body: JSON.stringify(table),
@@ -275,7 +275,7 @@ const Shifts: React.FC<Props> = ({
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/shifts');
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/shifts');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setPagination({ ...pagination, total: json.length });

@@ -11,12 +11,14 @@ const cardBodyStyle = { flex: 1, display: 'flex', alignItems: 'center', justifyC
 
 type Props = {
   token: any;
+  decypher: any;
   activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string };
   setActiveInput: (val: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string }) => void;
 };
 
 const SettingsDev: React.FC<Props> = ({
   token,
+  decypher,
   activeInput,
   setActiveInput,
 }) => {
@@ -45,7 +47,7 @@ const SettingsDev: React.FC<Props> = ({
 
   const fetchConn = async () => {
     try {
-      const response = await fetch('http://localhost:3000/config');
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/config');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setConn(json['connConf']['conn']);
@@ -55,7 +57,7 @@ const SettingsDev: React.FC<Props> = ({
 
   const fetchCOM = async () => {
     try {
-      const response = await fetch('http://localhost:3000/config');
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/config');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setOpCOM(json['comConf'][com]);
@@ -65,7 +67,7 @@ const SettingsDev: React.FC<Props> = ({
 
   const fetchRTU = async () => {
     try {
-      const response = await fetch('http://localhost:3000/config');
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/config');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setRtu(json['rtuConf']['rtu1']);
@@ -75,7 +77,7 @@ const SettingsDev: React.FC<Props> = ({
 
   const fetchTCP = async () => {
     try {
-      const response = await fetch('http://localhost:3000/config');
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/config');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setTcp(json['ipConf']['tcp1']); setLoading(false);
@@ -86,7 +88,7 @@ const SettingsDev: React.FC<Props> = ({
   const onConnChange = async (conf: any) => {
     if (conf != '') {
       try {
-        const response = await fetch('http://localhost:3000/config/update', {
+        const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/config/update', {
           method: 'POST',
           headers: { 'content-type': 'application/json;charset=UTF-8', },
           body: JSON.stringify({ conn: conf }),
@@ -102,7 +104,7 @@ const SettingsDev: React.FC<Props> = ({
 
   const onCOMChange = async (values: { path: any; scan: any; timeout: any; baudRate: any; dataBits: any; stopBits: any; parity: any; }) => {
     try {
-      const response = await fetch('http://localhost:3000/config/update', {
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/config/update', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
         body: JSON.stringify({ [com]: { path: values.path, scan: values.scan, timeout: values.timeout, conf: { baudRate: values.baudRate, dataBits: values.dataBits, stopBits: values.stopBits, parity: values.parity } } }),
@@ -117,7 +119,7 @@ const SettingsDev: React.FC<Props> = ({
 
   const onRTUChange = async (values: { com: any; sId: any; swapBytes: any; swapWords: any; }) => {
     try {
-      const response = await fetch('http://localhost:3000/config/update', {
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/config/update', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
         body: JSON.stringify({ rtu1: { com: values.com, sId: values.sId, swapBytes: values.swapBytes, swapWords: values.swapWords, } }),
@@ -132,7 +134,7 @@ const SettingsDev: React.FC<Props> = ({
 
   const onTCPChange = async (values: { ip: any; port: any; sId: any; swapBytes: any; swapWords: any; }) => {
     try {
-      const response = await fetch('http://localhost:3000/config/update', {
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/config/update', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
         body: JSON.stringify({ tcp1: { ip: values.ip, port: values.port, sId: values.sId, swapBytes: values.swapBytes, swapWords: values.swapWords, } }),
@@ -213,28 +215,28 @@ const SettingsDev: React.FC<Props> = ({
                   label={t('com.path')}
                   rules={[{ required: true, message: t('user.fill') }]}
                 >
-                  <Input className="narrow" userRights={['admin', 'manager']} token={token} placeholder='com.path' onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'com', id: 'path', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'default' }) }} />
+                  <Input className="narrow" userRights={['admin', 'manager']} token={token} decypher={decypher}placeholder='com.path' onChange={(e: any) => { setActiveInput({ ...activeInput, input: e.target.value }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'com', id: 'path', num: false, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'default' }) }} />
                 </Form.Item>
                 <Form.Item
                   name="scan"
                   label={t('com.scan')}
                   rules={[{ required: true, message: t('user.fill') }]}
                 >
-                  <InputNumber className="narrow" eng tag={{ name: 'comTime' }} userRights={['admin', 'manager']} token={token} placeholder='com.scan' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'com', id: 'scan', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
+                  <InputNumber className="narrow" eng tag={{ name: 'comTime' }} userRights={['admin', 'manager']} token={token} decypher={decypher} placeholder='com.scan' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'com', id: 'scan', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
                 </Form.Item>
                 <Form.Item
                   name="timeout"
                   label={t('com.timeout')}
                   rules={[{ required: true, message: t('user.fill') }]}
                 >
-                  <InputNumber className="narrow" eng tag={{ name: 'comTime' }} userRights={['admin', 'manager']} token={token} placeholder='com.timeout' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'com', id: 'timeout', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
+                  <InputNumber className="narrow" eng tag={{ name: 'comTime' }} userRights={['admin', 'manager']} token={token} decypher={decypher} placeholder='com.timeout' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'com', id: 'timeout', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
                 </Form.Item>
                 <Form.Item
                   name="baudRate"
                   label={t('com.baudRate')}
                   rules={[{ required: true, message: t('user.fill') }]}
                 >
-                  <Select userRights={['admin', 'manager']} token={token} options={[{ label: 9600, value: 9600 }, { label: 19200, value: 19200 }, { label: 38400, value: 38400 }, { label: 57600, value: 57600 }, { label: 115200, value: 115200 }, { label: 230400, value: 230400 },]
+                  <Select userRights={['admin', 'manager']} token={token} decypher={decypher} options={[{ label: 9600, value: 9600 }, { label: 19200, value: 19200 }, { label: 38400, value: 38400 }, { label: 57600, value: 57600 }, { label: 115200, value: 115200 }, { label: 230400, value: 230400 },]
                   }>
                   </Select>
                 </Form.Item>
@@ -243,31 +245,31 @@ const SettingsDev: React.FC<Props> = ({
                   label={t('com.dataBits')}
                   rules={[{ required: true, message: t('user.fill') }]}
                 >
-                  <Select userRights={['admin', 'manager']} token={token} options={[{ label: 5, value: 5 }, { label: 6, value: 6 }, { label: 7, value: 7 }, { label: 8, value: 8 }]} />
+                  <Select userRights={['admin', 'manager']} token={token} decypher={decypher} options={[{ label: 5, value: 5 }, { label: 6, value: 6 }, { label: 7, value: 7 }, { label: 8, value: 8 }]} />
                 </Form.Item>
                 <Form.Item
                   name="stopBits"
                   label={t('com.stopBits')}
                   rules={[{ required: true, message: t('user.fill') }]}
                 >
-                  <Select userRights={['admin', 'manager']} token={token} options={[{ label: 1, value: 1 }, { label: 1.5, value: 1.5 }, { label: 2, value: 2 }]} />
+                  <Select userRights={['admin', 'manager']} token={token} decypher={decypher} options={[{ label: 1, value: 1 }, { label: 1.5, value: 1.5 }, { label: 2, value: 2 }]} />
                 </Form.Item>
                 <Form.Item
                   name="parity"
                   label={t('com.parity.parity')}
                   rules={[{ required: true, message: t('user.fill') }]}
                 >
-                  <Select userRights={['admin', 'manager']} token={token} options={[{ label: t('com.parity.none'), value: "none" }, { label: t('com.parity.even'), value: "even" }, { label: t('com.parity.mark'), value: "mark" }, { label: t('com.parity.odd'), value: "odd" }, { label: t('com.parity.space'), value: "space" }]} />
+                  <Select userRights={['admin', 'manager']} token={token} decypher={decypher} options={[{ label: t('com.parity.none'), value: "none" }, { label: t('com.parity.even'), value: "even" }, { label: t('com.parity.mark'), value: "mark" }, { label: t('com.parity.odd'), value: "odd" }, { label: t('com.parity.space'), value: "space" }]} />
                 </Form.Item>
                 <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                  <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
+                  <Button userRights={['admin', 'manager']} token={token} decypher={decypher} htmlType="submit" text="user.submit" />
                 </Form.Item>
               </Form>
             </Skeleton>
           </Card>
         </Col>
         <Col span={12} style={{ display: 'flex', flex: '1 1 100%', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
-          <Card title={t('panel.rtu')} bordered={false} size='small' style={cardStyle2} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} extra={<Segmented onResize={undefined} onResizeCapture={undefined} disabled={['admin'].includes(token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : '') ? false : true} size='middle' value={conn} onChange={(value) => { onConnChange(value.toString()); }} options={[{ label: 'TCP', value: 'ip', icon: <ApiOutlined />, },
+          <Card title={t('panel.rtu')} bordered={false} size='small' style={cardStyle2} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} extra={<Segmented onResize={undefined} onResizeCapture={undefined} disabled={['admin'].includes((token && decypher) ? decypher?.role : '') ? false : true} size='middle' value={conn} onChange={(value) => { onConnChange(value.toString()); }} options={[{ label: 'TCP', value: 'ip', icon: <ApiOutlined />, },
           { label: 'RTU', value: 'com', icon: <ApiOutlined />, },]} />}>
             <Skeleton loading={loading} round active>
               <Form
@@ -285,7 +287,7 @@ const SettingsDev: React.FC<Props> = ({
                     style={{ display: 'inline-block', width: 'calc(50% - 8px)' }}
                     rules={[{ required: true, message: t('user.fill') }]}
                   >
-                    <Select userRights={['admin', 'manager']} token={token} options={[{ label: "COM1", value: "opCOM1" }, { label: "COM2", value: "opCOM2" }]} />
+                    <Select userRights={['admin', 'manager']} token={token} decypher={decypher} options={[{ label: "COM1", value: "opCOM1" }, { label: "COM2", value: "opCOM2" }]} />
                   </Form.Item>
                   <Form.Item
                     name="sId"
@@ -293,24 +295,24 @@ const SettingsDev: React.FC<Props> = ({
                     style={{ display: 'inline-block', width: 'calc(50%)', marginLeft: 8 }}
                     rules={[{ required: true, message: t('user.fill') }]}
                   >
-                    <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} placeholder='rtu.sId' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'rtu', id: 'sId', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
+                    <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} decypher={decypher} placeholder='rtu.sId' style={{ width: '100%' }} controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'rtu', id: 'sId', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
                   </Form.Item>
                 </Form.Item>
                 <Form.Item label=" " style={{ marginTop: 10 }} wrapperCol={{ offset: 4, span: 20 }}>
                   <Form.Item name="swapBytes" style={{ display: 'inline-block', width: 'calc(50% - 8px)' }} valuePropName="checked" >
-                    <Checkbox userRights={['admin', 'manager']} token={token} text='rtu.swapBytes' ></Checkbox>
+                    <Checkbox userRights={['admin', 'manager']} token={token} decypher={decypher} text='rtu.swapBytes' ></Checkbox>
                   </Form.Item>
                   <Form.Item name="swapWords" style={{ display: 'inline-block', width: 'calc(50% - 8px)', margin: '0 8px' }} valuePropName="checked" >
-                    <Checkbox userRights={['admin', 'manager']} token={token} text='rtu.swapWords'></Checkbox>
+                    <Checkbox userRights={['admin', 'manager']} token={token} decypher={decypher} text='rtu.swapWords'></Checkbox>
                   </Form.Item>
                 </Form.Item>
                 <Form.Item wrapperCol={{ offset: 8, span: 16 }} style={{ marginTop: 20 }}>
-                  <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
+                  <Button userRights={['admin', 'manager']} token={token} decypher={decypher} htmlType="submit" text="user.submit" />
                 </Form.Item>
               </Form>
             </Skeleton>
           </Card>
-          <Card title={t('panel.tcp')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} extra={<Segmented onResize={undefined} onResizeCapture={undefined} disabled={['admin'].includes(token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role : '') ? false : true} size='middle' value={conn} onChange={(value) => { onConnChange(value.toString()); }} options={[{ label: 'TCP', value: 'ip', icon: <ApiOutlined />, },
+          <Card title={t('panel.tcp')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle} extra={<Segmented onResize={undefined} onResizeCapture={undefined} disabled={['admin'].includes((token && decypher) ? decypher?.role : '') ? false : true} size='middle' value={conn} onChange={(value) => { onConnChange(value.toString()); }} options={[{ label: 'TCP', value: 'ip', icon: <ApiOutlined />, },
           { label: 'RTU', value: 'com', icon: <ApiOutlined />, },]} />}>
             <Skeleton loading={loading} round active>
               <Form
@@ -328,10 +330,10 @@ const SettingsDev: React.FC<Props> = ({
                   required={true}
                 >
                   <Form.Item name="ip" rules={[{ required: true, message: t('user.fill') }]} style={{ display: 'inline-block', width: 'calc(70% - 8px)' }} >
-                    <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} placeholder='tcp.ip' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'ip', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
+                    <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} decypher={decypher} placeholder='tcp.ip' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'ip', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'ip' }) }} />
                   </Form.Item>
                   <Form.Item name="port" rules={[{ required: true, message: t('user.fill') }]} style={{ display: 'inline-block', width: 'calc(30% )', marginLeft: '8px' }} >
-                    <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} placeholder='tcp.port' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'port', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
+                    <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} decypher={decypher} placeholder='tcp.port' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'port', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
                   </Form.Item>
                 </Form.Item>
                 <Form.Item
@@ -339,18 +341,18 @@ const SettingsDev: React.FC<Props> = ({
                   label={t('rtu.sId')}
                   rules={[{ required: true, message: t('user.fill') }]}
                 >
-                  <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} placeholder='rtu.sId' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'sId', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
+                  <InputNumber className="narrow" userRights={['admin', 'manager']} token={token} decypher={decypher} placeholder='rtu.sId' controls={false} onChange={(value: any) => { setActiveInput({ ...activeInput, input: value?.toString() }) }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'tcp', id: 'sId', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'dec+' }) }} />
                 </Form.Item>
                 <Form.Item label=" " style={{ marginTop: 10 }}>
                   <Form.Item name="swapBytes" style={{ display: 'inline-block', width: 'calc(50% - 8px)' }} valuePropName="checked" >
-                    <Checkbox userRights={['admin', 'manager']} token={token} text='rtu.swapBytes' ></Checkbox>
+                    <Checkbox userRights={['admin', 'manager']} token={token} decypher={decypher} text='rtu.swapBytes' ></Checkbox>
                   </Form.Item>
                   <Form.Item name="swapWords" style={{ display: 'inline-block', width: 'calc(50% - 8px)', margin: '0 8px' }} valuePropName="checked" >
-                    <Checkbox userRights={['admin', 'manager']} token={token} text='rtu.swapWords'></Checkbox>
+                    <Checkbox userRights={['admin', 'manager']} token={token} decypher={decypher} text='rtu.swapWords'></Checkbox>
                   </Form.Item>
                 </Form.Item>
                 <Form.Item wrapperCol={{ offset: 8, span: 16 }} style={{ marginTop: 20 }}>
-                  <Button userRights={['admin', 'manager']} token={token} htmlType="submit" text="user.submit" />
+                  <Button userRights={['admin', 'manager']} token={token} decypher={decypher} htmlType="submit" text="user.submit" />
                 </Form.Item>
               </Form>
             </Skeleton>

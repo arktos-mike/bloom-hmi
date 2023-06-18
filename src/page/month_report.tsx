@@ -58,12 +58,14 @@ interface ShiftDataType {
 
 type Props = {
   token: any;
+  decypher: any;
   usb: any;
   lifetime: any;
 };
 
 const MonthReport: React.FC<Props> = memo(({
   token,
+  decypher,
   usb,
   lifetime
 }
@@ -641,7 +643,7 @@ const MonthReport: React.FC<Props> = memo(({
     try {
       if (period[0] && period[1]) {
         setLoading(true);
-        const response = await fetch('http://localhost:3000/shifts/getstatinfo', {
+        const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/shifts/getstatinfo', {
           method: 'POST',
           headers: { 'content-type': 'application/json;charset=UTF-8', },
           body: JSON.stringify({ start: period ? period[0] : dayjs().startOf('month'), end: period ? period[1] : dayjs() }),
@@ -656,7 +658,7 @@ const MonthReport: React.FC<Props> = memo(({
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost:3000/users/weavers');
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/users/weavers');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setUsers(json);
@@ -668,7 +670,7 @@ const MonthReport: React.FC<Props> = memo(({
     try {
       if (period[0] && period[1]) {
         setLoading(true);
-        const response = await fetch('http://localhost:3000/reports/monthreport', {
+        const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/reports/monthreport', {
           method: 'POST',
           headers: { 'content-type': 'application/json;charset=UTF-8', },
           body: JSON.stringify({ start: period ? period[0] : dayjs().startOf('month'), end: period ? period[1] : dayjs() }),
@@ -685,7 +687,7 @@ const MonthReport: React.FC<Props> = memo(({
     try {
       if (period[0] && period[1]) {
         setLoading(true);
-        const response = await fetch('http://localhost:3000/reports/usersreport', {
+        const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/reports/usersreport', {
           method: 'POST',
           headers: { 'content-type': 'application/json;charset=UTF-8', },
           body: JSON.stringify({ start: period ? period[0] : dayjs().startOf('month'), end: period ? period[1] : dayjs() }),
@@ -702,7 +704,7 @@ const MonthReport: React.FC<Props> = memo(({
     try {
       if (period[0] && period[1]) {
         setLoading(true);
-        const response = await fetch('http://localhost:3000/reports/shiftsreport', {
+        const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/reports/shiftsreport', {
           method: 'POST',
           headers: { 'content-type': 'application/json;charset=UTF-8', },
           body: JSON.stringify({ start: period ? period[0] : dayjs().startOf('month'), end: period ? period[1] : dayjs() }),
@@ -888,7 +890,7 @@ const MonthReport: React.FC<Props> = memo(({
     <div ref={div} className='wrapper'>
       <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}><h1 style={{ margin: 10 }}>{t('log.select')}</h1>
         <DatePicker style={{ flexGrow: 1 }} picker="month" format='MMMM YYYY' defaultValue={dayjs()} onChange={(e: any) => { setPeriod([e ? e?.startOf('month') : dayjs().startOf('month'), e ? e?.endOf('month') : dayjs()]) }} />
-        {false && <Button userRights={['admin', 'manager']} token={token} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={confirm} ></Button>}
+        {false && <Button userRights={['admin', 'manager']} token={token} decypher={decypher} shape="circle" icon={<DeleteOutlined />} size="large" type="primary" style={{ margin: 10 }} onClick={confirm} ></Button>}
         {usb && <Button shape="circle" icon={<SaveOutlined style={{ fontSize: '130%' }} />} size="large" type="primary" style={{ margin: 10 }} onClick={saveReport} ></Button>}
       </div>
       <Tabs size='small' type='card' animated={{ inkBar: true, tabPane: true }} items={items} />

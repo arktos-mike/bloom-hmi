@@ -57,7 +57,7 @@ const UserEditSA: React.FC<Props> = ({
     };
     const onFinish = async (values: { id: any; user: any; password: any; email: any; phone: any; role: any; }) => {
         try {
-            const response = await fetch('http://localhost:3000/users/update', {
+            const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/users/update', {
                 method: 'POST',
                 headers: { 'content-type': 'application/json;charset=UTF-8', },
                 body: JSON.stringify({ id: values.id, name: values.user, email: values.email, phonenumber: values.phone, role: values.role, password: values.password }),

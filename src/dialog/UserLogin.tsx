@@ -10,6 +10,7 @@ const { Option } = Select;
 type Props = {
   isModalVisible: boolean;
   token: any;
+  decypher: any;
   usb: any;
   shadowUser: any;
   setToken: (val: any) => void;
@@ -23,6 +24,7 @@ const UserLogin: React.FC<Props> = ({
   isModalVisible,
   setIsModalVisible,
   token,
+  decypher,
   usb,
   shadowUser,
   setToken,
@@ -41,7 +43,7 @@ const UserLogin: React.FC<Props> = ({
   const [regVisible, setRegVisible] = useState(false)
   const fetchData = async () => {
     try {
-      const response = await fetch('http://localhost:3000/users/names');
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/users/names');
       if (!response.ok) { /*throw Error(response.statusText);*/ }
       const json = await response.json();
       setState({ data: json });
@@ -85,7 +87,7 @@ const UserLogin: React.FC<Props> = ({
 
   const confirmSave = async () => {
     try {
-      const response = await fetch('http://localhost:3000/users/saveAuth/' + JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id, {
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/users/saveAuth/' + decypher?.id, {
           method: 'POST'
         });
         const json = await response.json();
@@ -96,7 +98,7 @@ const UserLogin: React.FC<Props> = ({
   };
   const confirmShadowSave = async () => {
     try {
-      const response = await fetch('http://localhost:3000/users/saveAuth/' + shadowUser.id, {
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/users/saveAuth/' + shadowUser.id, {
           method: 'POST'
         });
         const json = await response.json();
@@ -109,17 +111,17 @@ const UserLogin: React.FC<Props> = ({
   const handleOk = async () => {
     form.resetFields();
     try {
-      const res = await fetch('http://localhost:3000/users/logout', {
+      const res = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/users/logout', {
         method: 'POST',
         headers: { 'content-type': 'application/json;charset=UTF-8', },
-        body: JSON.stringify({ id: JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id, logoutby: 'button' }),
+        body: JSON.stringify({ id: decypher?.id, logoutby: 'button' }),
       });
       if (!res.ok) { throw Error(res.statusText); }
-      const ans = await fetch('http://localhost:3000/logs/user');
+      const ans = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/logs/user');
       const json = await ans.json();
       if (!ans.ok) { throw Error(ans.statusText); }
       if (json.length) {
-        const response = await fetch('http://localhost:3000/users/login/' + json[0].id, {
+        const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/users/login/' + json[0].id, {
           method: 'POST'
         });
         const jsonb = await response.json();
@@ -133,8 +135,8 @@ const UserLogin: React.FC<Props> = ({
 
   const onFinish = async (values: { user: any; password: any; remember: boolean; }) => {
     try {
-      if (values.user != (token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : null)) {
-        const response = await fetch('http://localhost:3000/users/login', {
+      if (values.user != ((token && decypher) ? decypher?.name : null)) {
+        const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/users/login', {
           method: 'POST',
           headers: { 'content-type': 'application/json;charset=UTF-8', },
           body: JSON.stringify({ name: values.user, password: values.password, }),
@@ -180,7 +182,7 @@ const UserLogin: React.FC<Props> = ({
           <Form.Item
             label={t('user.curuser')}
           >
-            <span className="text" style={{ color: token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'fixer' ? "#108ee9" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver' ? "#87d068" : JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'manager' ? "#2db7f5" : "#f50" : "" }}>{token ? JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).name : t('user.anon')}</span>
+            <span className="text" style={{ color: (token && decypher) ? decypher?.role == 'fixer' ? "#108ee9" : decypher?.role == 'weaver' ? "#87d068" : decypher?.role == 'manager' ? "#2db7f5" : "#f50" : "" }}>{(token && decypher) ? decypher?.name : t('user.anon')}</span>
             {(token && usb) && <Button shape="circle" icon={<SaveOutlined />} size="middle" type="primary" style={{ margin: 10 }} onClick={confirmSave}></Button>}
           </Form.Item>
           {shadowUser?.name && <Form.Item
@@ -220,11 +222,11 @@ const UserLogin: React.FC<Props> = ({
           </Form.Item>
           <Form.Item wrapperCol={{ offset: 8, span: 16 }} hidden={!token} >
             <Button type="link" onClick={() => { setEditVisible(true); }}>{t('user.change')}</Button>
-            <UserEdit isModalVisible={editVisible} setIsModalVisible={setEditVisible} token={token} setToken={setToken} activeInput={activeInput} setActiveInput={setActiveInput} />
+            <UserEdit isModalVisible={editVisible} setIsModalVisible={setEditVisible} token={token} decypher={decypher} setToken={setToken} activeInput={activeInput} setActiveInput={setActiveInput} />
           </Form.Item >
           {token && <Form.Item wrapperCol={{ offset: 8, span: 16 }} >
             <Button type="link" onClick={() => { setRegVisible(true); }}>{t('user.register')}</Button>
-            <UserRegister isModalVisible={regVisible} setIsModalVisible={setRegVisible} activeInput={activeInput} setActiveInput={setActiveInput} token={token} />
+            <UserRegister isModalVisible={regVisible} setIsModalVisible={setRegVisible} activeInput={activeInput} setActiveInput={setActiveInput} token={token} decypher={decypher} />
           </Form.Item >}
         </Form>
       </div>

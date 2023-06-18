@@ -18,6 +18,7 @@ type Props = {
   fullinfo: any;
   userinfo: any;
   token: any;
+  decypher: any;
   tags: any;
   pieces: any;
   modeCode: { val: Number, updated: any };
@@ -33,6 +34,7 @@ const Overview: React.FC<Props> = memo(({
   fullinfo,
   userinfo,
   token,
+  decypher,
   tags,
   pieces,
   modeCode,
@@ -106,7 +108,7 @@ const Overview: React.FC<Props> = memo(({
 
   const handleAck = async (id: any) => {
     try {
-      const response = await fetch('http://localhost:3000/reminders/ack/' + id, {
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/reminders/ack/' + id, {
         method: 'POST',
       });
       if (!response.ok) { /*throw Error(response.statusText);*/ }
@@ -247,7 +249,7 @@ const Overview: React.FC<Props> = memo(({
                   </Row>
                 </Col>
                 <Col span={12} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
-                  <Row style={{ marginBottom: ((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser?.name) ? '8px' : '0px', flex: ((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser?.name) ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
+                  <Row style={{ marginBottom: (((token && decypher) && decypher?.role == 'weaver') || shadowUser?.name) ? '8px' : '0px', flex: (((token && decypher) && decypher?.role == 'weaver') || shadowUser?.name) ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
                     <Card title={capitalizeFirstLetter(t('period.' + period))} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}
                       extra={<Segmented onResize={undefined} onResizeCapture={undefined} size='middle' value={period} onChange={(value) => { setPeriod(value.toString()); }}
                         options={[{ label: t('period.shift'), value: 'shift', icon: <ScheduleOutlined /> },
@@ -305,7 +307,7 @@ const Overview: React.FC<Props> = memo(({
                       </Skeleton>
                     </Card>
                   </Row>
-                  {((token && JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).role == 'weaver') || shadowUser?.name) && <Row style={{ flex: periodInfo?.name ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex', marginBottom: '2px', }}>
+                  {(((token && decypher) && decypher?.role == 'weaver') || shadowUser?.name) && <Row style={{ flex: periodInfo?.name ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex', marginBottom: '2px', }}>
                     <Card title={t('user.weaver')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
                       <Skeleton loading={loading} round active>
                         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
@@ -373,7 +375,7 @@ const Overview: React.FC<Props> = memo(({
                       description={note['descr']}
                       type="info"
                     />
-                    <Button userRights={['admin', 'manager', 'fixer']} token={token} shape="circle" icon={<CheckOutlined />} size="small" type="primary" style={{ margin: 0, background: "#87d068", borderColor: "#87d068" }} onClick={() => { confirm(note['id']) }} />
+                    <Button userRights={['admin', 'manager', 'fixer']} token={token} decypher={decypher} shape="circle" icon={<CheckOutlined />} size="small" type="primary" style={{ margin: 0, background: "#87d068", borderColor: "#87d068" }} onClick={() => { confirm(note['id']) }} />
                   </div>
                 </React.Fragment>
               )) :
