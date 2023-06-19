@@ -14,6 +14,7 @@ type Props = {
   usb: any;
   shadowUser: any;
   setToken: (val: any) => void;
+  setDecypher: (val: any) => void;
   setRemember: (val: boolean) => void;
   setIsModalVisible: (val: boolean) => void;
   activeInput: { form: string, id: string, num: boolean, showInput: boolean, input: string, showKeyboard: boolean, descr: string, pattern: string };
@@ -28,6 +29,7 @@ const UserLogin: React.FC<Props> = ({
   usb,
   shadowUser,
   setToken,
+  setDecypher,
   setRemember,
   activeInput,
   setActiveInput,
@@ -85,6 +87,21 @@ const UserLogin: React.FC<Props> = ({
     form.resetFields()
   }
 
+  const decypherToken = async (token: any) => {
+    try {
+      if (token !== null) {
+        const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/users/decode/' + token, {
+          method: 'POST'
+        });
+        if (!response.ok) { /*throw Error(response.statusText);*/ }
+        const json = await response.json();
+        setDecypher(json?.decoded);
+      }
+      else setDecypher(null)
+    }
+    catch (error) { setDecypher(null)/*console.log(error);*/ }
+  }
+
   const confirmSave = async () => {
     try {
       const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/users/saveAuth/' + decypher?.id, {
@@ -126,9 +143,10 @@ const UserLogin: React.FC<Props> = ({
         });
         const jsonb = await response.json();
         setToken(jsonb.token || null);
+        await decypherToken(jsonb.token || null);
         if (!response.ok) { /*throw Error(response.statusText);*/ }
       }
-      else { setToken(null); }
+      else { setToken(null); setDecypher(null); }
     }
     catch (error) { /*console.log(error);*/ }
   }
@@ -143,6 +161,7 @@ const UserLogin: React.FC<Props> = ({
         });
         const json = await response.json();
         setToken(json.token || token);
+        await decypherToken(json.token || token)
         openNotificationWithIcon(json.error ? 'warning' : 'success', t(json.message), 3, '', json.error ? { backgroundColor: '#fffbe6', border: '2px solid #ffe58f' } : { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
         if (!response.ok) { /*throw Error(response.statusText);*/ }
       }

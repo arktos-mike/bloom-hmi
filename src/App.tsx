@@ -76,7 +76,12 @@ const App: React.FC = memo(() => {
       const ans = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/logs/user');
       const json = await ans.json();
       if (!ans.ok) { throw Error(ans.statusText); }
-      if (json.length && token && decypher && (json[0].id != decypher?.id)) {
+      const response = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/users/decode/' + token, {
+        method: 'POST'
+      });
+      if (!response.ok) { /*throw Error(response.statusText);*/ }
+      const jsonb = await response.json();
+      if (token && (Number(json[0].id) != Number(jsonb.decoded.id))) {
         setShadowUser(json[0]);
       }
       else { setShadowUser({ id: null, name: null, logintime: json[0]?.logintime }); }
@@ -95,6 +100,7 @@ const App: React.FC = memo(() => {
         });
         const jsonb = await response.json();
         setToken(jsonb.token || token);
+        await decypherToken(jsonb.token || token);
         if (!response.ok) { /*throw Error(response.statusText);*/ }
       }
       else {
@@ -107,9 +113,12 @@ const App: React.FC = memo(() => {
           });
           const jsonb = await response.json();
           setToken(jsonb.token || token);
+          await decypherToken(jsonb.token || token);
           if (!response.ok) { /*throw Error(response.statusText);*/ }
         }
-        else { setToken(null); }
+        else {
+          setToken(null); setDecypher(null);
+        }
       }
     }
     catch (error) { /*console.log(error);*/ }
@@ -519,7 +528,6 @@ const App: React.FC = memo(() => {
     (async () => {
       await checkLogin();
       usbtoken?.token && openNotificationWithIcon('success', t('notifications.userok'), 3, '', '', { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
-      usbtoken?.token && await decypherToken(usbtoken?.token)
       if (usbtoken?.token == null) { await checkShadowUser(); }
     })();
     return () => { }
@@ -545,7 +553,6 @@ const App: React.FC = memo(() => {
   useEffect(() => {
     (async () => {
       //setToken(token);
-      await decypherToken(token);
       await checkShadowUser();
     })();
     return () => { }
@@ -622,7 +629,7 @@ const App: React.FC = memo(() => {
                   <Avatar size={50} style={{ backgroundColor: avatarColor() }} icon={<UserOutlined />} />
                 </Avatar.Group>
                 <table><tbody><tr><td><div className='username'>{(token && decypher) ? decypher?.name : t('user.anon')}</div></td></tr><tr><td><div className='userrole'>{t((token && decypher) ? 'user.' + decypher?.role : '')}</div></td></tr></tbody></table>
-              </div><UserLogin shadowUser={shadowUser} usb={usb} token={token} decypher={decypher} setToken={setToken} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} activeInput={activeInput} setActiveInput={setActiveInput} />
+              </div><UserLogin shadowUser={shadowUser} usb={usb} token={token} decypher={decypher} setToken={setToken} setDecypher={setDecypher} isModalVisible={userDialogVisible} setIsModalVisible={setUserDialogVisible} setRemember={setRemember} activeInput={activeInput} setActiveInput={setActiveInput} />
             </div>
             <div className="clock">
               <div className="time">{curTime}</div><div className="date">{curDate}</div>
