@@ -470,7 +470,8 @@ const App: React.FC = memo(() => {
       start: '',
       starts: 0,
       runtime: { milliseconds: 0, seconds: 0, minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 },
-      stops: {}
+      stops: {},
+      token: ''
     },
     {
       parser(input: string) {
@@ -549,6 +550,27 @@ const App: React.FC = memo(() => {
     (usb !== undefined) && openNotificationWithIcon(usb ? 'success' : 'success', usb ? t('notifications.usbattach') : t('notifications.usbdetach'), 3, '', '', { backgroundColor: '#f6ffed', border: '2px solid #b7eb8f' });
     return () => { }
   }, [usb])
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const ans = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/logs/admuser');
+        const json = await ans.json();
+        if (!ans.ok) { throw Error(ans.statusText); }
+        if (json.length) {
+          await checkShadowUser();
+        }
+        else {
+          if (userinfo.token) {
+            setToken(userinfo.token);
+            await decypherToken(userinfo.token);
+          }
+        }
+      }
+      catch (error) { /*console.log(error);*/ }
+    })();
+    return () => { }
+  }, [userinfo])
 
   useEffect(() => {
     (async () => {

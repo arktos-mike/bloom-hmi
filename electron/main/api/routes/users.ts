@@ -245,6 +245,7 @@ router.post('/login', async (req, res) => {
               info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['runtime'] = parseInterval(info.rows[0]['userinfo']['runtime']))
               info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['workdur'] = parseInterval(info.rows[0]['userinfo']['workdur']))
               info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['start'] = info.rows[0]['weaver']['logintime'])
+              info.rows[0]['userinfo']['token'] = token
               await sse.send(info.rows[0]['userinfo'], 'userinfo', 'all');
             }
             res.status(200).json({
