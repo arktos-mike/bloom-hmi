@@ -437,7 +437,10 @@ const App: React.FC = memo(() => {
 
   const logoutid = useSSE(
     'userlogout',
-    '',
+    {
+      id: '',
+      updated: '',
+    },
     {
       parser(input: string) {
         return JSON.parse(input);
@@ -589,12 +592,12 @@ const App: React.FC = memo(() => {
         const json = await ans.json();
         if (!ans.ok) { throw Error(ans.statusText); }
         if (json.length) {
-          if (Number(logoutid) == Number(shadowUser.id)) {
+          if (Number(logoutid.id) == Number(shadowUser.id)) {
             setShadowUser({ id: null, name: null, logintime: json[0]?.logintime });
           }
         }
         else {
-          if (Number(logoutid) == Number(decypher.id)) {
+          if (Number(logoutid.id) == Number(decypher.id)) {
             setToken(null); setDecypher(null);
           }
         }
