@@ -435,6 +435,16 @@ const App: React.FC = memo(() => {
     }
   );
 
+  const logoutid = useSSE(
+    'userlogout',
+    '',
+    {
+      parser(input: string) {
+        return JSON.parse(input);
+      },
+    }
+  );
+
   const usb = useSSE(
     'usb',
     undefined,
@@ -571,6 +581,28 @@ const App: React.FC = memo(() => {
     })();
     return () => { }
   }, [userinfo])
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const ans = await fetch((window.location.hostname ? (window.location.protocol + '//' + window.location.hostname) : 'http://localhost') + ':3000/logs/admuser');
+        const json = await ans.json();
+        if (!ans.ok) { throw Error(ans.statusText); }
+        if (json.length) {
+          if (Number(logoutid) == Number(shadowUser.id)) {
+            setShadowUser({ id: null, name: null, logintime: json[0]?.logintime });
+          }
+        }
+        else {
+          if (Number(logoutid) == Number(decypher.id)) {
+            setToken(null); setDecypher(null);
+          }
+        }
+      }
+      catch (error) { /*console.log(error);*/ }
+    })();
+    return () => { }
+  }, [logoutid]);
 
   useEffect(() => {
     (async () => {

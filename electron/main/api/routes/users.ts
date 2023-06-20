@@ -188,7 +188,8 @@ router.post('/logout', async (req, res) => {
   try {
     const { id, logoutby } = req.body;
     await db.query(`DELETE FROM userlog WHERE upper_inf(timestamp) AND current_timestamp<lower(timestamp) AND id=$1`, [id])
-    await db.query(`UPDATE userlog SET timestamp = case when current_timestamp>lower(timestamp) then tstzrange(lower(timestamp),current_timestamp(3),'[)') else tstzrange(current_timestamp(3),current_timestamp(3),'[)')	end, logoutby=$2 WHERE upper_inf(timestamp) AND id=$1`, [id, logoutby]) //Verifying if the user exists in the database
+    await db.query(`UPDATE userlog SET timestamp = case when current_timestamp>lower(timestamp) then tstzrange(lower(timestamp),current_timestamp(3),'[)') else tstzrange(current_timestamp(3),current_timestamp(3),'[)')	end, logoutby=$2 WHERE upper_inf(timestamp) AND id=$1`, [id, logoutby])
+    await sse.send(id, 'userlogout', 'all');
     res.status(200).json({
       message: "notifications.logout",
     });
