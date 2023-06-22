@@ -63,7 +63,7 @@ const MachineInfo: React.FC<Props> = ({
                   <span style={{ fontSize: '24px' }}>{lifetime?.mfgdate && dayjs(lifetime?.mfgdate).format("LL")}</span>
                 </Form.Item>
                 <Form.Item label={<SyncOutlined style={{ fontSize: '200%', color: "#1890ff" }} />} >
-                  <span style={{ fontSize: '24px' }}>{lifetime?.picks > 0 && ((lifetime?.picks + ((modeCode?.val == 1) ? getTagVal('picksLastRun') : 0)) + ' ' + t('tags.planClothDensity.eng').split('/')[0])}</span>
+                  <span style={{ fontSize: '24px' }}>{lifetime?.picks > 0 && ((lifetime?.picks + getTagVal('picksLastRun')) + ' ' + t('tags.planClothDensity.eng').split('/')[0])}</span>
                 </Form.Item>
                 <Form.Item label={<FabricPieceIcon style={{ fontSize: '220%', color: "#1890ff" }} />} >
                   <span style={{ fontSize: '24px' }}>{lifetime?.cloth > 0 && (Number(Number((modeCode?.val == 1) ? lifetime?.cloth + Number(getTagVal('picksLastRun')) / (100 * Number(getTagVal('planClothDensity'))) : lifetime?.cloth).toFixed(2).toString()).toLocaleString(i18n.language) + ' ' + t('tags.planClothDensity.eng')?.split('/')[1]?.slice(-1))}</span>

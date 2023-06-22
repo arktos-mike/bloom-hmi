@@ -135,7 +135,7 @@ const Overview: React.FC<Props> = memo(({
   const getTagVal = (tagName: string): string => {
     let obj = tags.find((o: any) => o['tag']['name'] == tagName)
     if (obj) {
-      if (tagName == 'warpBeamLength' && modeCode?.val == 1) {
+      if (tagName == 'warpBeamLength') {
         return Number((Number(obj['val']) - (localeParseFloat(getTagVal('picksLastRun')) / (100 * localeParseFloat(getTagVal('planClothDensity')) * (1 - 0.01 * localeParseFloat(getTagVal('warpShrinkage')))))).toFixed(obj['tag']['dec'])).toLocaleString(i18n.language);
       }
       else {
