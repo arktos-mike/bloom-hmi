@@ -441,10 +441,45 @@ from
 			aquery)) as durqs) querysecduration
 where
 	modecode = 1
-)
+),
+fquery as (
+  select
+    sum(fppicks) as fpicks,
+    sum(
+  fppicks /(100 * plandensity)
+  ) as fmeter
+  from
+    aquery,
+    lateral (
+    select
+      extract(epoch
+    from
+      (upper(timestamp)-lower(timestamp))) as fdurrs) frowsecduration,
+    lateral (
+    select
+      extract(epoch
+    from
+      dur) as fdurs) fintsecduration,
+    lateral (
+    select
+    case
+    when upper(timestamp)=current_timestamp
+      and current_timestamp>lower(timestamp) then
+  (fdurs / fdurrs) * (
+      select
+        val
+      from
+        tags
+      where
+        (tag->>'name' = 'picksLastRun'))
+      else
+  (fdurs / fdurrs) * aquery.picks
+    end
+     as fppicks) fpartialpicks
+  )
 select
-	round(bigquery.spicks::numeric),
-	bigquery.meter::numeric,
+	round(fquery.fpicks::numeric),
+	fquery.fmeter::numeric,
 	speedMainDrive::numeric,
 	speedCloth::numeric,
 	bigquery.eff::numeric,
@@ -453,6 +488,7 @@ select
 	descrstop
 from
 	bigquery,
+  fquery,
 	lateral(
 	select
 		round((bigquery.spicks * 60)/(
@@ -573,8 +609,8 @@ from
 			when upper_inf(userlog.timestamp)
 			and current_timestamp>lower(userlog.timestamp) then
               tstzrange(lower(userlog.timestamp),
-				current_timestamp,
-				'[)')
+			current_timestamp,
+			'[)')
 			else
               userlog.timestamp
 		end as tr) timerange
@@ -652,19 +688,19 @@ from
 		dur) as durs) intsecduration,
 	lateral (
 	select
-  case
-  when upper(timestamp)=current_timestamp
-    and current_timestamp>lower(timestamp) then
+		case
+			when upper(timestamp)= current_timestamp
+				and current_timestamp>lower(timestamp) then
 (durs / durrs) * (
-    select
-      val
-    from
-      tags
-    where
-      (tag->>'name' = 'picksLastRun'))
-    else
+				select
+					val
+				from
+					tags
+				where
+					(tag->>'name' = 'picksLastRun'))
+				else
 (durs / durrs) * query.picks
-  end
+			end
 	 as ppicks) partialpicks
 ),
 sftable as (
@@ -679,7 +715,13 @@ where
 	sum (meter) filter (
 where
 	modecode = 1) as meters,
-	round((sum(spicks) filter (where modecode = 1) * 60)/(extract(epoch from sum(dur) filter (where modecode = 1)))) as rpm,
+	sum(spicks) as ffpicks,
+	sum(meter) as ffmeters,
+	round((sum(spicks) filter (
+	where modecode = 1) * 60)/(extract(epoch
+from
+	sum(dur) filter (
+	where modecode = 1)))) as rpm,
 	(sum(meter) filter (
 where
 	modecode = 1))/(extract(epoch
@@ -687,7 +729,6 @@ from
 	sum(dur) filter (
 where
 	modecode = 1))/ 3600 ) as mph,
-
 	count(distinct timestamp) as starts,
 	justify_hours(sum(dur)) as runtime
 from
@@ -700,8 +741,8 @@ select
 	(usertr)
 lower(usertr) as starttime,
 	upper(usertr) as endtime,
-	round(sftable.picks),
-	sftable.meters,
+	round(fpicks),
+	fmeter,
 	sftable.rpm,
 	sftable.mph,
 	sftable.picks * 100 / ppicks as efficiency,
@@ -718,14 +759,21 @@ from
 	sftable,
 	lateral (
 	select
+		sum(sftable.ffpicks) as fpicks,
+		sum(sftable.ffmeters) as fmeter
+	from
+		sftable
+	) fpicksmeter,
+	lateral (
+	select
 		usertr as crow) crow,
 	lateral(
 	select
-			sum(planpicks) as ppicks
+		sum(planpicks) as ppicks
 	from
-			sftable
+		sftable
 	where
-			usertr = crow) ppicks,
+		usertr = crow) ppicks,
 	lateral (
 	with t(num,
 	stop) as (
@@ -747,7 +795,12 @@ from
 	'other') ) as t(num,
 		stop) )
 	select
-		jsonb_agg(json_build_object(t.stop, json_build_object('total', coalesce (total, 0) , 'dur', dur))) as descrstop
+		jsonb_agg(json_build_object(t.stop,
+		json_build_object('total',
+		coalesce (total,
+		0) ,
+		'dur',
+		dur))) as descrstop
 	from
 		t
 	left join lateral(
@@ -879,19 +932,19 @@ from
 		dur) as durs) intsecduration,
 	lateral (
 	select
-  case
-  when upper(timestamp)=current_timestamp
-    and current_timestamp>lower(timestamp) then
+		case
+			when upper(timestamp)= current_timestamp
+				and current_timestamp>lower(timestamp) then
 (durs / durrs) * (
-    select
-      val
-    from
-      tags
-    where
-      (tag->>'name' = 'picksLastRun'))
-    else
+				select
+					val
+				from
+					tags
+				where
+					(tag->>'name' = 'picksLastRun'))
+				else
 (durs / durrs) * query.picks
-  end
+			end
 	 as ppicks) partialpicks
 ),
 sftable as (
@@ -905,7 +958,13 @@ where
 	sum (meter) filter (
 where
 	modecode = 1) as meters,
-	round((sum(spicks) filter (where modecode = 1) * 60)/(extract(epoch from sum(dur) filter (where modecode = 1)))) as rpm,
+	sum(spicks) as ffpicks,
+	sum(meter) as ffmeters,
+	round((sum(spicks) filter (
+	where modecode = 1) * 60)/(extract(epoch
+from
+	sum(dur) filter (
+	where modecode = 1)))) as rpm,
 	(sum(meter) filter (
 where
 	modecode = 1))/(extract(epoch
@@ -921,8 +980,8 @@ group by
 	modecode)
 select
 	workdurs,
-	round(sftable.picks),
-	sftable.meters,
+	round(fpicks),
+	fmeter,
 	sftable.rpm,
 	sftable.mph,
 	sftable.picks * 100 / ppicks as efficiency,
@@ -937,6 +996,13 @@ select
 	descrstop as stops
 from
 	sftable,
+	lateral (
+	select
+		sum(sftable.ffpicks) as fpicks,
+		sum(sftable.ffmeters) as fmeter
+	from
+		sftable
+	) fpicksmeter,
 	lateral(
 	select
 		justify_hours(sum(et-st)) as workdurs
@@ -970,10 +1036,22 @@ from
 	'other') ) as t(num,
 		stop) )
 	select
-		jsonb_agg(json_build_object(t.stop, json_build_object('total', coalesce (total, 0) , 'dur', dur)) order by case
-		t.num when 2 then 1 when 6 then 2 when 5 then 3 when 4 then 4 when 4 then 5 when 3 then 6
-		else 7
-	end) as descrstop
+		jsonb_agg(json_build_object(t.stop,
+		json_build_object('total',
+		coalesce (total,
+		0) ,
+		'dur',
+		dur))
+	order by
+		case
+			t.num when 2 then 1
+			when 6 then 2
+			when 5 then 3
+			when 4 then 4
+			when 4 then 5
+			when 3 then 6
+			else 7
+		end) as descrstop
 	from
 		t
 	left join lateral(
