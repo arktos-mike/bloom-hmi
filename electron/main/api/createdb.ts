@@ -716,12 +716,14 @@ where
 where
 	modecode = 1) as meters,
 	sum(spicks) as ffpicks,
-	sum(meter) as ffmeters,
+	sum(meter) as ffmeter,
 	round((sum(spicks) filter (
-	where modecode = 1) * 60)/(extract(epoch
+where
+	modecode = 1) * 60)/(extract(epoch
 from
 	sum(dur) filter (
-	where modecode = 1)))) as rpm,
+where
+	modecode = 1)))) as rpm,
 	(sum(meter) filter (
 where
 	modecode = 1))/(extract(epoch
@@ -759,17 +761,12 @@ from
 	sftable,
 	lateral (
 	select
-		sum(sftable.ffpicks) as fpicks,
-		sum(sftable.ffmeters) as fmeter
-	from
-		sftable
-	) fpicksmeter,
-	lateral (
-	select
 		usertr as crow) crow,
 	lateral(
 	select
-		sum(planpicks) as ppicks
+		sum(planpicks) as ppicks,
+		sum(ffpicks) as fpicks,
+		sum(ffmeter) as fmeter
 	from
 		sftable
 	where
