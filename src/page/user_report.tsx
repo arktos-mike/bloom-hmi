@@ -287,7 +287,7 @@ const UserReport: React.FC<Props> = memo(({
       render: (_, record) => <div><Badge
         count={stopsAgg(record?.stops).total} overflowCount={999}
         style={{ backgroundColor: '#1890ff' }}
-      /> {duration2text(stopsAgg(record?.stops).dur)}</div>
+      /> {(stopsAgg(record?.stops).total) && duration2text(stopsAgg(record?.stops).dur)}</div>
     },
   ];
 
@@ -432,13 +432,13 @@ const UserReport: React.FC<Props> = memo(({
                   <Badge
                     count={total && total[0] && total[0]['starts']} overflowCount={999}
                     style={{ backgroundColor: '#52c41a' }}
-                  /> {total && total[0] && duration2text(dayjs.duration(total[0]['runtime'] ? total[0]['runtime'] : 0))}
+                  /> {total && total[0] && (total[0]['starts'] > 0) && duration2text(dayjs.duration(total[0]['runtime'] ? total[0]['runtime'] : 0))}
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={7} colSpan={2}>
                   <Badge
                     count={total && total[0] && stopsAgg(total[0]['stops']).total} overflowCount={999}
                     style={{ backgroundColor: '#1890ff' }}
-                  /> {total && total[0] && duration2text(stopsAgg(total[0]['stops']).dur)}
+                  /> {total && total[0] && (stopsAgg(total[0]['stops']).total > 0) && duration2text(stopsAgg(total[0]['stops']).dur)}
                 </Table.Summary.Cell>
               </Table.Summary.Row>
               <Table.Summary.Row>
