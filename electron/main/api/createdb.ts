@@ -33,7 +33,8 @@ CREATE TABLE IF NOT EXISTS modelog (
     modecode NUMERIC not null,
     picks NUMERIC,
     planspeed NUMERIC default NULL,
-    plandensity NUMERIC default NULL
+    plandensity NUMERIC default NULL,
+    realpicks NUMERIC
   );
 CREATE INDEX IF NOT EXISTS modelog_tstzrange_idx ON modelog USING GIST (timestamp);
 CREATE INDEX IF NOT EXISTS modelog_tstzrange_lower_idx ON modelog USING btree (lower(timestamp));
@@ -191,7 +192,8 @@ where
 from
 	tags
 where
-	(tag->>'name' = 'planClothDensity'))
+	(tag->>'name' = 'planClothDensity')),
+  null
  );
  end if;
 
@@ -231,6 +233,8 @@ as $function$
 declare
   picksLastRun numeric;
 
+  realPicksLastRun numeric;
+
 density numeric;
 
 code numeric;
@@ -247,6 +251,13 @@ from
 	tags
 where
 	(tag->>'name' = 'picksLastRun'));
+  realPicksLastRun :=(
+    select
+      val
+    from
+      tags
+    where
+      (tag->>'name' = 'realPicksLastRun'));
 DELETE FROM modelog WHERE upper_inf(timestamp) AND current_timestamp<lower(timestamp);
 DELETE FROM clothlog WHERE upper_inf(timestamp) AND current_timestamp<lower(timestamp);
 update
@@ -257,7 +268,8 @@ set
 	current_timestamp(3),
 	'[)'
   ),
-	picks = picksLastRun
+	picks = picksLastRun,
+  realpicks = realPicksLastRun
 where
 	upper_inf(timestamp) returning modecode, (current_timestamp(3)-lower(timestamp)) into code, clock;
 
@@ -365,6 +377,7 @@ select
 	plandensity,
 	planspeed,
 	modelog.picks,
+  modelog.realpicks,
 	up - low as dur
 from
 	modelog,
@@ -445,6 +458,7 @@ where
 fquery as (
   select
     sum(fppicks) as fpicks,
+    sum(rppicks) as rpicks,
     sum(
   fppicks /(100 * plandensity)
   ) as fmeter
@@ -475,10 +489,26 @@ fquery as (
       else
   (fdurs / fdurrs) * aquery.picks
     end
-     as fppicks) fpartialpicks
+     as fppicks) fpartialpicks,
+     lateral (
+      select
+      case
+      when upper(timestamp)=current_timestamp
+        and current_timestamp>lower(timestamp) then
+    (fdurs / fdurrs) * (
+        select
+          val
+        from
+          tags
+        where
+          (tag->>'name' = 'realPicksLastRun'))
+        else
+    (fdurs / fdurrs) * aquery.realpicks
+      end
+       as rppicks) rpartialpicks
   )
 select
-	round(fquery.fpicks::numeric),
+	round(fquery.rpicks::numeric),
 	fquery.fmeter::numeric,
 	speedMainDrive::numeric,
 	speedCloth::numeric,
@@ -633,6 +663,7 @@ select
 	plandensity,
 	planspeed,
 	modelog.picks,
+  modelog.realpicks,
 	up - low as dur
 from
 	modelog,
@@ -663,12 +694,14 @@ where
 bigquery as (
 select
 	ppicks as spicks,
+  rppicks as rpicks,
 	timestamp,
 	usertr,
 	modecode,
 	plandensity,
 	planspeed,
 	query.picks,
+  query.realpicks,
 	dur,
 	ppicks /(100 * plandensity) as meter,
 	planspeed * extract(epoch
@@ -701,7 +734,23 @@ from
 				else
 (durs / durrs) * query.picks
 			end
-	 as ppicks) partialpicks
+	 as ppicks) partialpicks,
+   lateral (
+    select
+      case
+        when upper(timestamp)= current_timestamp
+          and current_timestamp>lower(timestamp) then
+  (durs / durrs) * (
+          select
+            val
+          from
+            tags
+          where
+            (tag->>'name' = 'realPicksLastRun'))
+          else
+  (durs / durrs) * query.realpicks
+        end
+     as rppicks) rpartialpicks
 ),
 sftable as (
 select
@@ -716,6 +765,7 @@ where
 where
 	modecode = 1) as meters,
 	sum(spicks) as ffpicks,
+  sum(rpicks) as rrpicks,
 	sum(meter) as ffmeter,
 	round((sum(spicks) filter (
 where
@@ -743,7 +793,7 @@ select
 	(usertr)
 lower(usertr) as starttime,
 	upper(usertr) as endtime,
-	round(fpicks),
+	round(rpicks),
 	fmeter,
 	sftable.rpm,
 	sftable.mph,
@@ -766,6 +816,7 @@ from
 	select
 		sum(planpicks) as ppicks,
 		sum(ffpicks) as fpicks,
+    sum(rrpicks) as rpicks,
 		sum(ffmeter) as fmeter
 	from
 		sftable
@@ -874,6 +925,7 @@ select
 	plandensity,
 	planspeed,
 	modelog.picks,
+  modelog.realpicks,
 	up - low as dur
 from
 	modelog,
@@ -904,12 +956,14 @@ where
 bigquery as (
 select
 	ppicks as spicks,
+  rppicks as rpicks,
 	timestamp,
 	usertr,
 	modecode,
 	plandensity,
 	planspeed,
 	query.picks,
+  query.realpicks,
 	dur,
 	ppicks /(100 * plandensity) as meter,
 	planspeed * extract(epoch
@@ -942,7 +996,23 @@ from
 				else
 (durs / durrs) * query.picks
 			end
-	 as ppicks) partialpicks
+	 as ppicks) partialpicks,
+   lateral (
+    select
+      case
+        when upper(timestamp)= current_timestamp
+          and current_timestamp>lower(timestamp) then
+  (durs / durrs) * (
+          select
+            val
+          from
+            tags
+          where
+            (tag->>'name' = 'realPicksLastRun'))
+          else
+  (durs / durrs) * query.realpicks
+        end
+     as rppicks) rpartialpicks
 ),
 sftable as (
 select
@@ -956,6 +1026,7 @@ where
 where
 	modecode = 1) as meters,
 	sum(spicks) as ffpicks,
+  sum(rpicks) as rrpicks,
 	sum(meter) as ffmeters,
 	round((sum(spicks) filter (
 	where modecode = 1) * 60)/(extract(epoch
@@ -977,7 +1048,7 @@ group by
 	modecode)
 select
 	workdurs,
-	round(fpicks),
+	round(rpicks),
 	fmeter,
 	sftable.rpm,
 	sftable.mph,
@@ -996,6 +1067,7 @@ from
 	lateral (
 	select
 		sum(sftable.ffpicks) as fpicks,
+    sum(sftable.rrpicks) as rpicks,
 		sum(sftable.ffmeters) as fmeter
 	from
 		sftable
