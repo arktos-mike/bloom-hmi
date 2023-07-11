@@ -165,7 +165,7 @@ const SettingsTech: React.FC<Props> = ({
                   <Button userRights={['admin', 'manager']} token={token} decypher={decypher} shape="circle" icon={<RedoOutlined style={{ fontSize: '150%' }} />} size="large" type="primary" style={{ margin: 10 }} onClick={() => { confirmFullWarpBeam() }} ></Button>
                 </div>
                 <div style={{ marginTop: '15px', width: '75%' }}>
-                  <InputNumber className="narrow" eng descr value={activeInput.id == ('warpLength') ? activeInput.input : getTagVal('fullWarpBeamLength')} tag={getTag('fullWarpBeamLength')} userRights={['admin', 'manager']} token={token} placeholder='tags.fullWarpBeamLength.descr' controls={false} onUpdate={(value: any) => { setTagVal('fullWarpBeamLength', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'warp', id: 'warpLength', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
+                  <InputNumber className="narrow" eng descr value={activeInput.id == ('warpLength') ? activeInput.input : getTagVal('fullWarpBeamLength')} tag={getTag('fullWarpBeamLength')} userRights={['admin', 'manager']} token={token} decypher={decypher} placeholder='tags.fullWarpBeamLength.descr' controls={false} onUpdate={(value: any) => { setTagVal('fullWarpBeamLength', value); }} onFocus={(e: any) => { setActiveInput({ showKeyboard: true, form: 'warp', id: 'warpLength', num: true, showInput: true, input: e.target.value, descr: e.target.placeholder, pattern: 'float' }) }} />
                 </div>
               </Skeleton>
             </Card>
