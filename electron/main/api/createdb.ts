@@ -1315,7 +1315,7 @@ if (TG_OP = 'UPDATE') then
   end if;
   if old.type = 1 and ((SELECT cloth from lifetime) + (picksLastRun / (100 * density)) > old.nextrun) then
     new.starttime := current_timestamp;
-	  new.nextrun := new.runcondition*(floor(((SELECT cloth from lifetime) + (picksLastRun / (100 * density)))/new.runcondition)+1);
+	  new.nextrun := new.runcondition*((((SELECT cloth from lifetime) + (picksLastRun / (100 * density)))/new.runcondition)+1);
     new.acknowledged := false;
   end if;
   if old.type = 2 and (extract(epoch from ((SELECT motor from lifetime) + clock)) > old.nextrun) then
@@ -1330,7 +1330,7 @@ if (TG_OP = 'INSERT') then
   		new.nexttime := new.starttime + (interval '1' hour * new.runcondition);
 	end if;
 	if (new.type=1) then
-  		new.nextrun := new.runcondition*(floor(((SELECT cloth from lifetime) + (picksLastRun / (100 * density)))/new.runcondition)+1);
+  		new.nextrun := new.runcondition*(((SELECT cloth from lifetime) + (picksLastRun / (100 * density)))/new.runcondition)+1);
 	end if;
 	if (new.type=2) then
   		new.nextrun := extract(epoch from ((SELECT motor from lifetime) + clock)) + 3600 * new.runcondition;
