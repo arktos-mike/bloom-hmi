@@ -363,7 +363,8 @@ const App: React.FC = memo(() => {
   }, [])
 
   useEffect(() => {
-    fetchTags();
+    //fetchTags();
+    fetchAll();
   }, [location]);
 
   useEffect(() => {

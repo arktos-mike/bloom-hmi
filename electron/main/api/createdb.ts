@@ -1275,27 +1275,52 @@ CREATE TABLE IF NOT EXISTS reminders (
 );
 DROP TRIGGER IF EXISTS remupdate
   ON reminders;
-DROP FUNCTION IF EXISTS remupdate;
-create or replace function remupdate()
+DROP FUNCTION IF EXISTS reminders;
+create or replace function reminders()
  returns trigger
  language plpgsql
 as $function$
+declare
+  picksLastRun numeric;
+  density numeric;
+  clock interval;
 begin
-
+picksLastRun :=(
+  select
+    val
+  from
+    tags
+  where
+    (tag->>'name' = 'picksLastRun'));
+density :=(
+  select
+    val
+  from
+    tags
+  where
+    (tag->>'name' = 'planClothDensity'));
+clock :=(
+  select
+    (current_timestamp(3)-lower(timestamp))
+  from
+    modelog
+  where
+    modecode=1 and upper_inf(timestamp)
+    limit 1);
 if (TG_OP = 'UPDATE') then
   if old.type = 0 and (current_timestamp > (old.starttime + (interval '1' hour * old.runcondition))) then
     new.starttime := current_timestamp;
 	  new.nexttime := current_timestamp + (interval '1' hour * new.runcondition);
     new.acknowledged := false;
   end if;
-  if old.type = 1 and ((SELECT cloth from lifetime) > old.nextrun) then
+  if old.type = 1 and ((SELECT cloth from lifetime) + (picksLastRun / (100 * density)) > old.nextrun) then
     new.starttime := current_timestamp;
-	  new.nextrun := new.runcondition*(floor((SELECT cloth from lifetime)/new.runcondition)+1);
+	  new.nextrun := new.runcondition*(floor(((SELECT cloth from lifetime) + (picksLastRun / (100 * density)))/new.runcondition)+1);
     new.acknowledged := false;
   end if;
-  if old.type = 2 and (extract(epoch from (SELECT motor from lifetime)) > old.nextrun) then
+  if old.type = 2 and (extract(epoch from ((SELECT motor from lifetime) + clock)) > old.nextrun) then
     new.starttime := current_timestamp;
-	  new.nextrun := extract(epoch from (SELECT motor from lifetime)) + 3600 * new.runcondition;
+	  new.nextrun := extract(epoch from ((SELECT motor from lifetime) + clock)) + 3600 * new.runcondition;
     new.acknowledged := false;
   end if;
 end if;
@@ -1305,10 +1330,10 @@ if (TG_OP = 'INSERT') then
   		new.nexttime := new.starttime + (interval '1' hour * new.runcondition);
 	end if;
 	if (new.type=1) then
-  		new.nextrun := new.runcondition*(floor((SELECT cloth from lifetime)/new.runcondition)+1);
+  		new.nextrun := new.runcondition*(floor(((SELECT cloth from lifetime) + (picksLastRun / (100 * density)))/new.runcondition)+1);
 	end if;
 	if (new.type=2) then
-  		new.nextrun := extract(epoch from (SELECT motor from lifetime)) + 3600 * new.runcondition;
+  		new.nextrun := extract(epoch from ((SELECT motor from lifetime) + clock)) + 3600 * new.runcondition;
 	end if;
 end if;
 return new;
@@ -1316,18 +1341,44 @@ end;
 
 $function$
 ;
-create trigger remupdate before insert or update on reminders for row execute function remupdate();
+create trigger remupdate before insert or update on reminders for row execute function reminders();
 CREATE OR REPLACE FUNCTION getactualnotifications()
  RETURNS SETOF reminders
  LANGUAGE plpgsql
 AS $function$
+declare
+  picksLastRun numeric;
+  density numeric;
+  clock interval;
 begin
+picksLastRun :=(
+  select
+    val
+  from
+    tags
+  where
+    (tag->>'name' = 'picksLastRun'));
+density :=(
+  select
+    val
+  from
+    tags
+  where
+    (tag->>'name' = 'planClothDensity'));
+clock :=(
+  select
+    (current_timestamp(3)-lower(timestamp))
+  from
+    modelog
+  where
+    modecode=1 and upper_inf(timestamp)
+    limit 1);
   UPDATE reminders SET acknowledged=acknowledged;
   RETURN QUERY(SELECT * FROM reminders where active=true and acknowledged=false and current_timestamp >= starttime and
 	case
-  when type=0 then current_timestamp <= nexttime
-  when type=1 then (SELECT cloth from lifetime) <= nextrun
-  when type=2 then extract(epoch from (SELECT motor from lifetime)) <= nextrun
+  when type=0 then current_timestamp >= nexttime
+  when type=1 then ((SELECT cloth from lifetime) + (picksLastRun / (100 * density))) >= nextrun
+  when type=2 then extract(epoch from ((SELECT motor from lifetime) + clock)) >= nextrun
   end
   );
 end;
