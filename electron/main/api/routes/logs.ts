@@ -82,7 +82,7 @@ router.post('/userlog/delete', async (req, res) => {
 
 router.post('/startstops', async (req, res) => {
   const { start, end } = req.body;
-  const { rows } = await db.query(`SELECT timestamp,modecode,round(picks) as picks FROM modelog WHERE tstzrange($1,$2,'[)') && timestamp ORDER BY timestamp DESC`, [start, end]);
+  const { rows } = await db.query(`SELECT timestamp,modecode,realpicks as picks FROM modelog WHERE tstzrange($1,$2,'[)') && timestamp ORDER BY timestamp DESC`, [start, end]);
   rows.map((row: any) => {
     row['timestamp'] = range.parse(row['timestamp'], parseTimestampTz)
   });
