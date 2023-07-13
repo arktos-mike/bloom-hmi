@@ -363,8 +363,7 @@ const App: React.FC = memo(() => {
   }, [])
 
   useEffect(() => {
-    //fetchTags();
-    fetchAll();
+    fetchTags();
   }, [location]);
 
   useEffect(() => {
@@ -537,7 +536,7 @@ const App: React.FC = memo(() => {
       setUpdatedReminders(false);
     })();
     return () => { }
-  }, [dayjs().minute(), updatedReminders])
+  }, [dayjs().second(), updatedReminders])
 
   useEffect(() => {
     (async () => {

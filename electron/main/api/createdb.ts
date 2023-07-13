@@ -1376,9 +1376,9 @@ clock :=(
   UPDATE reminders SET acknowledged=acknowledged;
   RETURN QUERY(SELECT * FROM reminders where active=true and acknowledged=false and current_timestamp >= starttime and
 	case
-  when type=0 then current_timestamp >= nexttime
-  when type=1 then ((SELECT cloth from lifetime) + (picksLastRun / (100 * density))) >= nextrun
-  when type=2 then extract(epoch from ((SELECT motor from lifetime) + clock)) >= nextrun
+  when type=0 then current_timestamp <= nexttime
+  when type=1 then ((SELECT cloth from lifetime) + (picksLastRun / (100 * density))) <= nextrun
+  when type=2 then extract(epoch from ((SELECT motor from lifetime) + clock)) <= nextrun
   end
   );
 end;
