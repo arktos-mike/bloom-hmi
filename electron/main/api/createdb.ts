@@ -1313,14 +1313,14 @@ if (TG_OP = 'UPDATE') then
 	  new.nexttime := current_timestamp + (interval '1' hour * new.runcondition);
     new.acknowledged := false;
   end if;
-  if old.type = 1 and ((SELECT cloth from lifetime) + (picksLastRun / (100 * density)) > old.nextrun) then
+  if old.type = 1 and (((SELECT cloth from lifetime) + (picksLastRun / (100 * density))) > old.nextrun) then
     new.starttime := current_timestamp;
 	  new.nextrun := new.runcondition*((((SELECT cloth from lifetime) + (picksLastRun / (100 * density)))/new.runcondition)+1);
     new.acknowledged := false;
   end if;
-  if old.type = 2 and (extract(epoch from ((SELECT motor from lifetime) + clock)) > old.nextrun) then
+  if old.type = 2 and (extract(epoch from ((SELECT motor from lifetime) + coalesce(clock,'0'))) > old.nextrun) then
     new.starttime := current_timestamp;
-	  new.nextrun := extract(epoch from ((SELECT motor from lifetime) + clock)) + 3600 * new.runcondition;
+	  new.nextrun := extract(epoch from ((SELECT motor from lifetime) + coalesce(clock,'0'))) + 3600 * new.runcondition;
     new.acknowledged := false;
   end if;
 end if;
@@ -1333,7 +1333,7 @@ if (TG_OP = 'INSERT') then
   		new.nextrun := new.runcondition*((((SELECT cloth from lifetime) + (picksLastRun / (100 * density)))/new.runcondition)+1);
 	end if;
 	if (new.type=2) then
-  		new.nextrun := extract(epoch from ((SELECT motor from lifetime) + clock)) + 3600 * new.runcondition;
+  		new.nextrun := extract(epoch from ((SELECT motor from lifetime) + coalesce(clock,'0'))) + 3600 * new.runcondition;
 	end if;
 end if;
 return new;
@@ -1378,7 +1378,7 @@ clock :=(
 	case
   when type=0 then current_timestamp <= nexttime
   when type=1 then ((SELECT cloth from lifetime) + (picksLastRun / (100 * density))) <= nextrun
-  when type=2 then extract(epoch from ((SELECT motor from lifetime) + clock)) <= nextrun
+  when type=2 then extract(epoch from ((SELECT motor from lifetime) + coalesce(clock,'0'))) <= nextrun
   end
   );
 end;
