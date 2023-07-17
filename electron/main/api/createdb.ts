@@ -170,96 +170,149 @@ create or replace
 DROP TRIGGER IF EXISTS modeChanged
   ON tags;
 DROP FUNCTION IF EXISTS modelog;
-CREATE OR REPLACE FUNCTION modelog()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
-  begin
-  IF new.val is not null then
-  insert
-    into
-    modelog
-  values(tstzrange(current_timestamp(3),NULL,'[)'),
-  new.val,
-  null,(select
-	val
-from
-	tags
-where
-	(tag->>'name' = 'planSpeedMainDrive')),
-	(select
-	val
-from
-	tags
-where
-	(tag->>'name' = 'planClothDensity')),
-  null
- );
- end if;
-
- if new.val = 6 then
-UPDATE
-  clothlog
-SET
-	timestamp = tstzrange(
-      lower(timestamp),
-	current_timestamp(3),
-	'[)'
-  ),
-	meters = (select
-    val
-  from
-    tags
-  where
-    tag->>'name' = 'orderLength')
-where
-	event=1 and upper_inf(timestamp);
-INSERT INTO clothlog VALUES(tstzrange(current_timestamp(3),NULL,'[)'),1,NULL);
-end if;
-
-  return null;
-  end;
-
-  $function$
-;
-create trigger modeChanged after insert or update on tags for row when (new.tag->>'name'='modeCode') execute function modelog();
-DROP TRIGGER IF EXISTS modeupdate
-  ON modelog;
-DROP FUNCTION IF EXISTS modeupdate;
-create or replace function modeupdate()
+create or replace
+function modelog()
  returns trigger
  language plpgsql
 as $function$
 declare
-  picksLastRun numeric;
+planSpeed numeric;
 
-  realPicksLastRun numeric;
+picksLastRun numeric;
 
-density numeric;
+realPicksLastRun numeric;
+
+planDensity numeric;
+
+warpShrinkage numeric;
+
+orderLength numeric;
 
 code numeric;
 
 clock interval;
 
-warpShrinkage numeric;
-
 begin
-	 picksLastRun :=(
-select
-	val
-from
-	tags
-where
-	(tag->>'name' = 'picksLastRun'));
-  realPicksLastRun :=(
+if new.val is not null then
+with numbers as (
+  select
+    tag->>'name' as name,
+    case
+      when tag->>'name' = 'planSpeedMainDrive' then val
+    end as val1,
+    case
+      when tag->>'name' = 'planClothDensity' then val
+    end as val2,
+    case
+      when tag->>'name' = 'picksLastRun' then val
+    end as val3,
+    case
+      when tag->>'name' = 'realPicksLastRun' then val
+    end as val4,
+    case
+      when tag->>'name' = 'warpShrinkage' then val
+    end as val5,
+    case
+      when tag->>'name' = 'orderLength' then val
+    end as val6
+  from
+    tags
+  where
+    tag->>'name' in ('planSpeedMainDrive', 'planClothDensity', 'picksLastRun', 'realPicksLastRun', 'warpShrinkage', 'orderLength'))
+      select
+    into
+    planSpeed,
+    planDensity,
+    picksLastRun,
+    realPicksLastRun,
+    warpShrinkage,
+    orderLength
+    (
     select
-      val
+      coalesce(val1,
+      val2,
+      val3,
+      val4,
+      val5,
+      val6)
     from
-      tags
+      numbers
     where
-      (tag->>'name' = 'realPicksLastRun'));
-DELETE FROM modelog WHERE upper_inf(timestamp) AND current_timestamp<lower(timestamp);
-DELETE FROM clothlog WHERE upper_inf(timestamp) AND current_timestamp<lower(timestamp);
+      name = 'planSpeedMainDrive'),
+    (
+    select
+      coalesce(val1,
+      val2,
+      val3,
+      val4,
+      val5,
+      val6)
+    from
+      numbers
+    where
+      name = 'planClothDensity'),
+    (
+    select
+      coalesce(val1,
+      val2,
+      val3,
+      val4,
+      val5,
+      val6)
+    from
+      numbers
+    where
+      name = 'picksLastRun'),
+    (
+    select
+      coalesce(val1,
+      val2,
+      val3,
+      val4,
+      val5,
+      val6)
+    from
+      numbers
+    where
+      name = 'realPicksLastRun'),
+    (
+    select
+      coalesce(val1,
+      val2,
+      val3,
+      val4,
+      val5,
+      val6)
+    from
+      numbers
+    where
+      name = 'warpShrinkage'),
+    (
+    select
+      coalesce(val1,
+      val2,
+      val3,
+      val4,
+      val5,
+      val6)
+    from
+      numbers
+    where
+      name = 'orderLength');
+delete
+from
+	modelog
+where
+	upper_inf(timestamp)
+	and current_timestamp<lower(timestamp);
+
+delete
+from
+	clothlog
+where
+	upper_inf(timestamp)
+	and current_timestamp<lower(timestamp);
+
 update
 	modelog
 set
@@ -269,51 +322,78 @@ set
 	'[)'
   ),
 	picks = picksLastRun,
-  realpicks = realPicksLastRun
+	realpicks = realPicksLastRun
 where
-	upper_inf(timestamp) returning modecode, (current_timestamp(3)-lower(timestamp)) into code, clock;
+	upper_inf(timestamp) returning modecode,
+	(current_timestamp(3)-lower(timestamp))
+into
+	code,
+	clock;
 
-if code = 1 then
-   density :=(
-select
-	val
-from
+update
 	tags
+set
+	val = val - (picksLastRun / (100 * planDensity * (1 - 0.01 * warpShrinkage))),
+	updated = current_timestamp
 where
-	(tag->>'name' = 'planClothDensity'));
-
-warpShrinkage :=(
-  select
-    val
-  from
-    tags
-  where
-    (tag->>'name' = 'warpShrinkage'));
-
-UPDATE
-  tags
-SET
-  val = val - (picksLastRun / (100 * density * (1 - 0.01 * warpShrinkage))),
-  updated = current_timestamp
-where
-  tag->>'name'= 'warpBeamLength';
+	tag->>'name' = 'warpBeamLength';
 
 update
 	lifetime
 set
 	picks = picks + picksLastRun,
-	cloth = cloth + (picksLastRun / (100 * density)),
-	motor = justify_hours(motor + clock)
+	cloth = cloth + (picksLastRun / (100 * planDensity)),
+	motor = justify_hours(motor + case when code = 1 then clock else '0' end)
 where
 	serialno is not null;
+
+insert
+	into
+	modelog
+values(tstzrange(current_timestamp(3),
+null,
+'[)'),
+new.val,
+null,
+planSpeed,
+planDensity,
+null
+ );
 end if;
 
-return new;
+if new.val = 6 then
+update
+	clothlog
+set
+	timestamp = tstzrange(
+      lower(timestamp),
+	current_timestamp(3),
+	'[)'
+  ),
+	meters = orderLength
+where
+	event = 1
+	and upper_inf(timestamp);
+
+insert
+	into
+	clothlog
+values(tstzrange(current_timestamp(3),
+null,
+'[)'),
+1,
+null);
+end if;
+
+return null;
 end;
 
 $function$
 ;
-create trigger modeupdate before insert on modelog for row execute function modeupdate();
+create trigger modeChanged after insert or update on tags for row when (new.tag->>'name'='modeCode') execute function modelog();
+DROP TRIGGER IF EXISTS modeupdate
+  ON modelog;
+DROP FUNCTION IF EXISTS modeupdate;
 create or replace
 function getstatinfo(starttime timestamp with time zone,
 endtime timestamp with time zone)
