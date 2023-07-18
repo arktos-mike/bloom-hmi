@@ -169,12 +169,12 @@ create or replace
   ;
 DROP TRIGGER IF EXISTS modeChanged
   ON tags;
-DROP FUNCTION IF EXISTS modelog;
+DROP function IF EXISTS modelog;
+DROP procedure IF EXISTS modelog;
 create or replace
-function modelog()
- returns trigger
+procedure modelog(newval numeric)
  language plpgsql
-as $function$
+as $procedure$
 declare
 planSpeed numeric;
 
@@ -193,7 +193,7 @@ code numeric;
 clock interval;
 
 begin
-if new.val is not null then
+if newval is not null then
 with numbers as (
   select
     tag->>'name' as name,
@@ -353,7 +353,7 @@ insert
 values(tstzrange(current_timestamp(3),
 null,
 '[)'),
-new.val,
+newval,
 null,
 planSpeed,
 planDensity,
@@ -361,7 +361,7 @@ null
  );
 end if;
 
-if new.val = 6 then
+if newval = 6 then
 update
 	clothlog
 set
@@ -385,12 +385,10 @@ null,
 null);
 end if;
 
-return null;
 end;
 
-$function$
+$procedure$
 ;
-create trigger modeChanged after insert or update on tags for row when (new.tag->>'name'='modeCode') execute function modelog();
 DROP TRIGGER IF EXISTS modeupdate
   ON modelog;
 DROP FUNCTION IF EXISTS modeupdate;
