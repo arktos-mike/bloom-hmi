@@ -385,12 +385,12 @@ null,
 null);
 end if;
 
-return new;
+return null;
 end;
 
 $function$
 ;
-create trigger modeChanged before insert or update on tags for row when (new.tag->>'name'='modeCode') execute function modelog();
+create trigger modeChanged after insert or update on tags for row when (new.tag->>'name'='modeCode') execute function modelog();
 DROP TRIGGER IF EXISTS modeupdate
   ON modelog;
 DROP FUNCTION IF EXISTS modeupdate;
