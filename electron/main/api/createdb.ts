@@ -169,11 +169,10 @@ create or replace
   ;
 DROP TRIGGER IF EXISTS modeChanged
   ON tags;
-DROP function IF EXISTS modelog;
-DROP procedure IF EXISTS modelog;
+DROP FUNCTION IF EXISTS modelog;
 create or replace
 function modelog()
-returns trigger
+ returns trigger
  language plpgsql
 as $function$
 declare
@@ -385,17 +384,13 @@ null,
 1,
 null);
 end if;
+
 return new;
 end;
 
 $function$
 ;
-DROP TRIGGER IF EXISTS modelog
-  ON tags;
-create trigger modelog before update or insert on tags for each row
-when (new.tag->>'name'='modeCode')
-execute procedure modelog();
-
+create trigger modeChanged before insert or update on tags for row when (new.tag->>'name'='modeCode') execute function modelog();
 DROP TRIGGER IF EXISTS modeupdate
   ON modelog;
 DROP FUNCTION IF EXISTS modeupdate;
