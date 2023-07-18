@@ -522,7 +522,6 @@ const readModbusData = async function (client, port, slave, group) {
           const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND ( (round(val::numeric,(tag->>$6)::integer)) IS DISTINCT FROM (round($1::numeric,(tag->>$6)::integer)) OR link=false) RETURNING tag, (round(val::numeric,(tag->>$6)::integer)) as val, updated, link;', [val, 'dev', slave.name, 'name', tag.name, 'dec']);
           if (rows[0] && rows[0]['tag']['group'] == 'event') {
             if (tag.name == 'modeCode') {
-              await db.query('CALL modelog($1);',[val]);
               const info = await db.query('SELECT * FROM getcurrentinfo();');
               info.rows[0]['userinfo'] && await info.rows[0]['userinfo']['stops'].map((row: any) => {
                 row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
