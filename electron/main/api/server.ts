@@ -463,17 +463,17 @@ const readModbusData = async function (client, port, slave, group) {
         await slave.mbarr.hregs.tags.reduce(async (memo, tag) => {
           await memo;
           const buf = await data.buffer.slice((tag.addr - slave.mbarr.hregs?.addr) * 2, (tag.addr - slave.mbarr.hregs?.addr) * 2 + getByteLength(tag.type))
-          if (slave.swapBytes) { buf.swap16(); }
+          if (slave.swapBytes) { await buf.swap16(); }
           let val;
           switch (tag.type) {
             case 'dword':
-              val = slave.swapWords ? buf.readUInt32LE(0) : buf.readUInt32BE(0);
+              val = slave.swapWords ? await buf.readUInt32LE(0) : await buf.readUInt32BE(0);
               break;
             case 'word':
-              val = slave.swapWords ? buf.readUInt16LE(0) : buf.readUInt16BE(0);
+              val = slave.swapWords ? await buf.readUInt16LE(0) : await buf.readUInt16BE(0);
               break;
             case 'float':
-              val = slave.swapWords ? buf.readFloatLE(0) : buf.readFloatBE(0);
+              val = slave.swapWords ? await buf.readFloatLE(0) : await buf.readFloatBE(0);
               break;
             default:
               break;
@@ -505,21 +505,22 @@ const readModbusData = async function (client, port, slave, group) {
         await slave.mbarr.iregs.tags.reduce(async (memo, tag) => {
           await memo;
           const buf = await data.buffer.slice((tag.addr - slave.mbarr.iregs?.addr) * 2, (tag.addr - slave.mbarr.iregs?.addr) * 2 + getByteLength(tag.type))
-          if (slave.swapBytes) { buf.swap16(); }
+          if (slave.swapBytes) { await buf.swap16(); }
           let val;
           switch (tag.type) {
             case 'dword':
-              val = slave.swapWords ? buf.readUInt32LE(0) : buf.readUInt32BE(0);
+              val = slave.swapWords ? await buf.readUInt32LE(0) : await buf.readUInt32BE(0);
               break;
             case 'word':
-              val = slave.swapWords ? buf.readUInt16LE(0) : buf.readUInt16BE(0);
+              val = slave.swapWords ? await buf.readUInt16LE(0) : await buf.readUInt16BE(0);
               break;
             case 'float':
-              val = slave.swapWords ? buf.readFloatLE(0) : buf.readFloatBE(0);
+              val = slave.swapWords ? await buf.readFloatLE(0) : await buf.readFloatBE(0);
               break;
             default:
               break;
           }
+          console.log("[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + val)
           const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND ( (round(val::numeric,(tag->>$6)::integer)) IS DISTINCT FROM (round($1::numeric,(tag->>$6)::integer)) OR link=false) RETURNING tag, (round(val::numeric,(tag->>$6)::integer)) as val, updated, link;', [val, 'dev', slave.name, 'name', tag.name, 'dec']);
           if (rows[0] && rows[0]['tag']['group'] == 'event') {
             if (tag.name == 'modeCode') {
