@@ -419,8 +419,8 @@ const readModbusData = async function (client, port, slave, group) {
         }, undefined);
       } catch (e) {
         port.mbsState = MBS_STATE_FAIL_READ;
-        mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]COILS" + " " + e.message;
-        console.log(mbsStatus);
+        //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]COILS" + " " + e.message;
+        //console.log(mbsStatus);
         await slave.mbarr.coils.tags.reduce(async (memo, tag) => {
           await memo;
           const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *', ['dev', slave.name, 'name', tag.name]);
@@ -448,8 +448,8 @@ const readModbusData = async function (client, port, slave, group) {
         }, undefined);
       } catch (e) {
         port.mbsState = MBS_STATE_FAIL_READ;
-        mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]COILS" + " " + e.message;
-        console.log(mbsStatus);
+        //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]COILS" + " " + e.message;
+        //console.log(mbsStatus);
         await slave.mbarr.discr.tags.reduce(async (memo, tag) => {
           await memo;
           const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *', ['dev', slave.name, 'name', tag.name]);
@@ -534,16 +534,16 @@ const readModbusData = async function (client, port, slave, group) {
               }
               else { sse.send(rows, 'tags', tag.name); }
             }
-            console.log('[' + new Date().toJSON() + ']' + "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
+            //console.log('[' + new Date().toJSON() + ']' + "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
           }
         }, undefined);
       } catch (e) {
         port.mbsState = MBS_STATE_FAIL_READ;
         await slave.mbarr.iregs.tags.reduce(async (memo, tag) => {
           await memo;
-          mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
-          console.log(mbsStatus);
-          console.log(e);
+          //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
+          //console.log(mbsStatus);
+          //console.log(e);
           if (tag.name == 'modeCode') {
             const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false, val=0 where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *;', ['dev', slave.name, 'name', tag.name]);
             if (rows[0]) {
