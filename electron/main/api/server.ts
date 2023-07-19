@@ -167,9 +167,9 @@ const dbConf = async () => {
     const tcpTags = [
       { tag: { name: "stopAngle", group: "monitoring", dev: "tcp1", addr: "6", type: "word", reg: "r", min: 0, max: 359, dec: 0 }, link: false },
       { tag: { name: "orderLength", group: "monitoring", dev: "tcp1", addr: "4", type: "float", reg: "r", min: 0, max: 1000, dec: 2 }, link: false },
-      { tag: { name: "speedMainDrive", group: "monitoring", dev: "tcp1", addr: "8", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, link: false },
+      { tag: { name: "speedMainDrive", group: "monitoring", dev: "tcp1", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, link: false },
       { tag: { name: "modeCode", group: "event", dev: "tcp1", addr: "0", type: "word", reg: "r", min: 0, max: 6, dec: 0 }, link: false },
-      { tag: { name: "picksLastRun", group: "monitoring", dev: "tcp1", addr: "2", type: "float", reg: "r", min: -1.7976931348623157e+308, max: 1.7976931348623157e+308, dec: 4 }, link: false },
+      { tag: { name: "picksLastRun", group: "monitoring", dev: "tcp1", addr: "8", type: "float", reg: "r", min: -1.7976931348623157e+308, max: 1.7976931348623157e+308, dec: 4 }, link: false },
       { tag: { name: "realPicksLastRun", group: "monitoring", dev: "tcp1", addr: "10", type: "dword", reg: "r", min: -2147483648, max: 2147483647, dec: 0 }, link: false },
       { tag: { name: "modeControl", group: "event", dev: "tcp1", addr: "14", type: "word", reg: "rw", min: 0, max: 65535, dec: 0 }, link: false },
       { tag: { name: "planClothDensity", group: "event", dev: "tcp1", type: "float", addr: "12", reg: "rw", min: 0.5, max: 1000, dec: 2 }, link: false },
@@ -200,9 +200,9 @@ const dbConf = async () => {
     const tags = [
       { tag: { name: "stopAngle", group: "monitoring", dev: "rtu1", addr: "6", type: "word", reg: "r", min: 0, max: 359, dec: 0 }, link: false },
       { tag: { name: "orderLength", group: "monitoring", dev: "rtu1", addr: "4", type: "float", reg: "r", min: 0, max: 1000, dec: 2 }, link: false },
-      { tag: { name: "speedMainDrive", group: "monitoring", dev: "rtu1", addr: "8", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, link: false },
+      { tag: { name: "speedMainDrive", group: "monitoring", dev: "rtu1", addr: "2", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, link: false },
       { tag: { name: "modeCode", group: "event", dev: "rtu1", addr: "0", type: "word", reg: "r", min: 0, max: 6, dec: 0 }, link: false },
-      { tag: { name: "picksLastRun", group: "monitoring", dev: "rtu1", addr: "2", type: "float", reg: "r", min: -1.7976931348623157e+308, max: 1.7976931348623157e+308, dec: 4 }, link: false },
+      { tag: { name: "picksLastRun", group: "monitoring", dev: "rtu1", addr: "8", type: "float", reg: "r", min: -1.7976931348623157e+308, max: 1.7976931348623157e+308, dec: 4 }, link: false },
       { tag: { name: "realPicksLastRun", group: "monitoring", dev: "rtu1", addr: "10", type: "dword", reg: "r", min: -2147483648, max: 2147483647, dec: 0 }, link: false },
       { tag: { name: "modeControl", group: "event", dev: "rtu1", addr: "14", type: "word", reg: "rw", min: 0, max: 65535, dec: 0 }, link: false },
       { tag: { name: "planSpeedMainDrive", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 600, dec: 1 }, val: 200.0 },
@@ -527,15 +527,15 @@ const readModbusData = async function (client, port, slave, group) {
             }
             else { sse.send(rows, 'tags', tag.name); }
           }
-          //console.log('[' + new Date().toJSON() + ']' + "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
+          console.log('[' + new Date().toJSON() + ']' + "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
         }, undefined);
       } catch (e) {
         port.mbsState = MBS_STATE_FAIL_READ;
         await slave.mbarr.iregs.tags.reduce(async (memo, tag) => {
           await memo;
-          //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
-          //console.log(mbsStatus);
-          //console.log(e);
+          mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
+          console.log(mbsStatus);
+          console.log(e);
           if (tag.name == 'modeCode') {
             const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false, val=0 where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING *;', ['dev', slave.name, 'name', tag.name]);
             if (rows[0]) {
