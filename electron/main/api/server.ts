@@ -525,7 +525,7 @@ const readModbusData = async function (client, port, slave, group) {
             if (tag.name == 'modeCode') {
               modeCodeProcess(rows);
             }
-            sse.send(rows, 'tags', tag.name);
+            else { sse.send(rows, 'tags', tag.name); }
           }
           //console.log('[' + new Date().toJSON() + ']' + "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " = " + val);
         }, undefined);
@@ -579,6 +579,7 @@ const readModbusData = async function (client, port, slave, group) {
     info.rows[0]['lifetime'] && (info.rows[0]['lifetime']['motor'] = parseInterval(info.rows[0]['lifetime']['motor']))
     info.rows[0]['modeCode'] = { val: rows[0]['val'], updated: rows[0]['updated'] }
     sse.send(info.rows[0], 'fullinfo', 'all');
+    sse.send(rows, 'tags', 'modeCode');
     //console.log('[' + new Date().toJSON() + ']' + "modeCode processed")
   }
 
