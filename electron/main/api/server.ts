@@ -409,7 +409,7 @@ const readModbusData = async function (client, port, slave, group) {
         await slave.mbarr.coils.tags.reduce(async (memo, tag) => {
           await memo;
           let val = await data.buffer[tag.addr - slave.mbarr.coils?.addr];
-          if (val) {
+          if (val != null) {
             const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false) RETURNING *;', [val, 'dev', slave.name, 'name', tag.name]);
             if (rows[0] && rows[0]['tag']['group'] == 'event') {
               sse.send(rows, 'tags', tag.name);
@@ -438,7 +438,7 @@ const readModbusData = async function (client, port, slave, group) {
         await slave.mbarr.discr.tags.reduce(async (memo, tag) => {
           await memo;
           let val = await data.buffer[tag.addr - slave.mbarr.discr?.addr];
-          if (val) {
+          if (val != null) {
             const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false) RETURNING *;', [val, 'dev', slave.name, 'name', tag.name]);
             if (rows[0] && rows[0]['tag']['group'] == 'event') {
               sse.send(rows, 'tags', tag.name);
@@ -482,7 +482,7 @@ const readModbusData = async function (client, port, slave, group) {
             default:
               break;
           }
-          if (val) {
+          if (val != null) {
             const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND ( (round(val::numeric,(tag->>$6)::integer)) IS DISTINCT FROM (round($1::numeric,(tag->>$6)::integer)) OR link=false) RETURNING tag, (round(val::numeric,(tag->>$6)::integer)) as val, updated, link;', [val, 'dev', slave.name, 'name', tag.name, 'dec']);
             if (rows[0] && rows[0]['tag']['group'] == 'event') {
               sse.send(rows, 'tags', tag.name);
@@ -526,7 +526,7 @@ const readModbusData = async function (client, port, slave, group) {
             default:
               break;
           }
-          if (val) {
+          if (val != null) {
             const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND ( (round(val::numeric,(tag->>$6)::integer)) IS DISTINCT FROM (round($1::numeric,(tag->>$6)::integer)) OR link=false) RETURNING tag, (round(val::numeric,(tag->>$6)::integer)) as val, updated, link;', [val, 'dev', slave.name, 'name', tag.name, 'dec']);
             if (rows[0] && rows[0]['tag']['group'] == 'event') {
               if (tag.name == 'modeCode') {
