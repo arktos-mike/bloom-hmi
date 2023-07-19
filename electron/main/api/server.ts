@@ -408,7 +408,7 @@ const readModbusData = async function (client, port, slave, group) {
         mbsStatus = "success";
         await slave.mbarr.coils.tags.reduce(async (memo, tag) => {
           await memo;
-          let val = data.buffer[tag.addr - slave.mbarr.coils?.addr];
+          let val = await data.buffer[tag.addr - slave.mbarr.coils?.addr];
           const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false) RETURNING *;', [val, 'dev', slave.name, 'name', tag.name]);
           if (rows[0] && rows[0]['tag']['group'] == 'event') {
             sse.send(rows, 'tags', tag.name);
@@ -435,7 +435,7 @@ const readModbusData = async function (client, port, slave, group) {
         mbsStatus = "success";
         await slave.mbarr.discr.tags.reduce(async (memo, tag) => {
           await memo;
-          let val = data.buffer[tag.addr - slave.mbarr.discr?.addr];
+          let val = await data.buffer[tag.addr - slave.mbarr.discr?.addr];
           const { rows } = await db.query('UPDATE tags SET val=$1, updated=current_timestamp, link=true where tag->>$2=$3 and tag->>$4=$5 AND (val IS DISTINCT FROM $1 OR link=false) RETURNING *;', [val, 'dev', slave.name, 'name', tag.name]);
           if (rows[0] && rows[0]['tag']['group'] == 'event') {
             sse.send(rows, 'tags', tag.name);
@@ -462,7 +462,7 @@ const readModbusData = async function (client, port, slave, group) {
         mbsStatus = "success";
         await slave.mbarr.hregs.tags.reduce(async (memo, tag) => {
           await memo;
-          const buf = data.buffer.slice((tag.addr - slave.mbarr.hregs?.addr) * 2, (tag.addr - slave.mbarr.hregs?.addr) * 2 + getByteLength(tag.type))
+          const buf = await data.buffer.slice((tag.addr - slave.mbarr.hregs?.addr) * 2, (tag.addr - slave.mbarr.hregs?.addr) * 2 + getByteLength(tag.type))
           if (slave.swapBytes) { buf.swap16(); }
           let val;
           switch (tag.type) {
@@ -504,7 +504,7 @@ const readModbusData = async function (client, port, slave, group) {
         mbsStatus = "success";
         await slave.mbarr.iregs.tags.reduce(async (memo, tag) => {
           await memo;
-          const buf = data.buffer.slice((tag.addr - slave.mbarr.iregs?.addr) * 2, (tag.addr - slave.mbarr.iregs?.addr) * 2 + getByteLength(tag.type))
+          const buf = await data.buffer.slice((tag.addr - slave.mbarr.iregs?.addr) * 2, (tag.addr - slave.mbarr.iregs?.addr) * 2 + getByteLength(tag.type))
           if (slave.swapBytes) { buf.swap16(); }
           let val;
           switch (tag.type) {
