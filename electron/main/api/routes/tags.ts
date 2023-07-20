@@ -14,6 +14,7 @@ setInterval(async () => {
   const info = await db.query('SELECT * FROM getpartialinfo();');
   info.rows[0]['shift'] && info.rows[0] && (info.rows[0]['shift']['shiftdur'] = parseInterval(info.rows[0]['shift']['shiftdur']))
   await sse.send(info.rows[0], 'info', 'all');
+  await db.query('SELECT modecodeupdate();');
   //sse.updateInit(["array", "containing", "new", "content"]);
   //sse.serialize(["array", "to", "be", "sent", "as", "serialized", "events"]);
  }, 1000);
