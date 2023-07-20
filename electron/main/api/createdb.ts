@@ -446,10 +446,21 @@ orderLength numeric;
 
 code numeric;
 
+numcode numeric;
+
 clock interval;
 
 begin
 if new.val is not null and new.link = true and old.link = false then
+select
+	modecode
+into
+	numcode
+from
+	modelog
+where
+  upper_inf(timestamp);
+if numcode = 0 then
 update
 	modelog
 set
@@ -461,7 +472,7 @@ set
 	picks = 0,
 	realpicks = 0
 where
-	upper_inf(timestamp) and modecode=0;
+	upper_inf(timestamp);
 insert
 	into
 	modelog
@@ -474,6 +485,7 @@ null,
 (select val from tags where tag->>'name' = 'planClothDensity'),
 null
  );
+end if;
 end if;
 if new.val is not null and new.link = true and old.link = true then
 with numbers as (
