@@ -167,6 +167,53 @@ create or replace
 
   $function$
   ;
+
+drop trigger if exists linkDown
+  on
+tags;
+
+drop function if exists modeCodeUpdate;
+
+create or replace
+function modeCodeUpdate()
+ returns trigger
+ language plpgsql
+as $function$
+declare
+    last_updated timestamptz;
+begin
+select
+	updated
+into
+	last_updated
+from
+	tags
+where
+	tag->>'name' = 'modeCode'
+	and link = false;
+if last_updated is not null
+and last_updated > current_timestamp - interval '5 second' then
+    update
+	modelog
+set
+	modecode = 0
+where
+	upper_inf(timestamp);
+return new;
+end if;
+return null;
+end;
+$function$
+;
+
+create trigger linkDown
+after
+update
+	on
+	tags
+for each row
+execute function modeCodeUpdate();
+
 DROP TRIGGER IF EXISTS modeChanged
   ON tags;
 DROP FUNCTION IF EXISTS modelog;
@@ -312,7 +359,7 @@ from
 where
 	upper_inf(timestamp)
 	and current_timestamp<lower(timestamp);
-
+if planSpeed is not null and planDensity is not null and picksLastRun is not null and realPicksLastRun is not null then
 update
 	modelog
 set
@@ -384,7 +431,7 @@ null,
 1,
 null);
 end if;
-
+end if;
 return null;
 end;
 
