@@ -182,6 +182,8 @@ as $function$
 declare
 last_updated timestamptz;
 
+new_updated timestamptz;
+
 planSpeed numeric;
 
 picksLastRun numeric;
@@ -196,13 +198,15 @@ orderLength numeric;
 
 code numeric;
 
+numcode numeric;
+
 clock interval;
 
 begin
 select
-	updated
+	updated, val
 into
-	last_updated
+	last_updated, numcode
 from
 	tags
 where
@@ -210,7 +214,8 @@ where
 	and link = false;
 
 if last_updated is not null
-and last_updated > current_timestamp - interval '5 second' then
+and last_updated < current_timestamp - interval '5 second'
+and numcode <> 0 then
 
 with numbers as (
 select
@@ -339,23 +344,25 @@ update
 set
 	timestamp = tstzrange(
       lower(timestamp),
-	last_updated,
+	(case when last_updated > lower(timestamp) then last_updated else lower(timestamp) + interval '1 microsecond' end),
 	'[)'
   ),
 	picks = picksLastRun,
 	realpicks = realPicksLastRun
 where
 	upper_inf(timestamp) returning modecode,
-	(last_updated-lower(timestamp))
+	((case when last_updated > lower(timestamp) then last_updated else lower(timestamp) + interval '1 microsecond' end) - lower(timestamp)),
+  (case when last_updated > lower(timestamp) then last_updated else lower(timestamp) + interval '1 microsecond' end)
 into
 	code,
-	clock;
+	clock,
+  new_updated;
 
 update
 	tags
 set
 	val = val - (picksLastRun / (100 * planDensity * (1 - 0.01 * warpShrinkage))),
-	updated = current_timestamp
+	updated = last_updated
 where
 	tag->>'name' = 'warpBeamLength';
 
@@ -374,7 +381,7 @@ where
 insert
 	into
 	modelog
-values(tstzrange(last_updated,
+values(tstzrange(new_updated,
 null,
 '[)'),
 0,
@@ -383,7 +390,6 @@ planSpeed,
 planDensity,
 0
  );
-end if;
 
 if code = 6 then
 update
@@ -407,6 +413,10 @@ null,
 '[)'),
 1,
 null);
+end if;
+
+UPDATE tags SET val=0 where tag->>'name'='modeCode' AND link=false;
+
 end if;
 end;
 
@@ -439,6 +449,32 @@ code numeric;
 clock interval;
 
 begin
+if new.val is not null and new.link = true and old.link = false then
+update
+	modelog
+set
+	timestamp = tstzrange(
+      lower(timestamp),
+	current_timestamp(3),
+	'[)'
+  ),
+	picks = 0,
+	realpicks = 0
+where
+	upper_inf(timestamp) and modecode=0;
+insert
+	into
+	modelog
+values(tstzrange(current_timestamp(3),
+null,
+'[)'),
+new.val,
+null,
+(select val from tags where tag->>'name' = 'planSpeedMainDrive'),
+(select val from tags where tag->>'name' = 'planClothDensity'),
+null
+ );
+end if;
 if new.val is not null and new.link = true and old.link = true then
 with numbers as (
   select
