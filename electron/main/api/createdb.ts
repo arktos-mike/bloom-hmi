@@ -168,7 +168,7 @@ create or replace
   $function$
   ;
 
-drop trigger if exists linkDown
+  drop trigger if exists linkDown
   on
 tags;
 
@@ -176,11 +176,28 @@ drop function if exists modeCodeUpdate;
 
 create or replace
 function modeCodeUpdate()
- returns trigger
+ returns void
  language plpgsql
 as $function$
 declare
-    last_updated timestamptz;
+last_updated timestamptz;
+
+planSpeed numeric;
+
+picksLastRun numeric;
+
+realPicksLastRun numeric;
+
+planDensity numeric;
+
+warpShrinkage numeric;
+
+orderLength numeric;
+
+code numeric;
+
+clock interval;
+
 begin
 select
 	updated
@@ -191,28 +208,210 @@ from
 where
 	tag->>'name' = 'modeCode'
 	and link = false;
+
 if last_updated is not null
 and last_updated > current_timestamp - interval '5 second' then
-    update
+
+with numbers as (
+select
+	tag->>'name' as name,
+	case
+		when tag->>'name' = 'planSpeedMainDrive' then val
+	end as val1,
+	case
+		when tag->>'name' = 'planClothDensity' then val
+	end as val2,
+	case
+		when tag->>'name' = 'picksLastRun' then val
+	end as val3,
+	case
+		when tag->>'name' = 'realPicksLastRun' then val
+	end as val4,
+	case
+		when tag->>'name' = 'warpShrinkage' then val
+	end as val5,
+	case
+		when tag->>'name' = 'orderLength' then val
+	end as val6
+from
+	tags
+where
+	tag->>'name' in ('planSpeedMainDrive', 'planClothDensity', 'picksLastRun', 'realPicksLastRun', 'warpShrinkage', 'orderLength'))
+      select
+	into
+	planSpeed,
+	planDensity,
+	picksLastRun,
+	realPicksLastRun,
+	warpShrinkage,
+	orderLength
+    (
+	select
+		coalesce(val1,
+		val2,
+		val3,
+		val4,
+		val5,
+		val6)
+	from
+		numbers
+	where
+		name = 'planSpeedMainDrive'),
+	(
+	select
+		coalesce(val1,
+		val2,
+		val3,
+		val4,
+		val5,
+		val6)
+	from
+		numbers
+	where
+		name = 'planClothDensity'),
+	(
+	select
+		coalesce(val1,
+		val2,
+		val3,
+		val4,
+		val5,
+		val6,
+		0)
+	from
+		numbers
+	where
+		name = 'picksLastRun'),
+	(
+	select
+		coalesce(val1,
+		val2,
+		val3,
+		val4,
+		val5,
+		val6,
+		0)
+	from
+		numbers
+	where
+		name = 'realPicksLastRun'),
+	(
+	select
+		coalesce(val1,
+		val2,
+		val3,
+		val4,
+		val5,
+		val6)
+	from
+		numbers
+	where
+		name = 'warpShrinkage'),
+	(
+	select
+		coalesce(val1,
+		val2,
+		val3,
+		val4,
+		val5,
+		val6)
+	from
+		numbers
+	where
+		name = 'orderLength');
+
+delete
+from
+	modelog
+where
+	upper_inf(timestamp)
+	and current_timestamp<lower(timestamp);
+
+delete
+from
+	clothlog
+where
+	upper_inf(timestamp)
+	and current_timestamp<lower(timestamp);
+
+update
 	modelog
 set
-	modecode = 0
+	timestamp = tstzrange(
+      lower(timestamp),
+	last_updated,
+	'[)'
+  ),
+	picks = picksLastRun,
+	realpicks = realPicksLastRun
 where
-	upper_inf(timestamp);
-return new;
+	upper_inf(timestamp) returning modecode,
+	(last_updated-lower(timestamp))
+into
+	code,
+	clock;
+
+update
+	tags
+set
+	val = val - (picksLastRun / (100 * planDensity * (1 - 0.01 * warpShrinkage))),
+	updated = current_timestamp
+where
+	tag->>'name' = 'warpBeamLength';
+
+update
+	lifetime
+set
+	picks = picks + picksLastRun,
+	cloth = cloth + (picksLastRun / (100 * planDensity)),
+	motor = justify_hours(motor + case
+		when code = 1 then clock
+		else '0'
+	end)
+where
+	serialno is not null;
+
+insert
+	into
+	modelog
+values(tstzrange(last_updated,
+null,
+'[)'),
+0,
+0,
+planSpeed,
+planDensity,
+0
+ );
 end if;
-return null;
+
+if code = 6 then
+update
+	clothlog
+set
+	timestamp = tstzrange(
+      lower(timestamp),
+	last_updated,
+	'[)'
+  ),
+	meters = orderLength
+where
+	event = 1
+	and upper_inf(timestamp);
+
+insert
+	into
+	clothlog
+values(tstzrange(last_updated,
+null,
+'[)'),
+1,
+null);
+end if;
 end;
+
 $function$
 ;
-
-create trigger linkDown
-after
-update
-	on
-	tags
-for each row
-execute function modeCodeUpdate();
 
 DROP TRIGGER IF EXISTS modeChanged
   ON tags;
@@ -240,7 +439,7 @@ code numeric;
 clock interval;
 
 begin
-if new.val is not null then
+if new.val is not null and new.link = true and old.link = true then
 with numbers as (
   select
     tag->>'name' as name,
