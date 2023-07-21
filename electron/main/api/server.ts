@@ -496,6 +496,7 @@ const readModbusData = async function (client, port, slave, group) {
           await memo;
           //mbsStatus = "[" + port.path + "]" + "[#" + slave.sId + "]" + tag.name + " " + e.message;
           //console.log(mbsStatus);
+          //console.log(e);
           const { rows } = await db.query('UPDATE tags SET updated=current_timestamp, link=false where tag->>$1=$2 and tag->>$3=$4 AND link=true RETURNING tag, (round(val::numeric,(tag->>$5)::integer)) as val, updated, link;', ['dev', slave.name, 'name', tag.name, 'dec']);
           if (rows[0]) {
             sse.send(rows, 'tags', tag.name);
