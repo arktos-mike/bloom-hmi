@@ -49,7 +49,7 @@ const Overview: React.FC<Props> = memo(({
   const [height, setHeight] = useState<number | undefined>(0)
   const [loading, setLoading] = useState(true)
   const [periodInfo, setPeriodInfo] = useState<any>((period == 'day' || ((!fullinfo?.shift?.shiftstart || !fullinfo?.shift?.shiftend) && period == 'shift')) ? { name: dayjs(fullinfo?.dayinfo?.start).format('LL'), start: fullinfo?.dayinfo?.start, end: fullinfo?.dayinfo?.end, duration: '', picks: fullinfo?.dayinfo?.picks, meters: fullinfo?.dayinfo?.meters, rpm: fullinfo?.dayinfo?.rpm, mph: fullinfo?.dayinfo?.mph, efficiency: fullinfo?.dayinfo?.efficiency, starts: fullinfo?.dayinfo?.starts, runtime: fullinfo?.dayinfo?.runtime, stops: fullinfo?.dayinfo?.stops } : (period == 'shift') ? { name: t('shift.shift') + ' ' + fullinfo?.shift?.shiftname, start: fullinfo?.shift?.shiftstart, end: fullinfo?.shift?.shiftend, duration: fullinfo?.shift?.shiftdur, picks: fullinfo?.shiftinfo?.picks, meters: fullinfo?.shiftinfo?.meters, rpm: fullinfo?.shiftinfo?.rpm, mph: fullinfo?.shiftinfo?.mph, efficiency: fullinfo?.shiftinfo?.efficiency, starts: fullinfo?.shiftinfo?.starts, runtime: fullinfo?.shiftinfo?.runtime, stops: fullinfo?.shiftinfo?.stops } : (period == 'month') ? { name: dayjs(fullinfo?.monthinfo?.start).format('MMMM YYYY'), start: fullinfo?.monthinfo?.start, end: fullinfo?.monthinfo?.end, duration: '', picks: fullinfo?.monthinfo?.picks, meters: fullinfo?.monthinfo?.meters, rpm: fullinfo?.monthinfo?.rpm, mph: fullinfo?.monthinfo?.mph, efficiency: fullinfo?.monthinfo?.efficiency, starts: fullinfo?.monthinfo?.starts, runtime: fullinfo?.monthinfo?.runtime, stops: fullinfo?.monthinfo?.stops } : {})
-  const [userInfo, setUserInfo] = useState<any>((dayjs(modeCode?.updated).isBefore(dayjs(userinfo?.start)) == true) ? { name: info.weaver?.name, duration: (userinfo?.stops === undefined || Object.keys(userinfo?.stops).length === 0 ) ? fullinfo?.userinfo?.workdur : userinfo?.workdur, start: info.weaver?.logintime, end: info.dayinfo?.end, picks: info.userinfo?.picks, meters: info.userinfo?.meters, rpm: info.userinfo?.rpm, mph: info.userinfo?.mph, efficiency: info.userinfo?.efficiency, starts: (userinfo?.stops === undefined || Object.keys(userinfo?.stops).length === 0 ) ? fullinfo?.userinfo?.starts : userinfo?.starts, runtime: (userinfo?.stops === undefined || Object.keys(userinfo?.stops).length === 0 ) ? fullinfo?.userinfo?.runtime : userinfo?.runtime, stops: (userinfo?.stops === undefined || Object.keys(userinfo?.stops).length === 0 )? fullinfo?.userinfo?.stops : userinfo?.stops } : { name: fullinfo?.weaver?.name, start: fullinfo?.weaver?.logintime, end: fullinfo?.dayinfo?.end, duration: fullinfo?.userinfo?.workdur, picks: fullinfo?.userinfo?.picks, meters: fullinfo?.userinfo?.meters, rpm: fullinfo?.userinfo?.rpm, mph: fullinfo?.userinfo?.mph, efficiency: fullinfo?.userinfo?.efficiency, starts: fullinfo?.userinfo?.starts, runtime: fullinfo?.userinfo?.runtime, stops: fullinfo?.userinfo?.stops })
+  const [userInfo, setUserInfo] = useState<any>((dayjs(modeCode?.updated).isBefore(dayjs(userinfo?.start)) == true) ? { name: info.weaver?.name, duration: (userinfo?.stops === undefined || Object.keys(userinfo?.stops).length === 0) ? fullinfo?.userinfo?.workdur : userinfo?.workdur, start: info.weaver?.logintime, end: info.dayinfo?.end, picks: info.userinfo?.picks, meters: info.userinfo?.meters, rpm: info.userinfo?.rpm, mph: info.userinfo?.mph, efficiency: info.userinfo?.efficiency, starts: (userinfo?.stops === undefined || Object.keys(userinfo?.stops).length === 0) ? fullinfo?.userinfo?.starts : userinfo?.starts, runtime: (userinfo?.stops === undefined || Object.keys(userinfo?.stops).length === 0) ? fullinfo?.userinfo?.runtime : userinfo?.runtime, stops: (userinfo?.stops === undefined || Object.keys(userinfo?.stops).length === 0) ? fullinfo?.userinfo?.stops : userinfo?.stops } : { name: fullinfo?.weaver?.name, start: fullinfo?.weaver?.logintime, end: fullinfo?.dayinfo?.end, duration: fullinfo?.userinfo?.workdur, picks: fullinfo?.userinfo?.picks, meters: fullinfo?.userinfo?.meters, rpm: fullinfo?.userinfo?.rpm, mph: fullinfo?.userinfo?.mph, efficiency: fullinfo?.userinfo?.efficiency, starts: fullinfo?.userinfo?.starts, runtime: fullinfo?.userinfo?.runtime, stops: fullinfo?.userinfo?.stops })
   const [userDonut, setUserDonut] = useState([] as any)
   const [userDonutSel, setUserDonutSel] = useState({ run: true, other: true, button: true, warp: true, weft: true, tool: true, fabric: true } as any)
   const [shiftDonut, setShiftDonut] = useState([] as any)
@@ -64,7 +64,7 @@ const Overview: React.FC<Props> = memo(({
     if (durstr == "") durstr = "<1 " + t('shift.secs')
     return durstr
   }
-
+  const query = (num: number, i: number) => num & (1 << i - 1)
   const stopNum = (reason: string) => {
     let obj;
     if (reason == 'other') obj = 0
@@ -217,7 +217,7 @@ const Overview: React.FC<Props> = memo(({
             <div className='wrapper'>
               <Row gutter={[8, 8]} style={{ flex: '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
                 <Col span={12} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
-                  <Row style={{ marginBottom: '8px', flex: '1 1 40%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
+                  <Row style={{ marginBottom: '8px', flex: (query(Number(getTagVal('modeControl')), 1) == 1) ? '1 1 40%' : '1 1 60%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
                     <Card title={t('panel.main')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
                       <Skeleton loading={loading} round active>
                         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
@@ -231,7 +231,7 @@ const Overview: React.FC<Props> = memo(({
                       </Skeleton>
                     </Card>
                   </Row>
-                  <Row style={{ marginBottom: '8px', flex: '1 1 30%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
+                  <Row style={{ marginBottom: (query(Number(getTagVal('modeControl')), 1) == 1) ? '8px' : '2px', flex: (query(Number(getTagVal('modeControl')), 1) == 1) ? '1 1 30%' : '1 1 40%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
                     <Card title={t('panel.warpbeam')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
                       <Skeleton loading={loading} round active>
                         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
@@ -240,7 +240,7 @@ const Overview: React.FC<Props> = memo(({
                       </Skeleton>
                     </Card>
                   </Row>
-                  <Row style={{ flex: '1 1 30%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex', marginBottom: '2px' }}>
+                  {(query(Number(getTagVal('modeControl')), 1) == 1) && <Row style={{ flex: '1 1 30%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex', marginBottom: '2px' }}>
                     <Card title={t('panel.roll')} bordered={false} size='small' style={cardStyle} headStyle={cardHeadStyle} bodyStyle={cardBodyStyle}>
                       <Skeleton loading={loading} round active>
                         <div style={{ display: 'inline-flex', width: '100%', alignItems: 'center', justifyContent: 'center' }}>
@@ -249,7 +249,7 @@ const Overview: React.FC<Props> = memo(({
                         </div>
                       </Skeleton>
                     </Card>
-                  </Row>
+                  </Row>}
                 </Col>
                 <Col span={12} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', alignSelf: 'stretch' }}>
                   <Row style={{ marginBottom: (((token && decypher) && decypher?.role == 'weaver') || shadowUser?.name) ? '8px' : '0px', flex: (((token && decypher) && decypher?.role == 'weaver') || shadowUser?.name) ? '1 1 50%' : '1 1 100%', alignSelf: 'stretch', alignItems: 'stretch', display: 'flex' }}>
