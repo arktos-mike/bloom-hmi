@@ -51,7 +51,7 @@ const Reminders: React.FC<Props> = ({
       runcondition: '0.0',
       nexttime: null,
       nextrun: null,
-      acknowledged: false
+      acknowledged: true
     };
     setData([...data, newData]);
     setPagination({ ...pagination, total: data.length + 1 });
