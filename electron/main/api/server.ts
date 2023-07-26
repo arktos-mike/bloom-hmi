@@ -165,12 +165,12 @@ const dbConf = async () => {
     ip1 = Object.assign(ip1, tcpRows.rows[0].data.tcp1, { act: 0, path: tcpRows.rows[0].data.tcp1.ip + ':' + tcpRows.rows[0].data.tcp1.port });
     ip1.slaves = []
     const tcpTags = [
-      { tag: { name: "stopAngle", group: "monitoring", dev: "tcp1", addr: "6", type: "word", reg: "r", min: 0, max: 359, dec: 0 }, link: false },
-      { tag: { name: "orderLength", group: "monitoring", dev: "tcp1", addr: "4", type: "float", reg: "r", min: 0, max: 1000, dec: 2 }, link: false },
-      { tag: { name: "speedMainDrive", group: "monitoring", dev: "tcp1", addr: "8", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, link: false },
+      { tag: { name: "stopAngle", group: "monitoring", dev: "tcp1", addr: "8", type: "word", reg: "r", min: 0, max: 359, dec: 0 }, link: false },
+      { tag: { name: "orderLength", group: "monitoring", dev: "tcp1", addr: "10", type: "float", reg: "r", min: 0, max: 1000, dec: 2 }, link: false },
+      { tag: { name: "speedMainDrive", group: "monitoring", dev: "tcp1", addr: "6", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, link: false },
       { tag: { name: "modeCode", group: "event", dev: "tcp1", addr: "0", type: "word", reg: "r", min: 0, max: 6, dec: 0 }, link: false },
-      { tag: { name: "picksLastRun", group: "monitoring", dev: "tcp1", addr: "2", type: "float", reg: "r", min: -1.7976931348623157e+308, max: 1.7976931348623157e+308, dec: 4 }, link: false },
-      { tag: { name: "realPicksLastRun", group: "monitoring", dev: "tcp1", addr: "10", type: "dword", reg: "r", min: -2147483648, max: 2147483647, dec: 0 }, link: false },
+      { tag: { name: "picksLastRun", group: "monitoring", dev: "tcp1", addr: "4", type: "float", reg: "r", min: -2147483648, max: 2147483647, dec: 4 }, link: false },
+      { tag: { name: "realPicksLastRun", group: "monitoring", dev: "tcp1", addr: "2", type: "dword", reg: "r", min: -2147483648, max: 2147483647, dec: 0 }, link: false },
       { tag: { name: "modeControl", group: "event", dev: "tcp1", addr: "14", type: "word", reg: "rw", min: 0, max: 65535, dec: 0 }, link: false },
       { tag: { name: "planClothDensity", group: "event", dev: "tcp1", type: "float", addr: "12", reg: "rw", min: 0.5, max: 1000, dec: 2 }, link: false },
       { tag: { name: "planOrderLength", group: "event", dev: "tcp1", type: "float", addr: "16", reg: "rw", min: 0, max: 1000, dec: 2 }, link: false },
@@ -198,12 +198,12 @@ const dbConf = async () => {
     com2.slaves = []
     const rtuConf = { rtu1: { com: 'opCOM1', sId: 1, swapBytes: true, swapWords: true } }
     const tags = [
-      { tag: { name: "stopAngle", group: "monitoring", dev: "rtu1", addr: "6", type: "word", reg: "r", min: 0, max: 359, dec: 0 }, link: false },
-      { tag: { name: "orderLength", group: "monitoring", dev: "rtu1", addr: "4", type: "float", reg: "r", min: 0, max: 1000, dec: 2 }, link: false },
-      { tag: { name: "speedMainDrive", group: "monitoring", dev: "rtu1", addr: "8", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, link: false },
+      { tag: { name: "stopAngle", group: "monitoring", dev: "rtu1", addr: "8", type: "word", reg: "r", min: 0, max: 359, dec: 0 }, link: false },
+      { tag: { name: "orderLength", group: "monitoring", dev: "rtu1", addr: "10", type: "float", reg: "r", min: 0, max: 1000, dec: 2 }, link: false },
+      { tag: { name: "speedMainDrive", group: "monitoring", dev: "rtu1", addr: "6", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, link: false },
       { tag: { name: "modeCode", group: "event", dev: "rtu1", addr: "0", type: "word", reg: "r", min: 0, max: 6, dec: 0 }, link: false },
-      { tag: { name: "picksLastRun", group: "monitoring", dev: "rtu1", addr: "2", type: "float", reg: "r", min: -1.7976931348623157e+308, max: 1.7976931348623157e+308, dec: 4 }, link: false },
-      { tag: { name: "realPicksLastRun", group: "monitoring", dev: "rtu1", addr: "10", type: "dword", reg: "r", min: -2147483648, max: 2147483647, dec: 0 }, link: false },
+      { tag: { name: "picksLastRun", group: "monitoring", dev: "rtu1", addr: "4", type: "float", reg: "r", min: -2147483648, max: 2147483647, dec: 4 }, link: false },
+      { tag: { name: "realPicksLastRun", group: "monitoring", dev: "rtu1", addr: "2", type: "dword", reg: "r", min: -2147483648, max: 2147483647, dec: 0 }, link: false },
       { tag: { name: "modeControl", group: "event", dev: "rtu1", addr: "14", type: "word", reg: "rw", min: 0, max: 65535, dec: 0 }, link: false },
       { tag: { name: "planSpeedMainDrive", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 600, dec: 1 }, val: 200.0 },
       { tag: { name: "planClothDensity", group: "event", dev: "rtu1", type: "float", addr: "12", reg: "rw", min: 0.5, max: 1000, dec: 2 }, link: false },
