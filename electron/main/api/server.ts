@@ -17,6 +17,7 @@ import { SerialPort } from 'serialport'
 import parseInterval from 'postgres-interval'
 import ModbusRTU from 'modbus-serial'
 import sudo from 'sudo-prompt'
+import { isString } from 'lodash'
 
 const options = {
   name: 'Electron',
@@ -566,27 +567,31 @@ const readModbusData = async function (client, port, slave, group) {
   }
 
   async function modeCodeProcess(rows) {
-    const info = await db.query('SELECT * FROM getcurrentinfo();');
-    info.rows[0]['userinfo'] && await info.rows[0]['userinfo']['stops'].map((row: any) => {
-      row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
-    });
-    info.rows[0]['shiftinfo'] && await info.rows[0]['shiftinfo']['stops'].map((row: any) => {
-      row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
-    });
-    info.rows[0]['dayinfo'] && await info.rows[0]['dayinfo']['stops'].map((row: any) => {
-      row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
-    });
-    info.rows[0]['monthinfo'] && await info.rows[0]['monthinfo']['stops'].map((row: any) => {
-      row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
-    });
-    info.rows[0]['shift'] && (info.rows[0]['shift']['shiftdur'] = parseInterval(info.rows[0]['shift']['shiftdur']))
-    info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['runtime'] = parseInterval(info.rows[0]['userinfo']['runtime']))
-    info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['workdur'] = parseInterval(info.rows[0]['userinfo']['workdur']))
-    info.rows[0]['shiftinfo'] && (info.rows[0]['shiftinfo']['runtime'] = parseInterval(info.rows[0]['shiftinfo']['runtime']))
-    info.rows[0]['dayinfo'] && (info.rows[0]['dayinfo']['runtime'] = parseInterval(info.rows[0]['dayinfo']['runtime']))
-    info.rows[0]['monthinfo'] && (info.rows[0]['monthinfo']['runtime'] = parseInterval(info.rows[0]['monthinfo']['runtime']))
-    info.rows[0]['lifetime'] && (info.rows[0]['lifetime']['motor'] = parseInterval(info.rows[0]['lifetime']['motor']))
-    info.rows[0]['modeCode'] = { val: rows[0]['val'], updated: rows[0]['updated'] }
+    let info: { rows: any[] };
+    do {
+      info = await db.query('SELECT * FROM getcurrentinfo();');
+      info.rows[0]['userinfo'] && await info.rows[0]['userinfo']['stops'].map((row: any) => {
+        row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+      });
+      info.rows[0]['shiftinfo'] && await info.rows[0]['shiftinfo']['stops'].map((row: any) => {
+        row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+      });
+      info.rows[0]['dayinfo'] && await info.rows[0]['dayinfo']['stops'].map((row: any) => {
+        row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+      });
+      info.rows[0]['monthinfo'] && await info.rows[0]['monthinfo']['stops'].map((row: any) => {
+        row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+      });
+      info.rows[0]['shift'] && (info.rows[0]['shift']['shiftdur'] = parseInterval(info.rows[0]['shift']['shiftdur']))
+      info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['runtime'] = parseInterval(info.rows[0]['userinfo']['runtime']))
+      info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['workdur'] = parseInterval(info.rows[0]['userinfo']['workdur']))
+      info.rows[0]['shiftinfo'] && (info.rows[0]['shiftinfo']['runtime'] = parseInterval(info.rows[0]['shiftinfo']['runtime']))
+      info.rows[0]['dayinfo'] && (info.rows[0]['dayinfo']['runtime'] = parseInterval(info.rows[0]['dayinfo']['runtime']))
+      info.rows[0]['monthinfo'] && (info.rows[0]['monthinfo']['runtime'] = parseInterval(info.rows[0]['monthinfo']['runtime']))
+      info.rows[0]['lifetime'] && (info.rows[0]['lifetime']['motor'] = parseInterval(info.rows[0]['lifetime']['motor']))
+      info.rows[0]['modeCode'] = { val: rows[0]['val'], updated: rows[0]['updated'] }
+      console.log('wait')
+    } while (info.rows[0]['tags'].filter((tag: any) => {return ['realPicksLastRun', 'picksLastRun', 'orderLength'].includes(tag['tag']['name']) && ((new Date(tag['updated'])) > (new Date(rows[0]['updated']))) }).length != 3)
     sse.send(info.rows[0], 'fullinfo', 'all');
     sse.send(rows, 'tags', 'modeCode');
     //console.log('[' + new Date().toJSON() + ']' + "modeCode processed")
