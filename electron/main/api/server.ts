@@ -591,7 +591,7 @@ const readModbusData = async function (client, port, slave, group) {
       info.rows[0]['lifetime'] && (info.rows[0]['lifetime']['motor'] = parseInterval(info.rows[0]['lifetime']['motor']))
       info.rows[0]['modeCode'] = { val: rows[0]['val'], updated: rows[0]['updated'] }
       console.log('wait')
-    } while (info.rows[0]['tags'].filter((tag: any) => {return ['realPicksLastRun', 'picksLastRun'].includes(tag['tag']['name']) && ((new Date(tag['updated'])) > (new Date(rows[0]['updated']))) }).length != 3)
+    } while (info.rows[0]['tags'].filter((tag: any) => {return ['realPicksLastRun', 'picksLastRun'].includes(tag['tag']['name']) && ((new Date(tag['updated'])) > (new Date(rows[0]['updated']))) }).length != 2)
     sse.send(info.rows[0], 'fullinfo', 'all');
     sse.send(rows, 'tags', 'modeCode');
     //console.log('[' + new Date().toJSON() + ']' + "modeCode processed")
