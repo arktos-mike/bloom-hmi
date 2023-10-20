@@ -64,7 +64,7 @@ router.post('/update', async (req, res) => {
         if (opIP.wired.dhcp == false) {
           switch (process.platform) {
             case 'linux':
-              sudo.exec("nmcli con del wired && nmcli con add con-name \"wired\" type ethernet ifname $(nmcli device status | awk \'$2==\"bridge\" || $2==\"ethernet\" {print $1}\' | sort | sed -n 1p) ipv4.method manual ip4 " + opIP.wired.ip_address + "/" + maskToPrefixLength(opIP.wired.netmask) + " gw4 " + opIP.wired.gateway_ip + " && nmcli con down wired && nmcli con up wired", options, async (error, data, getter) => {
+              sudo.exec("nmcli con del wired && nmcli con add con-name \"wired\" type $(nmcli device status | awk \'$2==\"bridge\" || $2==\"ethernet\" {print $2}\' | sort | sed -n 1p) ifname $(nmcli device status | awk \'$2==\"bridge\" || $2==\"ethernet\" {print $1}\' | sort | sed -n 1p) ipv4.method manual ip4 " + opIP.wired.ip_address + "/" + maskToPrefixLength(opIP.wired.netmask) + " gw4 " + opIP.wired.gateway_ip + " && nmcli con down wired && nmcli con up wired", options, async (error, data, getter) => {
                 if (!error) {
                   await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, dhcp}', opIP.wired.dhcp]);
                   await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, ip_address}', '"' + opIP.wired.ip_address + '"']);
@@ -93,7 +93,7 @@ router.post('/update', async (req, res) => {
         else {
           switch (process.platform) {
             case 'linux':
-              sudo.exec("nmcli con del wired && nmcli con add con-name \"wired\" type ethernet ifname $(nmcli device status | awk \'$2==\"bridge\" || $2==\"ethernet\" {print $1}\' | sort | sed -n 1p) ipv4.method auto && nmcli con down wired && nmcli con up wired", options, async (error, data, getter) => {
+              sudo.exec("nmcli con del wired && nmcli con add con-name \"wired\" type $(nmcli device status | awk \'$2==\"bridge\" || $2==\"ethernet\" {print $2}\' | sort | sed -n 1p) ifname $(nmcli device status | awk \'$2==\"ethernet\"\' | sort | awk \'BEGIN {cnt=0} $2==\"ethernet\" {cnt++} END {print (cnt==1? \"app-br0\":$1)}') ipv4.method auto && nmcli con down wired && nmcli con up wired", options, async (error, data, getter) => {
                 if (!error) {
                   await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, dhcp}', opIP.wired.dhcp]);
                   res.status(200).json({
