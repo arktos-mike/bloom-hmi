@@ -171,7 +171,7 @@ const dbConf = async () => {
       { tag: { name: "speedMainDrive", group: "monitoring", dev: "tcp1", addr: "6", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, link: false },
       { tag: { name: "modeCode", group: "event", dev: "tcp1", addr: "0", type: "word", reg: "r", min: 0, max: 6, dec: 0 }, link: false },
       { tag: { name: "picksLastRun", group: "monitoring", dev: "tcp1", addr: "4", type: "float", reg: "r", min: -2147483648, max: 2147483647, dec: 4 }, link: false },
-      { tag: { name: "realPicksLastRun", group: "monitoring", dev: "tcp1", addr: "2", type: "dword", reg: "r", min: -2147483648, max: 2147483647, dec: 0 }, link: false },
+      { tag: { name: "realPicksLastRun", group: "monitoring", dev: "tcp1", addr: "2", type: "int32", reg: "r", min: -2147483648, max: 2147483647, dec: 0 }, link: false },
       { tag: { name: "modeControl", group: "event", dev: "tcp1", addr: "14", type: "word", reg: "rw", min: 0, max: 65535, dec: 0 }, link: false },
       { tag: { name: "planClothDensity", group: "event", dev: "tcp1", type: "float", addr: "12", reg: "rw", min: 0.5, max: 1000, dec: 2 }, link: false },
       { tag: { name: "planOrderLength", group: "event", dev: "tcp1", type: "float", addr: "16", reg: "rw", min: 0, max: 1000, dec: 2 }, link: false },
@@ -204,7 +204,7 @@ const dbConf = async () => {
       { tag: { name: "speedMainDrive", group: "monitoring", dev: "rtu1", addr: "6", type: "float", reg: "r", min: 0, max: 600, dec: 1 }, link: false },
       { tag: { name: "modeCode", group: "event", dev: "rtu1", addr: "0", type: "word", reg: "r", min: 0, max: 6, dec: 0 }, link: false },
       { tag: { name: "picksLastRun", group: "monitoring", dev: "rtu1", addr: "4", type: "float", reg: "r", min: -2147483648, max: 2147483647, dec: 4 }, link: false },
-      { tag: { name: "realPicksLastRun", group: "monitoring", dev: "rtu1", addr: "2", type: "dword", reg: "r", min: -2147483648, max: 2147483647, dec: 0 }, link: false },
+      { tag: { name: "realPicksLastRun", group: "monitoring", dev: "rtu1", addr: "2", type: "int32", reg: "r", min: -2147483648, max: 2147483647, dec: 0 }, link: false },
       { tag: { name: "modeControl", group: "event", dev: "rtu1", addr: "14", type: "word", reg: "rw", min: 0, max: 65535, dec: 0 }, link: false },
       { tag: { name: "planSpeedMainDrive", group: "setting", dev: "op", type: "float", reg: "rw", min: 0, max: 600, dec: 1 }, val: 200.0 },
       { tag: { name: "planClothDensity", group: "event", dev: "rtu1", type: "float", addr: "12", reg: "rw", min: 0.5, max: 1000, dec: 2 }, link: false },
@@ -474,6 +474,9 @@ const readModbusData = async function (client, port, slave, group) {
             case 'dword':
               val = slave.swapWords ? await buf.readUInt32LE(0) : await buf.readUInt32BE(0);
               break;
+            case 'int32':
+              val = slave.swapWords ? await buf.readInt32LE(0) : await buf.readInt32BE(0);
+              break;
             case 'word':
               val = slave.swapWords ? await buf.readUInt16LE(0) : await buf.readUInt16BE(0);
               break;
@@ -518,6 +521,9 @@ const readModbusData = async function (client, port, slave, group) {
           switch (tag.type) {
             case 'dword':
               val = slave.swapWords ? await buf.readUInt32LE(0) : await buf.readUInt32BE(0);
+              break;
+            case 'int32':
+              val = slave.swapWords ? await buf.readInt32LE(0) : await buf.readInt32BE(0);
               break;
             case 'word':
               val = slave.swapWords ? await buf.readUInt16LE(0) : await buf.readUInt16BE(0);
@@ -635,6 +641,9 @@ const readModbusData = async function (client, port, slave, group) {
                 case 'dword':
                   val = slave.swapWords ? data.buffer.readUInt32LE(0) : data.buffer.readUInt32BE(0);
                   break;
+                case 'int32':
+                  val = slave.swapWords ? data.buffer.readInt32LE(0) : data.buffer.readInt32BE(0);
+                  break;
                 case 'word':
                   val = slave.swapWords ? data.buffer.readUInt16LE(0) : data.buffer.readUInt16BE(0);
                   break;
@@ -698,6 +707,9 @@ const readModbusData = async function (client, port, slave, group) {
               switch (tag.type) {
                 case 'dword':
                   val = slave.swapWords ? data.buffer.readUInt32LE(0) : data.buffer.readUInt32BE(0);
+                  break;
+                case 'int32':
+                  val = slave.swapWords ? data.buffer.readInt32LE(0) : data.buffer.readInt32BE(0);
                   break;
                 case 'word':
                   val = slave.swapWords ? data.buffer.readUInt16LE(0) : data.buffer.readUInt16BE(0);
