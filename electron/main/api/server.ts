@@ -60,7 +60,7 @@ api.get('/config/getinterfaces', async (req, res) => {
     else {
       let ifs = obj
       for (let ifc of ifs) {
-        if (ifc.name == 'enp2s0') {
+        if (ifc.type == 'Wired') {
 
           sudo.exec("nmcli -g ipv4.method connection show wired", options, async (error, data, getter) => {
             let dhcp = false
@@ -77,7 +77,7 @@ api.get('/config/getinterfaces', async (req, res) => {
             await db.query('UPDATE hwconfig set data = jsonb_set(data, $2, $3) where name=$1', ['ipConf', '{opIP, wired, gateway_ip}', '"' + (ifc.gateway_ip != undefined ? ifc.gateway_ip : '') + '"']);
           });
         }
-        if (ifc.name == 'wlp4s0') {
+        if (ifc.type == 'Wireless') {
 
           sudo.exec("nmcli -g ipv4.method connection show wireless", options, async (error, data, getter) => {
             let dhcp = false
