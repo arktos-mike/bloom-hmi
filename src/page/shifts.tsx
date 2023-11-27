@@ -48,7 +48,7 @@ const Shifts: React.FC<Props> = ({
     const newData: DataType = {
       key: data.length ? Number(data.slice(-1)[0].key) + 1 : 1,
       shiftname: `${data.length ? Number(data.slice(-1)[0].key) + 1 : 1}`,
-      starttime: data.length ? dayjs(data.slice(-1)[0].starttime, 'HH:mm').add(parseInt(data.length ? data.slice(-1)[0].duration : '8H'), 'h').format('HH:mm') : '00:00',
+      starttime: data.length ? dayjs(data.slice(-1)[0].starttime, 'HH:mm').add(parseFloat(data.length ? data.slice(-1)[0].duration : '8H'), 'h').format('HH:mm') : '00:00',
       duration: data.length ? data.slice(-1)[0].duration : '8H',
       monday: data.length ? data.slice(-1)[0].monday : true,
       tuesday: data.length ? data.slice(-1)[0].tuesday : true,
@@ -124,7 +124,7 @@ const Shifts: React.FC<Props> = ({
       });
   };
   const isNextDay = (data: DataType) => {
-    return (dayjs(data.starttime, "HH:mm").add(parseInt(data.duration), 'hour').date() != dayjs(data.starttime, "HH:mm").date() ? true : false)
+    return (dayjs(data.starttime, "HH:mm").add(parseFloat(data.duration), 'hour').date() != dayjs(data.starttime, "HH:mm").date() ? true : false)
   }
   const hasSameDay = (prevData: DataType, nextData: DataType) => {
     return ((prevData.monday || isNextDay(prevData) && prevData.sunday) && nextData.monday) || ((prevData.tuesday || isNextDay(prevData) && prevData.monday) && nextData.tuesday) || ((prevData.wednesday || isNextDay(prevData) && prevData.tuesday) && nextData.wednesday) || ((prevData.thursday || isNextDay(prevData) && prevData.wednesday) && nextData.thursday) || ((prevData.friday || isNextDay(prevData) && prevData.thursday) && nextData.friday) || ((prevData.saturday || isNextDay(prevData) && prevData.friday) && nextData.saturday) || ((prevData.sunday || isNextDay(prevData) && prevData.saturday) && nextData.sunday)
@@ -144,12 +144,12 @@ const Shifts: React.FC<Props> = ({
           obj.problemTime = true;
           result = true;
         }
-        if (i < index && hasSameDay(array[i], obj) && dayjs(obj.starttime, "HH:mm").add(isNextDay(array[i]) ? 1 : 0, 'day').isBefore(dayjs(array[i].starttime, "HH:mm").add(parseInt(array[i].duration), 'hour'))) {
+        if (i < index && hasSameDay(array[i], obj) && dayjs(obj.starttime, "HH:mm").add(isNextDay(array[i]) ? 1 : 0, 'day').isBefore(dayjs(array[i].starttime, "HH:mm").add(parseFloat(array[i].duration), 'hour'))) {
           obj.problemTime = true;
           array[i].problemDur = true;
           result = true;
         }
-        if (i < index && hasSameDay(obj, array[i]) && isNextDay(obj) && dayjs(obj.starttime, "HH:mm").add(parseInt(obj.duration), 'hour').isAfter(dayjs(array[i].starttime, "HH:mm").add(1, 'day'))) {
+        if (i < index && hasSameDay(obj, array[i]) && isNextDay(obj) && dayjs(obj.starttime, "HH:mm").add(parseFloat(obj.duration), 'hour').isAfter(dayjs(array[i].starttime, "HH:mm").add(1, 'day'))) {
           obj.problemDur = true;
           array[i].problemTime = true;
           result = true;
@@ -218,7 +218,7 @@ const Shifts: React.FC<Props> = ({
       title: t('shift.duration'),
       dataIndex: 'duration',
       width: '10%',
-      render: (_, record) => (<Select defaultValue={record.duration} onChange={(value: any) => { record.duration = value; handleSave(record); }} options={[{ label: 6 + ' ' + t('shift.hours'), value: '6H' }, { label: 7 + ' ' + t('shift.hours'), value: '7H' }, { label: 8 + ' ' + t('shift.hours'), value: '8H' }, { label: 9 + ' ' + t('shift.hours'), value: '9H' }, { label: 10 + ' ' + t('shift.hours'), value: '10H' }, { label: 11 + ' ' + t('shift.hours'), value: '11H' }, { label: 12 + ' ' + t('shift.hours'), value: '12H' }]} status={record.problemDur ? 'error' : null} />),
+      render: (_, record) => (<Select defaultValue={record.duration} onChange={(value: any) => { record.duration = value; handleSave(record); }} options={[{ label: 6 + ' ' + t('shift.hours'), value: '6H' }, { label: 6 + ' ' + t('shift.hours') + ' 30 ' + t('shift.mins'), value: '6.5H' }, { label: 7 + ' ' + t('shift.hours'), value: '7H' }, { label: 7 + ' ' + t('shift.hours') + ' 30 ' + t('shift.mins'), value: '7.5H' }, { label: 8 + ' ' + t('shift.hours'), value: '8H' }, { label: 8 + ' ' + t('shift.hours') + ' 30 ' + t('shift.mins'), value: '8.5H' }, { label: 9 + ' ' + t('shift.hours'), value: '9H' }, { label: 9 + ' ' + t('shift.hours') + ' 30 ' + t('shift.mins'), value: '9.5H' }, { label: 10 + ' ' + t('shift.hours'), value: '10H' }, { label: 10 + ' ' + t('shift.hours') + ' 30 ' + t('shift.mins'), value: '10.5H' }, { label: 11 + ' ' + t('shift.hours'), value: '11H' }, { label: 11 + ' ' + t('shift.hours') + ' 30 ' + t('shift.mins'), value: '11.5H' }, { label: 12 + ' ' + t('shift.hours'), value: '12H' }]} status={record.problemDur ? 'error' : null} />),
     },
     {
       title: t('shift.monday'),
