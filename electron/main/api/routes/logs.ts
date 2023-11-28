@@ -46,6 +46,8 @@ router.post('/clothlog', async (req, res) => {
 router.post('/clothlog/delete', async (req, res) => {
   const { start, end } = req.body;
   const { rows } = await db.query(`DELETE FROM clothlog WHERE tstzrange($1,$2,'[]') @> timestamp`, [start, end]);
+  db.query(`VACUUM clothlog;`);
+  db.query(`ANALYZE clothlog;`);
   rows.map((row: any) => {
     row['timestamp'] = range.parse(row['timestamp'], parseTimestampTz)
   });
@@ -74,6 +76,8 @@ router.post('/userlog', async (req, res) => {
 router.post('/userlog/delete', async (req, res) => {
   const { start, end } = req.body;
   const { rows } = await db.query(`DELETE FROM userlog WHERE tstzrange($1,$2,'[]') @> timestamp`, [start, end]);
+  db.query(`VACUUM userlog;`);
+  db.query(`ANALYZE userlog;`);
   rows.map((row: any) => {
     row['timestamp'] = range.parse(row['timestamp'], parseTimestampTz)
   });
@@ -92,6 +96,8 @@ router.post('/startstops', async (req, res) => {
 router.post('/startstops/delete', async (req, res) => {
   const { start, end } = req.body;
   const { rows } = await db.query(`DELETE FROM modelog WHERE tstzrange($1,$2,'[]') @> timestamp`, [start, end]);
+  db.query(`VACUUM modelog;`);
+  db.query(`ANALYZE modelog;`);
   rows.map((row: any) => {
     row['timestamp'] = range.parse(row['timestamp'], parseTimestampTz)
   });
