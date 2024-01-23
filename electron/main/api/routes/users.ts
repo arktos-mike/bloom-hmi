@@ -472,7 +472,16 @@ router.post('/update', async (req, res) => {
                 await db.query(`UPDATE userlog SET timestamp = case when current_timestamp>lower(timestamp) then tstzrange(lower(timestamp),$5,'[)') else tstzrange($5,$5,'[)')	end, logoutby=$2 WHERE upper_inf(timestamp) AND (role<>$1 OR (role=$1 AND $3=$1)) AND id IS DISTINCT FROM $4`, ['weaver', 'userid', role, id, t]);
                 (oldrole != role) && await db.query(`UPDATE userlog SET timestamp = tstzrange(lower(timestamp),$3,'[)'), logoutby=$2 WHERE upper_inf(timestamp) AND id=$1`, [id, 'rolechange', t]);
                 (oldrole != role) && await db.query(`INSERT INTO userlog (id, name, role, loginby, timestamp) VALUES($1, $2, $3, $4, tstzrange($5,NULL,'[)'));`, [id, name, role, 'rolechange', t]);
-                res.status(200).json({
+                if (role == 'weaver') {
+                  const info = await db.query('SELECT * FROM getcurrentinfo();');
+                  info.rows[0]['userinfo'] && await info.rows[0]['userinfo']['stops'].map((row: any) => {
+                    row[Object.keys(row)[0]].dur = parseInterval(row[Object.keys(row)[0]].dur)
+                  });
+                  info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['runtime'] = parseInterval(info.rows[0]['userinfo']['runtime']))
+                  info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['workdur'] = parseInterval(info.rows[0]['userinfo']['workdur']))
+                  info.rows[0]['userinfo'] && (info.rows[0]['userinfo']['start'] = info.rows[0]['weaver']['logintime'])
+                  await sse.send(info.rows[0]['userinfo'], 'userinfo', 'all');
+                }res.status(200).json({
                   message: "notifications.userupdate",
                   token: token,
                 });
