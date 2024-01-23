@@ -434,7 +434,7 @@ router.post('/update', async (req, res) => {
               error: "Server error",
             });
           } else if (result === true) { //Checking if credentials match
-            bcrypt.hash(newpassword, 10, (err, hash) => {
+            bcrypt.hash(newpassword, 10, async (err, hash) => {
               if (err)
                 res.status(err).json({
                   message: "notifications.servererror",
@@ -468,8 +468,10 @@ router.post('/update', async (req, res) => {
                   process.env['SECRET_KEY'] || 'g@&hGgG&n34b%F7_f123K9',
                 );
                 let t = new Date()
-                oldrole != role && db.query(`UPDATE userlog SET timestamp = tstzrange(lower(timestamp),$3,'[)'), logoutby=$2 WHERE upper_inf(timestamp) AND id=$1`, [id, 'rolechange', t]);
-                oldrole != role && db.query(`INSERT INTO userlog (id, name, role, loginby, timestamp) VALUES($1, $2, $3, $4, tstzrange($5,NULL,'[)'));`, [id, name, role, 'rolechange', t]);
+                await db.query(`DELETE FROM userlog WHERE upper_inf(timestamp) AND current_timestamp<lower(timestamp)`)
+                await db.query(`UPDATE userlog SET timestamp = case when current_timestamp>lower(timestamp) then tstzrange(lower(timestamp),$5,'[)') else tstzrange($5,$5,'[)')	end, logoutby=$2 WHERE upper_inf(timestamp) AND (role<>$1 OR (role=$1 AND $3=$1)) AND id IS DISTINCT FROM $4`, ['weaver', 'userid', role, id, t]);
+                (oldrole != role) && await db.query(`UPDATE userlog SET timestamp = tstzrange(lower(timestamp),$3,'[)'), logoutby=$2 WHERE upper_inf(timestamp) AND id=$1`, [id, 'rolechange', t]);
+                (oldrole != role) && await db.query(`INSERT INTO userlog (id, name, role, loginby, timestamp) VALUES($1, $2, $3, $4, tstzrange($5,NULL,'[)'));`, [id, name, role, 'rolechange', t]);
                 res.status(200).json({
                   message: "notifications.userupdate",
                   token: token,
